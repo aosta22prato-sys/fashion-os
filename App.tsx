@@ -5,6 +5,7 @@
 
 import React, { useState, useEffect, useRef, useMemo } from 'react';
 import { motion, AnimatePresence } from 'motion/react';
+import { useDropzone } from 'react-dropzone';
 import { 
   Search, 
   Camera, 
@@ -39,7 +40,8 @@ import {
   Server,
   ChevronLeft,
   MapPin,
-  Cpu
+  Cpu,
+  TrendingDown
 } from 'lucide-react';
 import { AppState, FashionItem, ChatMessage, Theme } from './types';
 import { MOCK_FASHION_GALLERY, FASHION_CATEGORIES, fileToBase64, optimizeImage } from './utils';
@@ -47,6 +49,13 @@ import { analyzeFashionQuery, getFashionAssistantResponse, performVisualSearch, 
 import { translations, getBrowserLanguage, Language } from './services/translationService';
 
 // --- Components ---
+
+const StatusTag: React.FC<{ label: string; value: string; color: string }> = ({ label, value, color }) => (
+  <div className="flex flex-col">
+    <span className="text-[8px] text-zinc-500 uppercase tracking-widest leading-none mb-1">{label}</span>
+    <span className={`text-[10px] font-mono font-bold text-${color}-500 leading-none`}>{value}</span>
+  </div>
+);
 
 const TrendHotspots: React.FC<{ t: any }> = ({ t }) => {
   const hotspots = [
@@ -387,10 +396,11 @@ const StyleRemixModal: React.FC<{
   onGenerate: (prompt: string, referenceImage: string, mutationLevel: number) => Promise<void>;
   isLoading: boolean;
   generatedImageUrl: string | null;
+  initialMutationLevel: number;
   t: any;
-}> = ({ item, onClose, onGenerate, isLoading, generatedImageUrl, t }) => {
+}> = ({ item, onClose, onGenerate, isLoading, generatedImageUrl, initialMutationLevel, t }) => {
   const [prompt, setPrompt] = useState('');
-  const [mutationLevel, setMutationLevel] = useState(0.5);
+  const [mutationLevel, setMutationLevel] = useState(initialMutationLevel);
 
   return (
     <motion.div
@@ -441,8 +451,13 @@ const StyleRemixModal: React.FC<{
 
               <div className="space-y-4">
                 <div className="flex justify-between items-center text-[10px] uppercase font-bold tracking-widest text-zinc-400">
-                  <span>Mutation Level</span>
-                  <span className="text-emerald-500">{Math.round(mutationLevel * 100)}%</span>
+                  <div className="flex items-center gap-2">
+                    <span>Mutation Intensity</span>
+                    <span className={`px-2 py-0.5 rounded-full text-[8px] font-black ${mutationLevel > 0.7 ? 'bg-red-500 text-white' : 'bg-emerald-500/10 text-emerald-500'}`}>
+                      {mutationLevel > 0.7 ? 'EXPERIMENTAL' : 'POLISHED'}
+                    </span>
+                  </div>
+                  <span className={mutationLevel > 0.7 ? 'text-red-500' : 'text-emerald-500'}>{Math.round(mutationLevel * 100)}%</span>
                 </div>
                 <div className="relative h-6 flex items-center">
                   <input 
@@ -452,12 +467,15 @@ const StyleRemixModal: React.FC<{
                     step="0.01"
                     value={mutationLevel}
                     onChange={(e) => setMutationLevel(parseFloat(e.target.value))}
-                    className="w-full h-1 bg-zinc-100 dark:bg-zinc-800 rounded-full appearance-none cursor-pointer accent-emerald-500"
+                    className={`w-full h-1 bg-zinc-100 dark:bg-zinc-800 rounded-full appearance-none cursor-pointer accent-current ${mutationLevel > 0.7 ? 'text-red-500' : 'text-emerald-500'}`}
                   />
                 </div>
                 <div className="flex justify-between text-[8px] text-zinc-300 dark:text-zinc-700 uppercase font-bold tracking-widest">
                   <span>Conservative</span>
-                  <span>Experimental</span>
+                  <div className="flex items-center gap-1">
+                    {mutationLevel > 0.7 && <Zap size={8} className="text-red-500 animate-pulse" />}
+                    <span>Neuro-Shaking</span>
+                  </div>
                 </div>
               </div>
 
@@ -514,6 +532,15 @@ const FashionCard: React.FC<{
   isSaved: boolean;
   t: any;
 }> = ({ item, index, onAddToMoodboard, onViewDetails, onAddToDesign, onRemix, isSaved, t }) => {
+  const [isAddedToDesign, setIsAddedToDesign] = useState(false);
+
+  const handleAddToDesign = (e: React.MouseEvent) => {
+    e.stopPropagation();
+    onAddToDesign(item);
+    setIsAddedToDesign(true);
+    setTimeout(() => setIsAddedToDesign(false), 2000);
+  };
+
   return (
     <motion.div 
       layout
@@ -540,9 +567,18 @@ const FashionCard: React.FC<{
       )}
       <div className="aspect-vogue overflow-hidden relative">
         {item.isSearchResult && (
-          <div className="absolute bottom-4 left-4 z-[40] pointer-events-none">
+          <div className="absolute bottom-4 left-4 z-[40] group/aitip">
             <div className="bg-emerald-500/80 backdrop-blur-md text-black px-2 py-1 rounded-[4px] text-[7px] font-black uppercase tracking-widest flex items-center gap-1.5 shadow-lg border border-white/20">
-              <Sparkles size={8} className="animate-pulse" /> AI Match
+              <Cpu size={8} className="animate-pulse" /> AI Match
+            </div>
+            
+            {/* AI Tooltip */}
+            <div className="absolute bottom-full left-0 mb-2 w-48 p-3 bg-black/95 backdrop-blur-xl border border-emerald-500/30 rounded-xl text-[9px] text-white opacity-0 group-hover/aitip:opacity-100 transition-all duration-300 pointer-events-none z-[50] shadow-2xl translate-y-2 group-hover/aitip:translate-y-0 text-left">
+              <div className="flex items-center gap-2 mb-1.5">
+                <Cpu size={10} className="text-emerald-400" />
+                <span className="font-bold uppercase tracking-widest text-emerald-400">Neural Intelligence</span>
+              </div>
+              <p className="leading-relaxed opacity-80">This result was identified and scored by our AI vision model.</p>
             </div>
           </div>
         )}
@@ -550,7 +586,7 @@ const FashionCard: React.FC<{
         <SafeImage 
           src={item.imageUrl} 
           alt={item.description}
-          className="w-full h-full object-cover origin-center grayscale-[0.3] group-hover:grayscale-0"
+          className="w-full h-full object-cover origin-center grayscale-[0.3] group-hover:grayscale-0 group-hover:scale-110 transition-all duration-1000 ease-out"
         />
         
         {/* Luxury Meta */}
@@ -651,13 +687,36 @@ const FashionCard: React.FC<{
           )}
           
           <button 
-            onClick={(e) => {
-              e.stopPropagation();
-              onAddToDesign(item);
-            }}
-            className="w-full py-4 bg-brand-ink text-white border border-white/10 rounded-full text-[10px] font-bold uppercase tracking-[0.3em] hover:bg-white hover:text-black transition-all flex items-center justify-center gap-3 shadow-2xl"
+            onClick={handleAddToDesign}
+            className={`w-full py-4 border rounded-full text-[10px] font-bold uppercase tracking-[0.3em] transition-all flex items-center justify-center gap-3 shadow-2xl relative overflow-hidden ${
+              isAddedToDesign 
+                ? 'bg-emerald-500 border-emerald-400 text-black' 
+                : 'bg-brand-ink text-white border-white/10 hover:bg-white hover:text-black'
+            }`}
           >
-            <Palette size={14} /> {t.gallery.addToDesign}
+            <AnimatePresence mode="wait">
+              {isAddedToDesign ? (
+                <motion.div
+                  key="check"
+                  initial={{ opacity: 0, y: 10 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  exit={{ opacity: 0, y: -10 }}
+                  className="flex items-center gap-2"
+                >
+                  <Check size={14} strokeWidth={3} /> {t.gallery.added || "Ready"}
+                </motion.div>
+              ) : (
+                <motion.div
+                  key="palette"
+                  initial={{ opacity: 0, y: 10 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  exit={{ opacity: 0, y: -10 }}
+                   className="flex items-center gap-2"
+                >
+                  <Palette size={14} /> {t.gallery.addToDesign}
+                </motion.div>
+              )}
+            </AnimatePresence>
           </button>
           <button 
             onClick={(e) => {
@@ -1524,12 +1583,78 @@ export default function App() {
   const [remixItem, setRemixItem] = useState<FashionItem | null>(null);
   const [isRemixing, setIsRemixing] = useState(false);
   const [remixResult, setRemixResult] = useState<string | null>(null);
+  const [mutationLevel, setMutationLevel] = useState(0.3);
+  const [labStatus, setLabStatus] = useState<'IDLE' | 'SCANNING' | 'REMIXING'>('IDLE');
 
-  const handleRemix = async (prompt: string, referenceImage: string, mutationLevel: number) => {
+  // Simulated Stats
+  const [flowRate, setFlowRate] = useState("1.2");
+  const [confidence, setConfidence] = useState("98.2");
+
+  const onDrop = useCallback(async (acceptedFiles: File[]) => {
+    const file = acceptedFiles[0];
+    if (!file) return;
+
+    setLabStatus('SCANNING');
+    setIsAnalyzingImage(true);
+    
+    try {
+      const { blob } = await optimizeImage(file);
+      const base64 = await fileToBase64(blob);
+      const analysis = await performVisualSearch(base64, blob.type);
+      
+      const simulatedResult: FashionItem = {
+        id: `img-${Date.now()}`,
+        imageUrl: base64,
+        category: analysis.category,
+        tags: [...analysis.tags, "Neural Harvest"],
+        style: "Harvested DNA",
+        description: analysis.description,
+        isSearchResult: true,
+        analysis: {
+          sustainability: 85,
+          heritageScore: 70,
+          trendVelocity: 'Rising',
+          fabricComposition: 'Extracted via Neural Scan',
+          vogueIndex: 94,
+          colors: analysis.colors || ['#000000', '#FFFFFF'],
+          fabrics: analysis.fabrics || ['Identified via Scan']
+        }
+      };
+      
+      setGallery(prev => [simulatedResult, ...prev]);
+      setActiveCategory(analysis.category);
+      window.scrollTo({ top: window.innerHeight * 0.8, behavior: 'smooth' });
+    } catch (e) {
+      console.error(e);
+      setError("Genetic retrieval failed.");
+    } finally {
+      setTimeout(() => {
+        setLabStatus('IDLE');
+        setIsAnalyzingImage(false);
+      }, 1000);
+    }
+  }, []);
+
+  const { getRootProps, getInputProps, isDragActive } = useDropzone({ 
+    onDrop,
+    noClick: true,
+    accept: { 'image/*': [] }
+  });
+
+  useEffect(() => {
+    const interval = setInterval(() => {
+      setFlowRate((parseFloat(flowRate) + (Math.random() - 0.5) * 0.1).toFixed(1));
+      setConfidence((parseFloat(confidence) + (Math.random() - 0.5) * 0.2).toFixed(1));
+    }, 3000);
+    return () => clearInterval(interval);
+  }, [flowRate, confidence]);
+
+  const handleRemix = async (prompt: string, referenceImage: string, level: number) => {
     setIsRemixing(true);
+    setMutationLevel(level);
     try {
       // Incorporate mutation level into the prompt or params if the service supports it
-      const enhancedPrompt = `Mutation Level: ${mutationLevel}. ${prompt}`;
+      const enhancedPrompt = `Mutation Level: ${level}. ${prompt}`;
       const result = await generateTextImage({
         text: enhancedPrompt,
         style: remixItem?.style || '',
@@ -1720,7 +1845,46 @@ export default function App() {
   };
 
   return (
-    <div className={`min-h-screen font-sans selection:bg-brand-ink selection:text-white pb-24 md:pb-0 vogue-grain ${theme === Theme.DARK ? 'dark bg-black text-white' : 'bg-white text-zinc-900'} ${activeTab !== 'gallery' && theme === Theme.LIGHT ? 'bg-zinc-50' : ''}`}>
+    <div {...getRootProps()} className={`min-h-screen font-sans selection:bg-brand-ink selection:text-white pb-24 md:pb-0 vogue-grain ${theme === Theme.DARK ? 'dark bg-black text-white' : 'bg-white text-zinc-900'} ${activeTab !== 'gallery' && theme === Theme.LIGHT ? 'bg-zinc-50' : ''}`}>
+      <input {...getInputProps()} />
+
+      {/* Gravity Capture Overlay */}
+      <AnimatePresence>
+        {isDragActive && (
+          <motion.div 
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            className="fixed inset-0 z-[1000] flex items-center justify-center bg-emerald-500/10 backdrop-blur-md"
+          >
+            <div className="absolute inset-0 bg-[radial-gradient(circle_at_center,_var(--tw-gradient-stops))] from-emerald-500/20 via-transparent to-transparent opacity-50" />
+            
+            <motion.div 
+              initial={{ scale: 0.8, rotate: -10 }}
+              animate={{ scale: 1, rotate: 0, transition: { type: 'spring', damping: 15 } }}
+              className="relative"
+            >
+              <div className="w-[400px] h-[400px] border-2 border-dashed border-emerald-500/50 rounded-full flex items-center justify-center animate-[spin_20s_linear_infinite]">
+                 <div className="w-[300px] h-[300px] border border-emerald-500/30 rounded-full animate-[spin_10s_linear_infinite_reverse]" />
+              </div>
+              
+              <div className="absolute inset-0 flex flex-col items-center justify-center gap-6">
+                <motion.div 
+                  animate={{ y: [0, -10, 0] }}
+                  transition={{ duration: 2, repeat: Infinity }}
+                  className="bg-emerald-500 text-black p-6 rounded-full shadow-[0_0_50px_rgba(16,185,129,0.5)]"
+                >
+                  <Upload size={40} strokeWidth={2.5} />
+                </motion.div>
+                <div className="text-center">
+                  <h3 className="text-emerald-500 font-mono text-xl font-black tracking-[0.3em] mb-2">GRAVITY CAPTURE</h3>
+                  <p className="text-white/60 font-mono text-[10px] uppercase tracking-widest">Drop to harvest item DNA</p>
+                </div>
+              </div>
+            </motion.div>
+          </motion.div>
+        )}
+      </AnimatePresence>
       {/* Error Toast */}
       <AnimatePresence>
         {isAnalyzingImage && (
@@ -1754,38 +1918,64 @@ export default function App() {
               initial={{ y: 20, opacity: 0 }}
               animate={{ y: 0, opacity: 1 }}
               transition={{ delay: 0.2 }}
-              className="text-center max-w-2xl"
+              className="text-center max-w-2xl px-6"
             >
-              <h2 className="font-serif text-5xl md:text-7xl uppercase tracking-tighter mb-8 italic drop-shadow-[0_0_15px_rgba(255,255,255,0.2)]">Dissecting Style DNA</h2>
+              <h2 className="font-serif text-5xl md:text-8xl uppercase tracking-tighter mb-8 italic drop-shadow-[0_0_30px_rgba(16,185,129,0.4)] animate-[pulse_2s_infinite]">
+                Neural Harvest <span className="not-italic font-black text-emerald-400 opacity-20">v.4</span>
+              </h2>
               
-              <div className="grid grid-cols-1 md:grid-cols-3 gap-8 text-[10px] font-mono text-emerald-500/60 uppercase tracking-widest mb-16">
-                <div className="flex flex-col gap-2 p-4 bg-emerald-500/5 rounded-xl border border-emerald-500/10 backdrop-blur-md">
-                  <span className="text-white/40">Phase 1</span>
-                  <span className="text-emerald-400 animate-pulse">Structural Analysis: OK</span>
-                </div>
-                <div className="flex flex-col gap-2 p-4 bg-emerald-500/5 rounded-xl border border-emerald-500/10 backdrop-blur-md">
-                  <span className="text-white/40">Phase 2</span>
-                  <span className="text-emerald-400 animate-pulse">Palette Extraction: RUNNING</span>
-                </div>
-                <div className="flex flex-col gap-2 p-4 bg-emerald-500/5 rounded-xl border border-emerald-500/10 backdrop-blur-md">
-                  <span className="text-white/40">Phase 3</span>
-                  <span className="text-emerald-400 animate-pulse">Vogue Indexing: PENDING</span>
-                </div>
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-6 text-[10px] font-mono text-emerald-500/60 uppercase tracking-widest mb-16">
+                {[
+                  { phase: 'Phase 1', label: 'Geometric Mapping', status: 'OK', delay: 0 },
+                  { phase: 'Phase 2', label: 'DNA Extraction', status: 'RUNNING', delay: 0.2 },
+                  { phase: 'Phase 3', label: 'Vector Alignment', status: 'PENDING', delay: 0.4 }
+                ].map((p, i) => (
+                  <motion.div 
+                    key={p.phase}
+                    initial={{ opacity: 0, y: 10 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    transition={{ delay: 0.5 + p.delay }}
+                    className="flex flex-col gap-2 p-6 bg-emerald-500/5 rounded-[24px] border border-emerald-500/10 backdrop-blur-md relative group overflow-hidden"
+                  >
+                    <div className="absolute inset-0 bg-emerald-500/5 translate-y-full group-hover:translate-y-0 transition-transform" />
+                    <span className="text-white/30 text-[8px]">{p.phase}</span>
+                    <span className="text-white font-bold mb-1">{p.label}</span>
+                    <span className={`text-[9px] ${p.status === 'RUNNING' ? 'text-white animate-pulse' : 'text-emerald-400/60'}`}>{p.status}</span>
+                  </motion.div>
+                ))}
               </div>
 
               {/* Progress Bar Upgrade */}
-              <div className="relative w-full h-[1px] bg-white/10 overflow-hidden">
-                <motion.div 
-                   initial={{ x: '-100%' }}
-                   animate={{ x: '100%' }}
-                   transition={{ duration: 1.5, repeat: Infinity, ease: "easeInOut" }}
-                   className="absolute inset-0 bg-emerald-400 shadow-[0_0_30px_rgba(16,185,129,1)]"
-                />
+              <div className="px-10">
+                <div className="relative w-full h-[2px] bg-white/5 overflow-hidden rounded-full">
+                  <motion.div 
+                    initial={{ x: '-100%' }}
+                    animate={{ x: '100%' }}
+                    transition={{ duration: 1, repeat: Infinity, ease: "easeInOut" }}
+                    className="absolute inset-0 bg-gradient-to-r from-transparent via-emerald-400 to-transparent shadow-[0_0_40px_rgba(16,185,129,1)]"
+                  />
+                </div>
               </div>
 
-              <div className="mt-8 font-mono text-[9px] text-white/40 flex justify-between uppercase tracking-widest px-2">
-                <span>Memory Pool: TX-92-B</span>
-                <span>Vectorizing 1024_DIM</span>
+              <div className="mt-12 flex justify-center items-center gap-10">
+                <div className="flex flex-col items-center">
+                  <span className="text-[8px] text-white/20 uppercase font-black tracking-widest mb-2">Memory Allocation</span>
+                  <div className="flex gap-1">
+                    {[...Array(5)].map((_, i) => (
+                      <motion.div 
+                        key={i}
+                        animate={{ height: [4, 12, 4] }}
+                        transition={{ duration: 1.5, repeat: Infinity, delay: i * 0.1 }}
+                        className="w-1 bg-emerald-500/40 rounded-full"
+                      />
+                    ))}
+                  </div>
+                </div>
+                <div className="w-[1px] h-10 bg-white/10" />
+                <div className="text-left">
+                  <div className="text-[8px] text-white/40 uppercase font-bold tracking-widest mb-1">Status Code</div>
+                  <div className="text-emerald-500 font-mono text-[10px] animate-pulse">TX_DNA_SYNC_ACTIVE</div>
+                </div>
               </div>
             </motion.div>
           </motion.div>
@@ -1803,22 +1993,83 @@ export default function App() {
         )}
       </AnimatePresence>
       {/* Navigation */}
-      <nav className="fixed top-0 w-full z-50 p-6 flex items-center justify-between pointer-events-none md:flex hidden">
+      <nav className="fixed top-0 w-full z-50 p-6 flex items-start justify-between pointer-events-none md:flex hidden">
         <motion.div 
           initial={{ opacity: 0, x: -20 }}
           animate={{ opacity: 1, x: 0 }}
-          className="pointer-events-auto cursor-pointer flex items-center gap-6"
+          className="pointer-events-auto cursor-pointer flex items-center gap-8"
         >
-          <span className="font-serif text-3xl font-black tracking-tighter uppercase text-white drop-shadow-lg" onClick={() => setActiveTab("gallery")}>ModaUI</span>
-          <button 
-            onClick={() => setLang(lang === 'en' ? 'zh' : 'en')}
-            className="flex items-center gap-2 glass px-4 py-1.5 rounded-full text-[10px] text-white uppercase font-bold tracking-widest hover:bg-white/20 transition-all"
-          >
-            <Globe size={14} /> {lang === 'en' ? '中文' : 'English'}
-          </button>
+          <div className="flex items-center gap-4">
+            <div className="w-10 h-10 bg-brand-ink rounded-xl border border-white/10 flex items-center justify-center shadow-[0_0_20px_rgba(0,0,0,0.3)]">
+              <span className="font-serif text-2xl font-black text-white italic">M</span>
+            </div>
+            <span className="font-serif text-3xl font-black tracking-tighter uppercase text-white drop-shadow-lg" onClick={() => setActiveTab("gallery")}>ModaUI</span>
+          </div>
+          
+          {/* Neural Harvester Dashboard */}
+          <div className="flex items-start gap-8 border-l border-white/10 pl-8">
+            <div className="flex flex-col">
+              <span className="text-[8px] text-white/40 uppercase font-black tracking-widest leading-none mb-1">Flow Rate</span>
+              <div className="flex items-center gap-2">
+                <span className="text-emerald-400 font-mono text-sm font-bold">{flowRate}GB/S</span>
+                <TrendingUp size={10} className="text-emerald-400" />
+              </div>
+            </div>
+            <div className="flex flex-col">
+              <span className="text-[8px] text-white/40 uppercase font-black tracking-widest leading-none mb-1">Confidence</span>
+              <div className="flex items-center gap-2">
+                <span className="text-emerald-400 font-mono text-sm font-bold">{confidence}%</span>
+                <div className="w-12 h-1 bg-white/10 rounded-full overflow-hidden">
+                  <motion.div 
+                    initial={{ width: 0 }}
+                    animate={{ width: `${confidence}%` }}
+                    className="h-full bg-emerald-400"
+                  />
+                </div>
+              </div>
+            </div>
+          </div>
         </motion.div>
-        
-        <div className="flex gap-4 pointer-events-auto">
+
+        <div className="flex gap-4 pointer-events-auto items-start">
+          {/* Mutation Console */}
+          <motion.div 
+            initial={{ opacity: 0, y: -20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: 0.5 }}
+            className="bg-black/80 backdrop-blur-2xl border border-white/10 p-5 rounded-[24px] w-64 shadow-2xl mr-4"
+          >
+             <div className="flex items-center justify-between mb-4">
+                <div className="flex items-center gap-2">
+                  <div className="w-2 h-2 bg-emerald-500 rounded-full animate-ping" />
+                  <span className="text-[8px] font-black uppercase tracking-widest text-emerald-500">Live Optimization</span>
+                </div>
+                <button onClick={() => setLang(lang === 'en' ? 'zh' : 'en')} className="text-[8px] font-mono text-white/40 hover:text-white transition-all uppercase tracking-widest">
+                  {lang === 'en' ? 'ZH' : 'EN'}
+                </button>
+             </div>
+             
+             <div className="space-y-4">
+               <div>
+                 <div className="flex justify-between items-center mb-2">
+                   <label className="text-[8px] text-zinc-500 font-black uppercase tracking-widest">Mutation Level</label>
+                   <span className={`text-[9px] font-black font-mono px-2 py-0.5 rounded ${mutationLevel > 0.7 ? 'bg-red-500/20 text-red-400 border border-red-500/30' : 'bg-emerald-500/20 text-emerald-300 border border-emerald-500/30'}`}>
+                      {mutationLevel > 0.7 ? 'EXPERIMENTAL' : 'POLISHED'}
+                   </span>
+                 </div>
+                 <input 
+                   type="range" 
+                   min="0" 
+                   max="1" 
+                   step="0.01"
+                   value={mutationLevel}
+                   onChange={(e) => setMutationLevel(parseFloat(e.target.value))}
+                   className="w-full h-1 bg-white/10 rounded-full appearance-none cursor-pointer accent-emerald-400"
+                 />
+               </div>
+             </div>
+          </motion.div>
+
           <button 
             onClick={() => setIsMoodboardOpen(true)}
             className="p-3 glass rounded-full text-white hover:scale-110 transition-all relative group"
@@ -1839,7 +2090,7 @@ export default function App() {
           >
             <MessageSquare size={20} />
             <span className="absolute -top-1 -right-1 w-3 h-3 bg-white rounded-full animate-ping opacity-75" />
-            <div className="absolute right-0 top-14 opacity-0 group-hover:opacity-100 transition-all bg-white text-black text-[10px] px-3 py-2 rounded-lg whitespace-nowrap uppercase tracking-widest shadow-xl">
+            <div className="absolute right-0 top-14 opacity-0 group-hover:opacity-100 transition-all bg-white text-black text-[10px] px-3 py-2 rounded-lg whitespace-nowrap uppercase tracking-widest shadow-xl font-bold">
               {t.nav.curator}
             </div>
           </button>
@@ -2246,6 +2497,7 @@ export default function App() {
             onGenerate={handleRemix}
             isLoading={isRemixing}
             generatedImageUrl={remixResult}
+            initialMutationLevel={mutationLevel}
             t={t}
           />
         )}
