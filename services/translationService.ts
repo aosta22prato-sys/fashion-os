@@ -39,13 +39,13 @@ export interface Translations {
 export const translations: Record<Language, Translations> = {
   en: {
     hero: {
-      title: "Tomorrow's Elegance, Today.",
-      subtitle: "Elegance",
-      placeholder: "Describe the style you're looking for...",
-      analyze: "Analyze"
+      title: "Intelligent Design, Trend Gallery.",
+      subtitle: "Bestsellers",
+      placeholder: "Discover the next global trend...",
+      analyze: "Analyze Trend"
     },
     nav: {
-      curator: "Ask Fashion Curator",
+      curator: "ModaUI Curator",
       moodboard: "My Moodboard",
       settings: "Settings"
     },
@@ -94,7 +94,7 @@ export const translations: Record<Language, Translations> = {
       labStatus: "Neural Engine Active"
     },
     interaction: {
-      title: "Vogue Intelligence",
+      title: "ModaUI Intelligence",
       subtitle: "Ask the Curator",
       placeholder: "Inquire about trend cycles..."
     },
@@ -107,13 +107,13 @@ export const translations: Record<Language, Translations> = {
   },
   zh: {
     hero: {
-      title: "今日，预见明日的优雅。",
-      subtitle: "优雅",
-      placeholder: "描述您正在寻找的风格...",
-      analyze: "智能分析"
+      title: "时装智能化，全球爆款库。",
+      subtitle: "趋势爆款",
+      placeholder: "搜索全球时尚趋势...",
+      analyze: "核心分析"
     },
     nav: {
-      curator: "时尚 AI 助手",
+      curator: "ModaUI 策展管家",
       moodboard: "我的灵感板",
       settings: "系统设置"
     },
@@ -162,7 +162,7 @@ export const translations: Record<Language, Translations> = {
       labStatus: "神经引擎已启用"
     },
     interaction: {
-      title: "Vogue 智能助手",
+      title: "ModaUI 智能系统",
       subtitle: "咨询策展人",
       placeholder: "查询趋势周期..."
     },

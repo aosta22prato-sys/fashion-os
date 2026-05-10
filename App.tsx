@@ -127,12 +127,18 @@ const HeroSection: React.FC<{
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 1.2, ease: [0.22, 1, 0.36, 1] }}
         >
-          <span className="text-[10px] uppercase font-bold tracking-[0.5em] mb-4 block text-white/50">Vogue Intelligence Core</span>
-          <h1 className="editorial-title font-serif text-[15vw] md:text-[18vw] mb-12 uppercase">
+          <span className="text-[10px] uppercase font-bold tracking-[0.5em] mb-4 block text-white/50">ModaUI Intelligence Core</span>
+          <h1 className="editorial-title font-serif text-[15vw] md:text-[18vw] mb-12 uppercase leading-[0.85] tracking-tighter">
             {t.hero.title.split('，').map((line: string, i: number) => (
               <React.Fragment key={i}>
                 {i > 0 && <br />}
-                <span className={i === 1 ? 'italic font-light' : ''}>{line}</span>
+                <span className={
+                  i === 0 
+                  ? "font-black tracking-[-0.08em] block drop-shadow-[0_0_15px_rgba(255,255,255,0.2)]" 
+                  : "italic font-light bg-gradient-to-r from-white to-white/40 bg-clip-text text-transparent block"
+                }>
+                  {line}
+                </span>
               </React.Fragment>
             ))}
           </h1>
@@ -329,49 +335,70 @@ const FashionCard: React.FC<{
         />
         
         {/* Luxury Meta */}
-        <div className="absolute top-8 left-8 right-8 flex justify-between items-start z-20 overflow-hidden">
+        <div className="absolute top-8 left-8 right-8 flex justify-between items-start z-20">
           <motion.div 
             initial={{ y: -20, opacity: 0 }}
-            whileHover={{ y: 0, opacity: 1 }}
-            className="flex flex-col gap-1 transition-all duration-500 delay-100"
+            animate={{ y: 0, opacity: 1 }}
+            className="flex flex-col gap-2"
           >
-            <span className="text-[8px] uppercase font-bold tracking-[0.4em] text-white/60">Registry</span>
-            <span className="text-[10px] text-white font-mono">00{item.id}/INT</span>
-          </motion.div>
-          <div className="flex flex-col gap-2">
-            <div className="p-3 border border-white/20 rounded-full group-hover:bg-white group-hover:text-black transition-all duration-500 mb-2">
-              <Maximize2 size={12} className="text-white group-hover:text-black" />
+            <div className="flex flex-col gap-1">
+              <span className="text-[8px] uppercase font-bold tracking-[0.4em] text-white/60">Intelligence</span>
+              <span className="text-[10px] text-white font-mono">#{item.id}/INTEL</span>
             </div>
-            <button 
-              onClick={(e) => {
-                e.stopPropagation();
-                const link = document.createElement('a');
-                link.href = item.imageUrl;
-                link.download = `vogue-${item.id}.jpg`;
-                link.click();
-              }}
-              className="p-3 border border-white/20 rounded-full group-hover:bg-white group-hover:text-black transition-all duration-500 mb-2"
-            >
-              <Download size={12} className="text-white group-hover:text-black" />
-            </button>
-            <button 
-              onClick={(e) => {
-                e.stopPropagation();
-                navigator.clipboard.writeText(window.location.href);
-              }}
-              className="p-3 border border-white/20 rounded-full group-hover:bg-white group-hover:text-black transition-all duration-500"
-            >
-              <Share2 size={12} className="text-white group-hover:text-black" />
-            </button>
+            
+            {item.gallerySeries && (
+              <div className="flex items-center gap-2 bg-white/10 backdrop-blur-md px-2 py-1 rounded-md border border-white/5">
+                <Library size={10} className="text-white/60" />
+                <span className="text-[8px] text-white/80 font-bold uppercase tracking-widest">{item.gallerySeries.length}</span>
+              </div>
+            )}
+          </motion.div>
+
+          <div className="flex flex-col items-end gap-3">
+             {/* Trend Badge */}
+             {(item.analysis?.vogueIndex || 0) > 90 && (
+                <div className="bg-brand-ink/40 backdrop-blur-md border border-white/20 text-white px-3 py-1 rounded-full flex items-center gap-2">
+                  <TrendingUp size={10} className="text-white" />
+                  <span className="text-[8px] font-bold uppercase tracking-[0.2em]">Bestseller</span>
+                </div>
+             )}
+             
+             <div className="flex flex-col items-end gap-1">
+                <div className="bg-white/10 backdrop-blur-lg border border-white/10 px-3 py-1.5 rounded-2xl flex items-center gap-2">
+                  <div className="w-1.5 h-1.5 bg-white rounded-full animate-pulse shadow-[0_0_8px_white]" />
+                  <span className="text-[11px] font-bold tracking-widest text-white">{item.analysis?.vogueIndex}%</span>
+                </div>
+                <span className="text-[7px] uppercase font-bold tracking-[0.4em] text-white/40">{t.gallery.trendScore}</span>
+             </div>
           </div>
         </div>
 
-        {item.gallerySeries && (
-          <div className="absolute top-8 left-8 z-20 flex items-center gap-2 bg-black/40 backdrop-blur-md px-3 py-1.5 rounded-full border border-white/10 opacity-0 group-hover:opacity-100 transition-opacity duration-500">
-            <Library size={10} className="text-white" />
-            <span className="text-[9px] text-white font-bold uppercase tracking-widest">{item.gallerySeries.length} {t.gallery.series}</span>
+        <div className="absolute top-1/2 right-4 -translate-y-1/2 flex flex-col gap-2 z-20 opacity-0 group-hover:opacity-100 transition-all duration-500 translate-x-4 group-hover:translate-x-0">
+          <div className="p-3 bg-white/10 backdrop-blur-md border border-white/20 rounded-full hover:bg-white hover:text-black transition-all">
+            <Maximize2 size={12} className="text-white hover:text-black" />
           </div>
-        )}
+          <button 
+            onClick={(e) => {
+              e.stopPropagation();
+              const link = document.createElement('a');
+              link.href = item.imageUrl;
+              link.download = `vogue-${item.id}.jpg`;
+              link.click();
+            }}
+            className="p-3 bg-white/10 backdrop-blur-md border border-white/20 rounded-full hover:bg-white hover:text-black transition-all"
+          >
+            <Download size={12} className="text-white hover:text-black" />
+          </button>
+          <button 
+            onClick={(e) => {
+              e.stopPropagation();
+              navigator.clipboard.writeText(window.location.href);
+            }}
+            className="p-3 bg-white/10 backdrop-blur-md border border-white/20 rounded-full hover:bg-white hover:text-black transition-all"
+          >
+            <Share2 size={12} className="text-white hover:text-black" />
+          </button>
+        </div>
 
         <div className="absolute bottom-0 left-0 w-full p-8 translate-y-full group-hover:translate-y-0 transition-transform duration-700 ease-[0.22, 1, 0.36, 1] z-20 flex flex-col gap-3 justify-end bg-gradient-to-t from-black/95 via-black/40 to-transparent pt-32">
           <button 
@@ -404,13 +431,13 @@ const FashionCard: React.FC<{
         </div>
       </div>
       
-      <div className="p-8 border-b border-zinc-100 bg-white group-hover:bg-white transition-colors">
+      <div className="p-8 border-b border-zinc-100 bg-white group-hover:bg-zinc-50 transition-colors duration-500">
         <div className="flex items-center gap-4 mb-4">
-          <div className="h-[1px] w-8 bg-zinc-200" />
-          <span className="text-[9px] uppercase tracking-[0.3em] text-zinc-400 font-bold">{item.category}</span>
+          <div className="h-[1px] w-8 bg-zinc-400 group-hover:w-12 transition-all duration-500" />
+          <span className="text-[9px] uppercase tracking-[0.4em] text-zinc-400 font-black">{item.category}</span>
         </div>
-        <h3 className="font-serif text-2xl mb-3 uppercase tracking-tighter transition-all group-hover:tracking-normal group-hover:italic">{item.style}</h3>
-        <p className="text-[11px] text-zinc-400 line-clamp-2 italic font-serif leading-relaxed uppercase tracking-wider">{item.description}</p>
+        <h3 className="font-serif text-3xl mb-3 uppercase tracking-tighter transition-all duration-700 group-hover:tracking-[-0.05em] group-hover:italic font-medium">{item.style}</h3>
+        <p className="text-[10px] text-zinc-400 line-clamp-2 italic font-serif leading-loose uppercase tracking-[0.1em] opacity-60 group-hover:opacity-100 transition-opacity">{item.description}</p>
       </div>
     </motion.div>
   );
@@ -678,7 +705,7 @@ const ItemDetailModal: React.FC<{
 
   const handleShare = (platform: 'pinterest' | 'twitter' | 'facebook' | 'link') => {
     const shareUrl = window.location.href;
-    const text = `Vogue.AI - ${item.style}: ${item.description}`;
+    const text = `ModaUI - ${item.style}: ${item.description}`;
     
     switch (platform) {
       case 'pinterest':
@@ -782,7 +809,7 @@ const ItemDetailModal: React.FC<{
 
               <div className="relative">
                 <div className="flex items-center gap-6 mb-12">
-                  <span className="text-[10px] uppercase font-bold tracking-[0.4em] text-zinc-300">Neural Hash: {item.id}x92</span>
+                  <span className="text-[10px] uppercase font-bold tracking-[0.4em] text-zinc-300">ModaUI ID: {item.id}x92</span>
                   <div className="h-[1px] flex-1 bg-zinc-100" />
                 </div>
 
@@ -793,6 +820,54 @@ const ItemDetailModal: React.FC<{
               <p className="font-serif text-2xl text-zinc-400 italic leading-snug mb-16 max-w-xl">
                 "{item.description}"
               </p>
+
+                {/* AI Intelligence Modules */}
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-10 mb-16">
+                  <div className="p-8 bg-zinc-50 rounded-[32px] border border-zinc-100 group transition-all duration-500 hover:bg-zinc-100">
+                    <div className="flex items-center gap-3 mb-6">
+                      <div className="p-2 bg-white rounded-xl shadow-sm border border-zinc-100 group-hover:scale-110 transition-transform">
+                        <Palette size={14} className="text-zinc-600" />
+                      </div>
+                      <span className="text-[10px] uppercase font-black tracking-widest text-zinc-900">Color DNA</span>
+                    </div>
+                    <div className="flex gap-2">
+                      {item.analysis?.colors?.map((color, i) => (
+                        <div key={i} className="flex flex-col gap-2">
+                          <div className="w-12 h-12 rounded-2xl shadow-inner cursor-pointer hover:scale-105 transition-transform" style={{ backgroundColor: color }} />
+                          <span className="text-[8px] font-mono text-zinc-400 uppercase text-center">{color}</span>
+                        </div>
+                      )) || (
+                        <div className="flex gap-2 opacity-30">
+                          {['#E5E5E5', '#A3A3A3', '#525252'].map(c => (
+                            <div key={c} className="w-12 h-12 rounded-2xl bg-zinc-200" />
+                          ))}
+                        </div>
+                      )}
+                    </div>
+                  </div>
+
+                  <div className="p-8 bg-zinc-50 rounded-[32px] border border-zinc-100 group transition-all duration-500 hover:bg-zinc-100">
+                    <div className="flex items-center gap-3 mb-6">
+                      <div className="p-2 bg-white rounded-xl shadow-sm border border-zinc-100 group-hover:scale-110 transition-transform">
+                        <Library size={14} className="text-zinc-600" />
+                      </div>
+                      <span className="text-[10px] uppercase font-black tracking-widest text-zinc-900">Textile Intelligence</span>
+                    </div>
+                    <div className="flex flex-wrap gap-2">
+                      {item.analysis?.fabrics?.map((fabric, i) => (
+                        <span key={i} className="px-3 py-1.5 bg-white border border-zinc-100 rounded-full text-[9px] font-bold uppercase tracking-widest text-zinc-600 hover:bg-zinc-900 hover:text-white transition-colors cursor-pointer">
+                          {fabric}
+                        </span>
+                      )) || (
+                        ['Organic Linen', 'Raw Silk', 'Recycled Wool'].map(f => (
+                          <span key={f} className="px-3 py-1.5 bg-white border border-zinc-100 rounded-full text-[9px] font-bold uppercase tracking-widest text-zinc-300">
+                            {f}
+                          </span>
+                        ))
+                      )}
+                    </div>
+                  </div>
+                </div>
 
               {/* Advanced Neural Insights */}
               <div className="grid grid-cols-1 md:grid-cols-2 gap-12 mb-16">
@@ -1007,7 +1082,7 @@ const SettingsPanel: React.FC = () => {
         </div>
       </div>
       <div className="mt-20 pt-10 border-t border-zinc-100 text-center">
-        <p className="text-[10px] uppercase tracking-widest text-zinc-300">Vogue.AI Core Protocol v4.82</p>
+        <p className="text-[10px] uppercase tracking-widest text-zinc-300">ModaUI Core Protocol v4.82</p>
       </div>
     </section>
   );
@@ -1219,7 +1294,7 @@ export default function App() {
           animate={{ opacity: 1, x: 0 }}
           className="pointer-events-auto cursor-pointer flex items-center gap-6"
         >
-          <span className="font-serif text-3xl font-black tracking-tighter uppercase text-white drop-shadow-lg" onClick={() => setActiveTab("gallery")}>Vogue.AI</span>
+          <span className="font-serif text-3xl font-black tracking-tighter uppercase text-white drop-shadow-lg" onClick={() => setActiveTab("gallery")}>ModaUI</span>
           <button 
             onClick={() => setLang(lang === 'en' ? 'zh' : 'en')}
             className="flex items-center gap-2 glass px-4 py-1.5 rounded-full text-[10px] text-white uppercase font-bold tracking-widest hover:bg-white/20 transition-all"
@@ -1302,6 +1377,43 @@ export default function App() {
 
               {/* Main Content Area */}
               <div className="max-w-7xl mx-auto px-6 py-20">
+                {/* Intelligence Status Indicators */}
+                <div className="flex flex-col md:flex-row md:items-center justify-between gap-8 mb-20 border-b border-zinc-100 pb-12">
+                  <div className="flex items-center gap-5">
+                    <div className="flex -space-x-3">
+                      {[1, 2, 3, 4].map(i => (
+                        <div key={i} className="w-9 h-9 rounded-full bg-zinc-100 border-2 border-white overflow-hidden hover:z-10 transition-all cursor-pointer">
+                          <img src={`https://i.pravatar.cc/100?img=${i+20}`} alt="" className="w-full h-full object-cover" />
+                        </div>
+                      ))}
+                      <div className="w-9 h-9 rounded-full bg-zinc-900 border-2 border-white flex items-center justify-center text-[10px] text-white font-bold">+1.2k</div>
+                    </div>
+                    <div>
+                      <span className="text-[10px] uppercase font-black tracking-[0.4em] text-zinc-900 block mb-0.5 whitespace-nowrap">ModaUI Trend Engine</span>
+                      <span className="text-[9px] uppercase font-bold tracking-[0.2em] text-zinc-400 whitespace-nowrap">48,202 Active Data Streams</span>
+                    </div>
+                  </div>
+
+                  <div className="flex items-center gap-8 bg-zinc-50 border border-zinc-100 px-6 py-4 rounded-3xl">
+                    <div className="flex items-center gap-3">
+                      <div className="w-2 h-2 bg-emerald-500 rounded-full animate-pulse shadow-[0_0_12px_rgba(16,185,129,0.8)]" />
+                      <div className="flex flex-col">
+                        <span className="text-[10px] uppercase font-black tracking-[0.15em] text-zinc-900 leading-none mb-1">Neural Cluster 07</span>
+                        <span className="text-[8px] uppercase tracking-widest text-zinc-400 font-bold">Status: Synchronized</span>
+                      </div>
+                    </div>
+                    <div className="w-[1px] h-8 bg-zinc-200" />
+                    <div className="flex items-center gap-3">
+                      <div className="p-2 bg-white rounded-xl shadow-sm border border-zinc-100">
+                        <TrendingUp size={14} className="text-zinc-600" />
+                      </div>
+                      <div className="flex flex-col">
+                        <span className="text-[10px] uppercase font-black tracking-[0.15em] text-zinc-900 leading-none mb-1">Trend Velocity</span>
+                        <span className="text-[8px] uppercase tracking-widest text-emerald-600 font-bold">Accelerator Peak</span>
+                      </div>
+                    </div>
+                  </div>
+                </div>
                 
                 {/* Category Filters */}
                 <div className="flex flex-col md:flex-row md:items-end justify-between mb-16 gap-8">

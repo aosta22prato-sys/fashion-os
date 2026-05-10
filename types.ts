@@ -25,6 +25,8 @@ export interface FashionItem {
     trendVelocity: 'Rising' | 'Stable' | 'Fading';
     fabricComposition: string;
     vogueIndex: number;
+    colors?: string[];
+    fabrics?: string[];
   }
 }
 

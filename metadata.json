@@ -1,6 +1,5 @@
 {
-  "name": "Vogue.AI Intelligent Gallery",
-  "description": "Global fashion trend intelligence: AI-driven discovery, visual search, and automated trend analysis.",
-  "requestFramePermissions": ["camera"],
-  "majorCapabilities": []
+  "name": "ModaUI 时尚智能爆款库",
+  "description": "基于 AI 驱动的全球时装趋势采集与智能化图库管理平台，集成视觉分析、趋势预测与生成式设计工具。",
+  "requestFramePermissions": ["camera"]
 }

@@ -29,7 +29,15 @@ export const MOCK_FASHION_GALLERY: FashionItem[] = [
     tags: ['Sustainable', 'Linen', 'Beige'],
     style: 'Scandinavian Minimalist',
     description: 'Clean lines and sustainable fabrics for a timeless look.',
-    analysis: { sustainability: 92, heritageScore: 40, trendVelocity: 'Stable', fabricComposition: '100% Organic Linen', vogueIndex: 88 }
+    analysis: { 
+      sustainability: 92, 
+      heritageScore: 40, 
+      trendVelocity: 'Stable', 
+      fabricComposition: '100% Organic Linen', 
+      vogueIndex: 88,
+      colors: ['#F5F5DC', '#D2B48C', '#8B4513'],
+      fabrics: ['Organic Linen', 'Hemp Fibre', 'Recycled Cotton']
+    }
   },
   {
     id: '2',
@@ -43,7 +51,15 @@ export const MOCK_FASHION_GALLERY: FashionItem[] = [
     tags: ['Graphic', 'Oversized', 'Urban'],
     style: 'Tokyo Streetwear',
     description: 'Vibrant colors and bold graphics inspired by Shibuya culture.',
-    analysis: { sustainability: 65, heritageScore: 75, trendVelocity: 'Rising', fabricComposition: 'Heavyweight Cotton Jersey', vogueIndex: 94 }
+    analysis: { 
+      sustainability: 65, 
+      heritageScore: 75, 
+      trendVelocity: 'Rising', 
+      fabricComposition: 'Heavyweight Cotton Jersey', 
+      vogueIndex: 94,
+      colors: ['#000000', '#FF0000', '#333333'],
+      fabrics: ['Technical Nylon', 'Ripstop', 'Bonded Jersey']
+    }
   },
   {
     id: '3',
@@ -85,7 +101,7 @@ export const MOCK_FASHION_GALLERY: FashionItem[] = [
     id: '7',
     imageUrl: 'https://images.unsplash.com/photo-1529133039943-085215f6d58d?auto=format&fit=crop&q=80&w=1200',
     category: 'Luxury Editorial',
-    tags: ['Vogue', 'Gold', 'Catwalk'],
+    tags: ['Moda', 'Gold', 'Catwalk'],
     style: 'Golden Hour Gown',
     description: 'Metals threads woven into fine silk for ultimate opulence.',
     analysis: { sustainability: 55, heritageScore: 85, trendVelocity: 'Stable', fabricComposition: 'Silk with Gold Thread', vogueIndex: 97 }
