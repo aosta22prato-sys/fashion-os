@@ -47,6 +47,13 @@ export interface Translations {
       configure: string;
     };
   };
+  styleGen: {
+    button: string;
+    prompt: string;
+    generating: string;
+    result: string;
+    close: string;
+  };
 }
 
 export const translations: Record<Language, Translations> = {
@@ -129,6 +136,13 @@ export const translations: Record<Language, Translations> = {
         action: "Trigger Forced Sync",
         configure: "Configure Sources"
       }
+    },
+    styleGen: {
+      button: "Style Remix",
+      prompt: "Describe the remix (e.g., 'Cyberpunk style', '3D model')",
+      generating: "Neural Rendering...",
+      result: "Generation Result",
+      close: "Close"
     }
   },
   zh: {
@@ -210,6 +224,13 @@ export const translations: Record<Language, Translations> = {
         action: "强制同步触发",
         configure: "配置信源"
       }
+    },
+    styleGen: {
+      button: "风格重塑",
+      prompt: "描述重塑方向 (例如: '赛博朋克风格', '3D 粘土模型')",
+      generating: "神经渲染中...",
+      result: "生成结果",
+      close: "关闭"
     }
   }
 };

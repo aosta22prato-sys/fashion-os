@@ -11,6 +11,7 @@ import {
   MessageSquare, 
   X, 
   ChevronRight, 
+  Zap,
   Sparkles, 
   Upload, 
   Filter,
@@ -36,7 +37,9 @@ import {
   Library,
   Activity,
   Server,
-  ChevronLeft
+  ChevronLeft,
+  MapPin,
+  Cpu
 } from 'lucide-react';
 import { AppState, FashionItem, ChatMessage, Theme } from './types';
 import { MOCK_FASHION_GALLERY, FASHION_CATEGORIES, fileToBase64, optimizeImage } from './utils';
@@ -44,6 +47,82 @@ import { analyzeFashionQuery, getFashionAssistantResponse, performVisualSearch, 
 import { translations, getBrowserLanguage, Language } from './services/translationService';
 
 // --- Components ---
+
+const TrendHotspots: React.FC<{ t: any }> = ({ t }) => {
+  const hotspots = [
+    { city: 'Tokyo', x: '75%', y: '40%', intensity: 0.9, style: 'Cyberpunk' },
+    { city: 'Paris', x: '48%', y: '35%', intensity: 0.8, style: 'Couture' },
+    { city: 'Seoul', x: '78%', y: '42%', intensity: 0.7, style: 'Minimalist' },
+    { city: 'New York', x: '25%', y: '38%', intensity: 0.85, style: 'Streetwear' },
+    { city: 'London', x: '47%', y: '32%', intensity: 0.6, style: 'Avant-garde' },
+  ];
+
+  return (
+    <div className="bg-zinc-50 dark:bg-zinc-900 border border-zinc-100 dark:border-white/5 rounded-[32px] p-8 mb-20 relative overflow-hidden">
+      <div className="absolute top-0 right-0 w-64 h-64 bg-emerald-500/5 blur-3xl rounded-full translate-x-1/2 -translate-y-1/2" />
+      
+      <div className="flex flex-col md:flex-row justify-between items-start md:items-center mb-10 gap-4">
+        <div>
+          <span className="text-[10px] uppercase font-black tracking-[0.3em] text-emerald-500 mb-2 block">Real-time Pulse</span>
+          <h3 className="font-serif text-2xl uppercase tracking-tighter dark:text-white">Global Trend Hotspots</h3>
+        </div>
+        <div className="flex items-center gap-3 bg-white dark:bg-black px-4 py-2 rounded-full border border-zinc-100 dark:border-white/10 shadow-sm">
+          <div className="w-2 h-2 bg-emerald-500 rounded-full animate-pulse" />
+          <span className="text-[10px] uppercase font-bold tracking-widest text-zinc-400">Scanning 48k nodes</span>
+        </div>
+      </div>
+
+      <div className="relative aspect-[21/9] md:aspect-[3/1] w-full bg-zinc-100 dark:bg-black/40 rounded-2xl overflow-hidden group">
+        {/* Abstract World Map Dots */}
+        <div className="absolute inset-0 grid grid-cols-20 grid-rows-10 gap-4 p-8 opacity-10">
+          {Array.from({ length: 200 }).map((_, i) => (
+            <div key={i} className="w-1 h-1 bg-zinc-900 dark:bg-white rounded-full" />
+          ))}
+        </div>
+
+        {/* Hotspot Indicators */}
+        {hotspots.map((spot) => (
+          <motion.div
+            key={spot.city}
+            style={{ left: spot.x, top: spot.y }}
+            className="absolute -translate-x-1/2 -translate-y-1/2 cursor-crosshair z-10"
+            whileHover={{ scale: 1.2 }}
+          >
+            <div className="relative">
+              <motion.div 
+                animate={{ scale: [1, 2], opacity: [spot.intensity, 0] }}
+                transition={{ duration: 2, repeat: Infinity }}
+                className="absolute inset-0 bg-emerald-500 rounded-full blur-sm"
+              />
+              <div className="w-3 h-3 bg-emerald-500 rounded-full border-2 border-white dark:border-black shadow-lg" />
+              
+              <div className="absolute top-full mt-4 left-1/2 -translate-x-1/2 opacity-0 group-hover:opacity-100 transition-opacity bg-white dark:bg-zinc-800 p-3 rounded-xl shadow-2xl border border-zinc-100 dark:border-white/5 pointer-events-none whitespace-nowrap">
+                <div className="flex items-center gap-2 mb-1">
+                  <MapPin size={10} className="text-emerald-500" />
+                  <span className="text-[10px] font-black uppercase text-zinc-900 dark:text-white">{spot.city}</span>
+                </div>
+                <div className="text-[9px] text-zinc-400 uppercase tracking-widest font-bold">
+                  Trend DNA: <span className="text-emerald-500">{spot.style}</span>
+                </div>
+              </div>
+            </div>
+          </motion.div>
+        ))}
+
+        {/* Global Stats Overlay */}
+        <div className="absolute bottom-6 left-6 flex gap-4">
+          <div className="glass px-5 py-3 rounded-2xl border-white/10 flex items-center gap-3">
+            <TrendingUp size={14} className="text-emerald-400" />
+            <div>
+              <div className="text-[8px] uppercase tracking-widest text-zinc-400 leading-none mb-1">Active Flow</div>
+              <div className="text-[10px] font-bold text-white leading-none">84.2 GB/s</div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+};
 
 const SafeImage: React.FC<{ 
   src: string; 
@@ -302,15 +381,139 @@ const FashionAssistant: React.FC<{ isOpen: boolean; onClose: () => void }> = ({ 
   );
 };
 
+const StyleRemixModal: React.FC<{
+  item: FashionItem;
+  onClose: () => void;
+  onGenerate: (prompt: string, referenceImage: string, mutationLevel: number) => Promise<void>;
+  isLoading: boolean;
+  generatedImageUrl: string | null;
+  t: any;
+}> = ({ item, onClose, onGenerate, isLoading, generatedImageUrl, t }) => {
+  const [prompt, setPrompt] = useState('');
+  const [mutationLevel, setMutationLevel] = useState(0.5);
+
+  return (
+    <motion.div
+      initial={{ opacity: 0 }}
+      animate={{ opacity: 1 }}
+      exit={{ opacity: 0 }}
+      className="fixed inset-0 z-[200] bg-black/90 backdrop-blur-2xl flex items-center justify-center p-6"
+    >
+      <div className="max-w-6xl w-full bg-white dark:bg-zinc-950 rounded-[40px] overflow-hidden shadow-2xl flex flex-col md:flex-row h-[85vh] relative">
+        <button 
+          onClick={onClose}
+          className="absolute top-6 right-6 p-3 bg-black/10 hover:bg-black/20 dark:bg-white/10 dark:hover:bg-white/20 rounded-full transition-all z-50 text-zinc-900 dark:text-white"
+        >
+          <X size={20} />
+        </button>
+
+        <div className="md:w-1/2 h-64 md:h-full relative bg-zinc-100 dark:bg-zinc-900">
+          <img src={generatedImageUrl || item.imageUrl} className="w-full h-full object-cover" alt="Source" />
+          {!generatedImageUrl && (
+            <div className="absolute top-8 left-8 bg-black/40 backdrop-blur-xl border border-white/20 px-4 py-2 rounded-full text-white text-[10px] font-black uppercase tracking-widest">
+              Source Reference
+            </div>
+          )}
+          {generatedImageUrl && (
+            <div className="absolute top-8 left-8 bg-emerald-500 border border-white/20 px-4 py-2 rounded-full text-black text-[10px] font-black uppercase tracking-widest">
+              {t.styleGen.result}
+            </div>
+          )}
+        </div>
+
+        <div className="md:w-1/2 p-12 flex flex-col justify-center">
+          <div className="mb-10">
+            <span className="text-[10px] uppercase font-black tracking-[0.4em] text-zinc-300 dark:text-zinc-700 mb-2 block">Neural Remix Engine</span>
+            <h2 className="font-serif text-4xl uppercase tracking-tighter leading-none dark:text-white">{t.styleGen.button}</h2>
+          </div>
+
+          {!generatedImageUrl ? (
+            <div className="space-y-8">
+              <div className="p-8 bg-zinc-50 dark:bg-zinc-900 rounded-[32px] border border-zinc-100 dark:border-white/5">
+                <p className="text-zinc-400 text-[10px] uppercase font-bold tracking-widest mb-4">{t.styleGen.prompt}</p>
+                <textarea 
+                  value={prompt}
+                  onChange={(e) => setPrompt(e.target.value)}
+                  className="w-full bg-transparent border-none focus:outline-none text-xl font-serif italic text-zinc-900 dark:text-white placeholder:text-zinc-200 dark:placeholder:text-zinc-800 resize-none h-32"
+                  placeholder="e.g. As a 3D digital sculpture in a neon rain city..."
+                />
+              </div>
+
+              <div className="space-y-4">
+                <div className="flex justify-between items-center text-[10px] uppercase font-bold tracking-widest text-zinc-400">
+                  <span>Mutation Level</span>
+                  <span className="text-emerald-500">{Math.round(mutationLevel * 100)}%</span>
+                </div>
+                <div className="relative h-6 flex items-center">
+                  <input 
+                    type="range" 
+                    min="0" 
+                    max="1" 
+                    step="0.01"
+                    value={mutationLevel}
+                    onChange={(e) => setMutationLevel(parseFloat(e.target.value))}
+                    className="w-full h-1 bg-zinc-100 dark:bg-zinc-800 rounded-full appearance-none cursor-pointer accent-emerald-500"
+                  />
+                </div>
+                <div className="flex justify-between text-[8px] text-zinc-300 dark:text-zinc-700 uppercase font-bold tracking-widest">
+                  <span>Conservative</span>
+                  <span>Experimental</span>
+                </div>
+              </div>
+
+              <button 
+                onClick={() => onGenerate(prompt, item.imageUrl, mutationLevel)}
+                disabled={isLoading || !prompt.trim()}
+                className="w-full py-6 bg-brand-ink text-white rounded-full text-[12px] font-black uppercase tracking-[0.4em] disabled:opacity-30 flex items-center justify-center gap-3 shadow-xl hover:scale-[1.02] active:scale-95 transition-all"
+              >
+                {isLoading ? (
+                  <><Sparkles className="animate-spin" size={18} /> {t.styleGen.generating}</>
+                ) : (
+                  <><Zap size={18} /> {t.styleGen.button}</>
+                )}
+              </button>
+            </div>
+          ) : (
+            <div className="space-y-6">
+              <p className="text-zinc-400 text-sm italic leading-relaxed">
+                Remix analysis complete. The neural network has extrapolated new aesthetic directions based on your prompt and the core DNA of the original item.
+              </p>
+              <div className="flex gap-4">
+                <a 
+                  href={generatedImageUrl} 
+                  download="remix.jpg"
+                  className="flex-1 py-4 bg-zinc-900 dark:bg-white text-white dark:text-black rounded-full text-[10px] font-black uppercase tracking-widest flex items-center justify-center gap-2"
+                >
+                  <Download size={14} /> Download 4K
+                </a>
+                <button 
+                  onClick={() => {
+                    setPrompt('');
+                    // Logic to clear generatedImageUrl would need to be in parent state
+                  }}
+                  className="px-8 py-4 border border-zinc-200 dark:border-white/10 rounded-full text-[10px] font-black uppercase tracking-widest hover:bg-zinc-50 dark:hover:bg-white/5 transition-all text-zinc-900 dark:text-white"
+                >
+                  Reset
+                </button>
+              </div>
+            </div>
+          )}
+        </div>
+      </div>
+    </motion.div>
+  );
+};
+
 const FashionCard: React.FC<{ 
   item: FashionItem; 
   index: number; 
   onAddToMoodboard: (item: FashionItem) => void;
   onViewDetails: (item: FashionItem) => void;
   onAddToDesign: (item: FashionItem) => void;
+  onRemix: (item: FashionItem) => void;
   isSaved: boolean;
   t: any;
-}> = ({ item, index, onAddToMoodboard, onViewDetails, onAddToDesign, isSaved, t }) => {
+}> = ({ item, index, onAddToMoodboard, onViewDetails, onAddToDesign, onRemix, isSaved, t }) => {
   return (
     <motion.div 
       layout
@@ -327,7 +530,7 @@ const FashionCard: React.FC<{
       }}
       className={`group relative overflow-hidden cursor-pointer shadow-sm transition-all duration-700 ${
         item.isSearchResult 
-          ? 'ring-2 ring-emerald-500/50 shadow-[0_0_40px_rgba(16,185,129,0.2)] bg-emerald-50/5 dark:bg-emerald-950/10' 
+          ? 'ring-2 ring-emerald-500 shadow-[0_0_50px_rgba(16,185,129,0.3)] bg-emerald-950/20' 
           : 'bg-white dark:bg-zinc-900 border border-transparent'
       } hover:shadow-[0_40px_80px_rgba(0,0,0,0.15)]`}
       onClick={() => onViewDetails(item)}
@@ -337,9 +540,9 @@ const FashionCard: React.FC<{
       )}
       <div className="aspect-vogue overflow-hidden relative">
         {item.isSearchResult && (
-          <div className="absolute top-4 left-1/2 -translate-x-1/2 z-[40] pointer-events-none">
-            <div className="bg-emerald-500 text-black px-4 py-1.5 rounded-full text-[9px] font-black uppercase tracking-widest flex items-center gap-2 shadow-xl border border-white/20">
-              <Sparkles size={10} className="animate-spin-slow" /> Visual AI Result
+          <div className="absolute bottom-4 left-4 z-[40] pointer-events-none">
+            <div className="bg-emerald-500/80 backdrop-blur-md text-black px-2 py-1 rounded-[4px] text-[7px] font-black uppercase tracking-widest flex items-center gap-1.5 shadow-lg border border-white/20">
+              <Sparkles size={8} className="animate-pulse" /> AI Match
             </div>
           </div>
         )}
@@ -373,23 +576,36 @@ const FashionCard: React.FC<{
           <div className="flex flex-col items-end gap-3">
              {/* Trend Badge */}
              {(item.analysis?.vogueIndex || 0) > 90 && (
-                <div className="bg-brand-ink/40 backdrop-blur-md border border-white/20 text-white px-3 py-1 rounded-full flex items-center gap-2">
-                  <TrendingUp size={10} className="text-white" />
-                  <span className="text-[8px] font-bold uppercase tracking-[0.2em]">Bestseller</span>
+                <div className={`backdrop-blur-md border border-white/20 text-white px-3 py-1 rounded-full flex items-center gap-2 ${item.isSearchResult ? 'bg-emerald-500/20 border-emerald-500/30' : 'bg-brand-ink/40'}`}>
+                  <TrendingUp size={10} className={item.isSearchResult ? 'text-emerald-400' : 'text-white'} />
+                  <span className={`text-[8px] font-bold uppercase tracking-[0.2em] ${item.isSearchResult ? 'text-emerald-500' : ''}`}>Bestseller</span>
                 </div>
              )}
              
              <div className="flex flex-col items-end gap-1">
-                <div className="bg-white/10 backdrop-blur-lg border border-white/10 px-3 py-1.5 rounded-2xl flex items-center gap-2">
-                  <div className="w-1.5 h-1.5 bg-white rounded-full animate-pulse shadow-[0_0_8px_white]" />
-                  <span className="text-[11px] font-bold tracking-widest text-white">{item.analysis?.vogueIndex}%</span>
+                <div className={`backdrop-blur-lg border border-white/10 px-4 py-2 rounded-2xl flex items-center gap-3 ${item.isSearchResult ? 'bg-emerald-500/20 border-emerald-500/40 shadow-[0_0_30px_rgba(16,185,129,0.3)]' : 'bg-white/10'}`}>
+                  <div className={`w-1.5 h-1.5 rounded-full animate-pulse ${item.isSearchResult ? 'bg-emerald-400 shadow-[0_0_8px_rgba(16,185,129,1)]' : 'bg-white shadow-[0_0_8px_white]'}`} />
+                  <span className={`text-2xl font-black tracking-tight font-serif italic ${item.isSearchResult ? 'text-emerald-400' : 'text-white'}`}>
+                    {item.isSearchResult ? ((item.analysis?.vogueIndex || 0) / 10).toFixed(1) : `${item.analysis?.vogueIndex}%`}
+                  </span>
                 </div>
-                <span className="text-[7px] uppercase font-bold tracking-[0.4em] text-white/40">{t.gallery.trendScore}</span>
+                <span className={`text-[7px] uppercase font-bold tracking-[0.4em] ${item.isSearchResult ? 'text-emerald-500/60' : 'text-white/40'}`}>
+                  {item.isSearchResult ? 'Neural Score' : t.gallery.trendScore}
+                </span>
              </div>
           </div>
         </div>
 
         <div className="absolute top-1/2 right-4 -translate-y-1/2 flex flex-col gap-2 z-20 opacity-0 group-hover:opacity-100 transition-all duration-500 translate-x-4 group-hover:translate-x-0">
+          <button 
+            onClick={(e) => {
+              e.stopPropagation();
+              onRemix(item);
+            }}
+            className="p-3 bg-emerald-500/10 backdrop-blur-md border border-emerald-500/20 rounded-full hover:bg-emerald-500 hover:text-black transition-all group/remix"
+          >
+            <Zap size={12} className="text-emerald-400 group-hover/remix:text-black" />
+          </button>
           <div className="p-3 bg-white/10 backdrop-blur-md border border-white/20 rounded-full hover:bg-white hover:text-black transition-all">
             <Maximize2 size={12} className="text-white hover:text-black" />
           </div>
@@ -417,6 +633,23 @@ const FashionCard: React.FC<{
         </div>
 
         <div className="absolute bottom-0 left-0 w-full p-8 translate-y-full group-hover:translate-y-0 transition-transform duration-700 ease-[0.22, 1, 0.36, 1] z-20 flex flex-col gap-3 justify-end bg-gradient-to-t from-black/95 via-black/40 to-transparent pt-32">
+          {item.isSearchResult && item.analysis && (
+            <div className="mb-4 p-4 bg-emerald-500/10 backdrop-blur-xl border border-emerald-500/20 rounded-2xl">
+              <div className="flex items-center gap-2 mb-2">
+                <div className="w-1.5 h-1.5 bg-emerald-500 rounded-full animate-pulse" />
+                <span className="text-[8px] text-emerald-400 font-black uppercase tracking-widest">Textile Intel</span>
+              </div>
+              <p className="text-[10px] text-white/90 italic font-serif leading-tight">
+                {item.analysis.fabricComposition || "Neural detected fiber structure"}
+              </p>
+              <div className="mt-3 flex gap-1 h-[2px]">
+                {item.analysis.colors.map((c, i) => (
+                  <div key={i} className="flex-1 rounded-full opacity-60" style={{ backgroundColor: c }} />
+                ))}
+              </div>
+            </div>
+          )}
+          
           <button 
             onClick={(e) => {
               e.stopPropagation();
@@ -456,7 +689,18 @@ const FashionCard: React.FC<{
           <div className={`h-[1px] ${item.isSearchResult ? 'bg-emerald-400 w-12' : 'bg-zinc-400 group-hover:w-12'} transition-all duration-500`} />
           <span className={`text-[9px] uppercase tracking-[0.4em] font-black ${item.isSearchResult ? 'text-emerald-500' : 'text-zinc-400'}`}>{item.category}</span>
         </div>
-        <h3 className={`font-serif text-3xl mb-3 uppercase tracking-tighter transition-all duration-700 group-hover:tracking-[-0.05em] group-hover:italic font-medium ${item.isSearchResult ? 'text-zinc-900 dark:text-emerald-50' : 'dark:text-white'}`}>{item.style}</h3>
+        <h3 className={`font-serif text-3xl mb-3 uppercase tracking-tighter transition-all duration-700 group-hover:tracking-[-0.05em] group-hover:italic font-medium flex items-center gap-3 ${item.isSearchResult ? 'text-zinc-900 dark:text-emerald-50' : 'dark:text-white'}`}>
+          {item.style}
+          {item.isSearchResult && (
+            <motion.div 
+              initial={{ opacity: 0, scale: 0.5 }}
+              animate={{ opacity: 1, scale: 1 }}
+              className="p-1 bg-emerald-500/10 border border-emerald-500/20 rounded-md"
+            >
+              <Sparkles size={12} className="text-emerald-500" />
+            </motion.div>
+          )}
+        </h3>
         <p className={`text-[10px] line-clamp-2 italic font-serif leading-loose uppercase tracking-[0.1em] opacity-60 group-hover:opacity-100 transition-opacity ${item.isSearchResult ? 'text-emerald-800/60 dark:text-emerald-400/60' : 'text-zinc-400 dark:text-zinc-500'}`}>{item.description}</p>
         
         {item.isSearchResult && (
@@ -700,9 +944,10 @@ const ItemDetailModal: React.FC<{
   item: FashionItem | null; 
   onClose: () => void; 
   onAddToMoodboard: (item: FashionItem) => void;
+  onRemix: (item: FashionItem) => void;
   isSaved: boolean;
   t: any;
-}> = ({ item, onClose, onAddToMoodboard, isSaved, t }) => {
+}> = ({ item, onClose, onAddToMoodboard, onRemix, isSaved, t }) => {
   const [isCopied, setIsCopied] = useState(false);
   const [currentImageIndex, setCurrentImageIndex] = useState(0);
 
@@ -932,18 +1177,25 @@ const ItemDetailModal: React.FC<{
                   disabled={isSaved}
                   className={`flex-1 py-6 rounded-full font-bold uppercase text-[11px] tracking-[0.4em] transition-all flex items-center justify-center gap-4 ${
                     isSaved 
-                      ? 'bg-zinc-900 text-white cursor-default' 
-                      : 'bg-zinc-900 text-white hover:bg-zinc-800 shadow-2xl'
+                      ? 'bg-zinc-900 dark:bg-white dark:text-black text-white cursor-default' 
+                      : 'bg-zinc-900 dark:bg-white dark:text-black text-white hover:bg-zinc-800 dark:hover:bg-zinc-200 shadow-2xl'
                   }`}
                 >
                   {isSaved ? <><Sparkles size={20} /> Verified Archive</> : <><Upload size={20} className="rotate-180" /> Append to Board</>}
+                </button>
+
+                <button 
+                  onClick={() => onRemix(item)}
+                  className="flex-1 py-6 bg-emerald-500 text-black rounded-full font-black uppercase text-[11px] tracking-[0.4em] hover:bg-emerald-600 transition-all flex items-center justify-center gap-4 shadow-xl shadow-emerald-500/20"
+                >
+                  <Zap size={20} /> {t.styleGen.button}
                 </button>
               </div>
 
               <div className="flex gap-4">
                 <button 
                   onClick={handleDownload}
-                  className="flex-1 py-5 border border-zinc-200 rounded-full font-bold uppercase text-[10px] tracking-[0.3em] hover:bg-zinc-50 transition-all flex items-center justify-center gap-3"
+                  className="flex-1 py-5 border border-zinc-200 dark:border-white/10 rounded-full font-bold uppercase text-[10px] tracking-[0.3em] hover:bg-zinc-50 dark:hover:bg-white/5 transition-all flex items-center justify-center gap-3"
                 >
                   <Download size={18} /> {t.gallery.download}
                 </button>
@@ -1154,15 +1406,61 @@ const SettingsPanel: React.FC<{
               </div>
             </div>
 
-            <div className="grid grid-cols-2 gap-4 mb-8">
-              <div className="p-4 bg-white/5 rounded-2xl border border-white/5">
-                <span className="text-[10px] text-white/40 uppercase font-bold tracking-widest block mb-2">Sync Frequency</span>
-                <p className="text-white font-serif text-lg italic">Real-time / 5m</p>
+            <div className="grid grid-cols-3 gap-4 mb-8">
+              <div className="p-4 bg-white/5 rounded-2xl border border-white/5 group/metric overflow-hidden relative">
+                <div className="absolute inset-0 bg-emerald-500/5 translate-y-full group-hover/metric:translate-y-0 transition-transform duration-500" />
+                <span className="text-[10px] text-white/40 uppercase font-bold tracking-widest block mb-2 relative z-10">Sync Delay</span>
+                <p className="text-white font-serif text-lg italic relative z-10">0.42ms</p>
               </div>
-              <div className="p-4 bg-white/5 rounded-2xl border border-white/5">
-                <span className="text-[10px] text-white/40 uppercase font-bold tracking-widest block mb-2">Confidence Gate</span>
-                <p className="text-white font-serif text-lg italic">88% (YOLOv8)</p>
+              <div className="p-4 bg-white/5 rounded-2xl border border-white/5 group/metric overflow-hidden relative">
+                <div className="absolute inset-0 bg-emerald-500/5 translate-y-full group-hover/metric:translate-y-0 transition-transform duration-500" />
+                <span className="text-[10px] text-white/40 uppercase font-bold tracking-widest block mb-2 relative z-10">Confidence</span>
+                <p className="text-white font-serif text-lg italic relative z-10">94.2%</p>
               </div>
+              <div className="p-4 bg-white/5 rounded-2xl border border-white/5 group/metric overflow-hidden relative">
+                <div className="absolute inset-0 bg-emerald-500/5 translate-y-full group-hover/metric:translate-y-0 transition-transform duration-500" />
+                <span className="text-[10px] text-white/40 uppercase font-bold tracking-widest block mb-2 relative z-10">Streams</span>
+                <p className="text-white font-serif text-lg italic relative z-10">1.2k/s</p>
+              </div>
+            </div>
+
+            {/* Neural Topology Visualization */}
+            <div className="mb-8 h-24 relative bg-black/40 rounded-2xl border border-white/5 overflow-hidden flex items-center justify-center">
+              <svg className="w-full h-full stroke-emerald-500/20 stroke-[0.5]" viewBox="0 0 400 100">
+                {[...Array(12)].map((_, i) => (
+                  <motion.circle
+                    key={`node-${i}`}
+                    cx={30 + i * 30}
+                    cy={50 + Math.sin(i) * 20}
+                    r="2"
+                    fill="#10b981"
+                    animate={{ opacity: [0.2, 1, 0.2], r: [2, 3, 2] }}
+                    transition={{ duration: 2, repeat: Infinity, delay: i * 0.2 }}
+                  />
+                ))}
+                {[...Array(11)].map((_, i) => (
+                  <motion.line
+                    key={`line-${i}`}
+                    x1={30 + i * 30}
+                    y1={50 + Math.sin(i) * 20}
+                    x2={30 + (i + 1) * 30}
+                    y2={50 + Math.sin(i + 1) * 20}
+                    strokeDasharray="4 2"
+                  />
+                ))}
+              </svg>
+              <div className="absolute inset-0 flex items-center justify-center">
+                <span className="text-[10px] font-black uppercase tracking-[0.5em] text-emerald-500/30 mix-blend-overlay">Active Pipeline 392X</span>
+              </div>
+            </div>
+
+            {/* Simulated Live Log Upgrade */}
+            <div className="mb-8 p-4 bg-black/40 rounded-2xl border border-white/5 font-mono text-[9px] h-32 overflow-hidden flex flex-col gap-2">
+              <div className="text-emerald-400/80 animate-pulse flex justify-between"><span>[SYSTEM] Neural Harvester active</span> <span>TX-92</span></div>
+              <div className="text-white/40 flex justify-between"><span>[CRAWL] Pinterest/Tokyo_Streetwear :: Captured</span> <span>2ms</span></div>
+              <div className="text-white/40 flex justify-between"><span>[AI] Feature Vectorization complete</span> <span>1024_DIM</span></div>
+              <div className="text-white/40 flex justify-between"><span>[DB] Pinecone Indexing successful</span> <span>ID_82x</span></div>
+              <div className="text-emerald-500 flex justify-between"><span>[SUCCESS] Scraped metadata for Gown_92</span> <span>OK</span></div>
             </div>
 
             <div className="space-y-4 mb-8">
@@ -1223,6 +1521,27 @@ export default function App() {
   const [searchStatus, setSearchStatus] = useState<AppState>(AppState.IDLE);
   const [aiAnalysis, setAiAnalysis] = useState<{ category: string, tags: string[], description: string } | null>(null);
   const [isAnalyzingImage, setIsAnalyzingImage] = useState(false);
+  const [remixItem, setRemixItem] = useState<FashionItem | null>(null);
+  const [isRemixing, setIsRemixing] = useState(false);
+  const [remixResult, setRemixResult] = useState<string | null>(null);
+
+  const handleRemix = async (prompt: string, referenceImage: string, mutationLevel: number) => {
+    setIsRemixing(true);
+    try {
+      // Incorporate mutation level into the prompt or params if the service supports it
+      const enhancedPrompt = `Mutation Level: ${mutationLevel}. ${prompt}`;
+      const result = await generateTextImage({
+        text: enhancedPrompt,
+        style: remixItem?.style || '',
+        referenceImage
+      });
+      setRemixResult(`data:${result.mimeType};base64,${result.data}`);
+    } catch (err) {
+      setError(err instanceof Error ? err.message : "Remix failed");
+    } finally {
+      setIsRemixing(false);
+    }
+  };
   const [moodboard, setMoodboard] = useState<FashionItem[]>([]);
   const [isMoodboardOpen, setIsMoodboardOpen] = useState(false);
   const [selectedItem, setSelectedItem] = useState<FashionItem | null>(null);
@@ -1409,31 +1728,66 @@ export default function App() {
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
-            className="fixed inset-0 z-[300] bg-black/80 backdrop-blur-xl flex flex-col items-center justify-center text-white p-10"
+            className="fixed inset-0 z-[300] bg-black/90 backdrop-blur-3xl flex flex-col items-center justify-center text-white p-10"
           >
-            <div className="relative mb-12">
-              <div className="w-32 h-32 border-4 border-emerald-500/20 border-t-emerald-500 rounded-full animate-spin" />
-              <div className="absolute inset-0 flex items-center justify-center">
-                <Camera size={40} className="text-emerald-500 animate-pulse" />
+            <div className="relative mb-20">
+              <motion.div 
+                animate={{ rotate: 360 }}
+                transition={{ duration: 8, repeat: Infinity, ease: "linear" }}
+                className="w-64 h-64 border-[1px] border-emerald-500/10 rounded-full flex items-center justify-center"
+              >
+                <div className="absolute inset-0 border-t border-emerald-400 rounded-full animate-spin shadow-[0_0_20px_rgba(16,185,129,0.3)]" />
+              </motion.div>
+              <div className="absolute inset-0 flex flex-col items-center justify-center">
+                <Cpu size={48} className="text-emerald-400 animate-pulse mb-4" />
+                <motion.div 
+                  animate={{ opacity: [0.3, 1, 0.3] }}
+                  transition={{ duration: 2, repeat: Infinity }}
+                  className="flex items-center gap-2 text-emerald-400 font-mono text-[10px] tracking-widest"
+                >
+                  <Activity size={14} className="animate-bounce" /> DNA_HARVEST_V2
+                </motion.div>
               </div>
             </div>
+
             <motion.div
               initial={{ y: 20, opacity: 0 }}
               animate={{ y: 0, opacity: 1 }}
               transition={{ delay: 0.2 }}
-              className="text-center"
+              className="text-center max-w-2xl"
             >
-              <h2 className="font-serif text-5xl md:text-7xl uppercase tracking-tighter mb-4 italic">Neural Scan In Progress</h2>
-              <p className="text-[10px] uppercase font-bold tracking-[0.5em] text-emerald-400 animate-pulse">Dissecting style DNA • Identifying Silhouette • Mapping Category</p>
+              <h2 className="font-serif text-5xl md:text-7xl uppercase tracking-tighter mb-8 italic drop-shadow-[0_0_15px_rgba(255,255,255,0.2)]">Dissecting Style DNA</h2>
+              
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-8 text-[10px] font-mono text-emerald-500/60 uppercase tracking-widest mb-16">
+                <div className="flex flex-col gap-2 p-4 bg-emerald-500/5 rounded-xl border border-emerald-500/10 backdrop-blur-md">
+                  <span className="text-white/40">Phase 1</span>
+                  <span className="text-emerald-400 animate-pulse">Structural Analysis: OK</span>
+                </div>
+                <div className="flex flex-col gap-2 p-4 bg-emerald-500/5 rounded-xl border border-emerald-500/10 backdrop-blur-md">
+                  <span className="text-white/40">Phase 2</span>
+                  <span className="text-emerald-400 animate-pulse">Palette Extraction: RUNNING</span>
+                </div>
+                <div className="flex flex-col gap-2 p-4 bg-emerald-500/5 rounded-xl border border-emerald-500/10 backdrop-blur-md">
+                  <span className="text-white/40">Phase 3</span>
+                  <span className="text-emerald-400 animate-pulse">Vogue Indexing: PENDING</span>
+                </div>
+              </div>
+
+              {/* Progress Bar Upgrade */}
+              <div className="relative w-full h-[1px] bg-white/10 overflow-hidden">
+                <motion.div 
+                   initial={{ x: '-100%' }}
+                   animate={{ x: '100%' }}
+                   transition={{ duration: 1.5, repeat: Infinity, ease: "easeInOut" }}
+                   className="absolute inset-0 bg-emerald-400 shadow-[0_0_30px_rgba(16,185,129,1)]"
+                />
+              </div>
+
+              <div className="mt-8 font-mono text-[9px] text-white/40 flex justify-between uppercase tracking-widest px-2">
+                <span>Memory Pool: TX-92-B</span>
+                <span>Vectorizing 1024_DIM</span>
+              </div>
             </motion.div>
-            
-            <div className="mt-20 w-full max-w-md h-[1px] bg-white/10 relative overflow-hidden">
-              <motion.div 
-                className="absolute inset-0 bg-emerald-500 shadow-[0_0_20px_rgba(16,185,129,1)]"
-                animate={{ x: ['-100%', '100%'] }}
-                transition={{ duration: 2, repeat: Infinity, ease: "easeInOut" }}
-              />
-            </div>
           </motion.div>
         )}
         {error && (
@@ -1576,6 +1930,8 @@ export default function App() {
                   </div>
                 </div>
                 
+                <TrendHotspots t={t} />
+                
                 {/* Category Filters */}
                 <div className="flex flex-col md:flex-row md:items-end justify-between mb-16 gap-8">
                   <div>
@@ -1665,7 +2021,8 @@ export default function App() {
                           onAddToMoodboard={addToMoodboard}
                           onViewDetails={setSelectedItem}
                           onAddToDesign={setDesignItem}
-                          isSaved={!!moodboard.find(m => m.id === item.id)}
+                          onRemix={setRemixItem}
+                          isSaved={moodboard.some(m => m.id === item.id)}
                           t={t}
                         />
                       </motion.div>
@@ -1873,9 +2230,26 @@ export default function App() {
         item={selectedItem} 
         onClose={() => setSelectedItem(null)} 
         onAddToMoodboard={addToMoodboard}
-        isSaved={!!selectedItem && !!moodboard.find(m => m.id === selectedItem.id)}
+        onRemix={setRemixItem}
+        isSaved={!!selectedItem && moodboard.some(m => m.id === selectedItem.id)}
         t={t}
       />
+
+      <AnimatePresence>
+        {remixItem && (
+          <StyleRemixModal 
+            item={remixItem}
+            onClose={() => {
+              setRemixItem(null);
+              setRemixResult(null);
+            }}
+            onGenerate={handleRemix}
+            isLoading={isRemixing}
+            generatedImageUrl={remixResult}
+            t={t}
+          />
+        )}
+      </AnimatePresence>
 
       <MoodboardDrawer 
         isOpen={isMoodboardOpen} 
