@@ -1,6 +1,6 @@
 {
-  "name": "AI Fashion Gallery",
-  "description": "An intelligent fashion trend gallery with AI-driven discovery, visual search, and automated tagging.",
+  "name": "Vogue.AI Intelligent Gallery",
+  "description": "Global fashion trend intelligence: AI-driven discovery, visual search, and automated trend analysis.",
   "requestFramePermissions": ["camera"],
   "majorCapabilities": []
 }

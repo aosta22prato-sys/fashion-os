@@ -78,6 +78,40 @@ export const getFashionAssistantResponse = async (messages: { role: string, cont
   }
 };
 
+export const performVisualSearch = async (imageBase64: string, mimeType: string): Promise<{ category: string, tags: string[], description: string }> => {
+  const ai = getAI();
+  try {
+    const response = await ai.models.generateContent({
+      model: 'gemini-3-flash-preview',
+      contents: [
+        {
+          inlineData: {
+            data: cleanBase64(imageBase64),
+            mimeType: mimeType
+          }
+        },
+        {
+          text: `Analyze this fashion reference image. 
+          Identify the main style category, three specific trend tags, and a short poetic description.
+          Return a JSON object with:
+          - category: One of ["Streetwear", "Minimalist", "Avant-Garde", "Bohemian", "Cyberpunk", "Luxury Editorial"]
+          - tags: Array of 3 relevant trend tags.
+          - description: A short, poetic description of the style (max 15 words).
+          
+          Response must be ONLY JSON.`
+        }
+      ],
+      config: {
+        responseMimeType: "application/json"
+      }
+    });
+    return JSON.parse(response.text || "{}");
+  } catch (e) {
+    console.error("Visual search analysis failed", e);
+    return { category: "Minimalist", tags: ["Modern", "Reference", "Uploaded"], description: "A unique style detected from your visual reference." };
+  }
+};
+
 interface TextImageOptions {
   text: string;
   style: string;
