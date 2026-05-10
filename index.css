@@ -15,27 +15,33 @@ body {
   background-color: var(--color-brand-beige);
   color: var(--color-brand-ink);
   font-family: var(--font-sans);
+  overflow-x: hidden;
 }
 
 .fashion-grid {
   display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
-  gap: 2rem;
+  grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+  gap: 48px;
 }
 
 .aspect-vogue {
-  aspect-ratio: 3 / 4;
+  aspect-ratio: 4 / 5;
+}
+
+.editorial-title {
+  line-height: 0.85;
+  letter-spacing: -0.04em;
 }
 
 .glass {
-  background: rgba(255, 255, 255, 0.1);
-  backdrop-filter: blur(12px);
-  border: 1px solid rgba(255, 255, 255, 0.2);
+  background: rgba(255, 255, 255, 0.05);
+  backdrop-filter: blur(24px);
+  border: 1px solid rgba(255, 255, 255, 0.1);
 }
 
 /* Custom Scrollbar */
 ::-webkit-scrollbar {
-  width: 6px;
+  width: 4px;
 }
 
 ::-webkit-scrollbar-track {
@@ -43,10 +49,14 @@ body {
 }
 
 ::-webkit-scrollbar-thumb {
-  background: #d1d1d1;
-  border-radius: 10px;
+  background: var(--color-brand-ink);
 }
 
-::-webkit-scrollbar-thumb:hover {
-  background: #a1a1a1;
+.no-scrollbar::-webkit-scrollbar {
+  display: none;
+}
+
+.no-scrollbar {
+  -ms-overflow-style: none;
+  scrollbar-width: none;
 }

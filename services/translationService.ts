@@ -62,7 +62,28 @@ export const translations: Record<Language, Translations> = {
       visualSearch: "Visual Search",
       upload: "Upload Reference",
       analyzing: "Analyzing Style",
-      searchDesc: "Upload a sketch, a fabric pattern, or a reference photo. Our AI vision model will dissect the silhouette."
+      searchDesc: "Upload a sketch, a fabric pattern, or a reference photo. Our AI vision model will dissect the silhouette.",
+      neuralAnalysis: "Neural Analysis",
+      sustainability: "Sustainability",
+      heritage: "Heritage Score",
+      velocity: "Trend Velocity",
+      composition: "Composition",
+      download: "Download HD",
+      share: "Share Concept",
+      copied: "Link Copied"
+    },
+    design: {
+      title: "AI Studio Workshop",
+      subtitle: "Creative Lab",
+      generate: "Generate Concept",
+      promptLabel: "Style Seed",
+      placeholder: "e.g. Victorian Cyberpunk with Silk accents...",
+      labStatus: "Neural Engine Active"
+    },
+    interaction: {
+      title: "Vogue Intelligence",
+      subtitle: "Ask the Curator",
+      placeholder: "Inquire about trend cycles..."
     },
     moodboard: {
       title: "Your Moodboard",
@@ -96,7 +117,28 @@ export const translations: Record<Language, Translations> = {
       visualSearch: "视觉搜索",
       upload: "上传参考图",
       analyzing: "正在分析风格",
-      searchDesc: "上传草图、面料图案或参考照片。我们的 AI 视觉模型将剖析轮廓并匹配趋势。"
+      searchDesc: "上传草图、面料图案或参考照片。我们的 AI 视觉模型将剖析轮廓并匹配趋势。",
+      neuralAnalysis: "神经元分析",
+      sustainability: "环保评定",
+      heritage: "历史底蕴",
+      velocity: "流行趋势",
+      composition: "面料成分",
+      download: "下载高清图",
+      share: "分享灵感",
+      copied: "链接已复制"
+    },
+    design: {
+      title: "AI 创意实验室",
+      subtitle: "设计工坊",
+      generate: "生成方案",
+      promptLabel: "风格种子",
+      placeholder: "例如：带有丝绸点缀的维多利亚赛博朋克...",
+      labStatus: "神经引擎已启用"
+    },
+    interaction: {
+      title: "Vogue 智能助手",
+      subtitle: "咨询策展人",
+      placeholder: "查询趋势周期..."
     },
     moodboard: {
       title: "灵感板",

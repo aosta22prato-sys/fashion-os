@@ -3,8 +3,8 @@
  * SPDX-License-Identifier: Apache-2.0
 */
 
-// @ts-ignore
 import { GIFEncoder, quantize, applyPalette } from 'gifenc';
+import { FashionItem } from './types';
 
 export const FASHION_CATEGORIES = [
   "All Trends",
@@ -16,14 +16,15 @@ export const FASHION_CATEGORIES = [
   "Luxury Editorial"
 ];
 
-export const MOCK_FASHION_GALLERY: any[] = [
+export const MOCK_FASHION_GALLERY: FashionItem[] = [
   {
     id: '1',
     imageUrl: 'https://images.unsplash.com/photo-1539109132314-3477524c8830?auto=format&fit=crop&q=80&w=800',
     category: 'Minimalist',
     tags: ['Sustainable', 'Linen', 'Beige'],
     style: 'Scandinavian Minimalist',
-    description: 'Clean lines and sustainable fabrics for a timeless look.'
+    description: 'Clean lines and sustainable fabrics for a timeless look.',
+    analysis: { sustainability: 92, heritageScore: 40, trendVelocity: 'Stable', fabricComposition: '100% Organic Linen', vogueIndex: 88 }
   },
   {
     id: '2',
@@ -31,7 +32,8 @@ export const MOCK_FASHION_GALLERY: any[] = [
     category: 'Streetwear',
     tags: ['Graphic', 'Oversized', 'Urban'],
     style: 'Tokyo Streetwear',
-    description: 'Vibrant colors and bold graphics inspired by Shibuya culture.'
+    description: 'Vibrant colors and bold graphics inspired by Shibuya culture.',
+    analysis: { sustainability: 65, heritageScore: 75, trendVelocity: 'Rising', fabricComposition: 'Heavyweight Cotton Jersey', vogueIndex: 94 }
   },
   {
     id: '3',
@@ -39,7 +41,8 @@ export const MOCK_FASHION_GALLERY: any[] = [
     category: 'Luxury Editorial',
     tags: ['Haute Couture', 'Satin', 'Evening'],
     style: 'Parisian Elegance',
-    description: 'Sophisticated evening wear for the modern aristocrat.'
+    description: 'Sophisticated evening wear for the modern aristocrat.',
+    analysis: { sustainability: 40, heritageScore: 98, trendVelocity: 'Stable', fabricComposition: 'Double-faced Silk Satin', vogueIndex: 99 }
   },
   {
     id: '4',
@@ -47,7 +50,8 @@ export const MOCK_FASHION_GALLERY: any[] = [
     category: 'Bohemian',
     tags: ['Floral', 'Flowy', 'Vintage'],
     style: 'Retro Boho',
-    description: 'Ethereal silhouettes and vintage floral patterns.'
+    description: 'Ethereal silhouettes and vintage floral patterns.',
+    analysis: { sustainability: 85, heritageScore: 60, trendVelocity: 'Rising', fabricComposition: 'Recycled Viscose Chiffon', vogueIndex: 82 }
   },
   {
     id: '5',
@@ -55,7 +59,8 @@ export const MOCK_FASHION_GALLERY: any[] = [
     category: 'Cyberpunk',
     tags: ['Neon', 'Techwear', 'Synthetic'],
     style: 'Neo-Tokyo Night',
-    description: 'Functional silhouettes meet high-vis synthetic textiles.'
+    description: 'Functional silhouettes meet high-vis synthetic textiles.',
+    analysis: { sustainability: 30, heritageScore: 10, trendVelocity: 'Rising', fabricComposition: 'Reflective Polyamide', vogueIndex: 91 }
   },
   {
     id: '6',
@@ -63,7 +68,8 @@ export const MOCK_FASHION_GALLERY: any[] = [
     category: 'Avant-Garde',
     tags: ['Sculptural', 'Deconstructed', 'Artistic'],
     style: 'Architectural Form',
-    description: 'Defying gravity with sculptural drapes and non-linear construction.'
+    description: 'Defying gravity with sculptural drapes and non-linear construction.',
+    analysis: { sustainability: 70, heritageScore: 25, trendVelocity: 'Stable', fabricComposition: 'Reinforced Bonded Wool', vogueIndex: 96 }
   },
   {
     id: '7',
@@ -71,7 +77,8 @@ export const MOCK_FASHION_GALLERY: any[] = [
     category: 'Luxury Editorial',
     tags: ['Vogue', 'Gold', 'Catwalk'],
     style: 'Golden Hour Gown',
-    description: 'Metals threads woven into fine silk for ultimate opulence.'
+    description: 'Metals threads woven into fine silk for ultimate opulence.',
+    analysis: { sustainability: 55, heritageScore: 85, trendVelocity: 'Stable', fabricComposition: 'Silk with Gold Thread', vogueIndex: 97 }
   },
   {
     id: '8',
@@ -79,7 +86,8 @@ export const MOCK_FASHION_GALLERY: any[] = [
     category: 'Bohemian',
     tags: ['Free-spirit', 'Embroidered', 'Summer'],
     style: 'Nomadic Chic',
-    description: 'Detailed embroidery inspired by traditional nomadic cultures.'
+    description: 'Detailed embroidery inspired by traditional nomadic cultures.',
+    analysis: { sustainability: 95, heritageScore: 90, trendVelocity: 'Stable', fabricComposition: 'Organic Hand-woven Cotton', vogueIndex: 85 }
   },
   {
     id: '9',
@@ -87,7 +95,8 @@ export const MOCK_FASHION_GALLERY: any[] = [
     category: 'Minimalist',
     tags: ['Monochrome', 'Tailored', 'Wool'],
     style: 'Urban Monolith',
-    description: 'Single-tone tailoring that emphasizes silhouette over detail.'
+    description: 'Single-tone tailoring that emphasizes silhouette over detail.',
+    analysis: { sustainability: 78, heritageScore: 50, trendVelocity: 'Stable', fabricComposition: 'Virgin Wool Blend', vogueIndex: 89 }
   },
   {
     id: '10',
@@ -95,7 +104,8 @@ export const MOCK_FASHION_GALLERY: any[] = [
     category: 'Luxury Editorial',
     tags: ['Jewelry', 'Velvet', 'Midnight'],
     style: 'Stellar Nightwear',
-    description: 'Deep velvet textures accented by intricate celestial jewelry.'
+    description: 'Deep velvet textures accented by intricate celestial jewelry.',
+    analysis: { sustainability: 45, heritageScore: 70, trendVelocity: 'Rising', fabricComposition: 'Silk Velvet', vogueIndex: 93 }
   },
   {
     id: '11',

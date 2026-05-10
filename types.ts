@@ -18,6 +18,13 @@ export interface FashionItem {
   tags: string[];
   style: string;
   description: string;
+  analysis?: {
+    sustainability: number;
+    heritageScore: number;
+    trendVelocity: 'Rising' | 'Stable' | 'Fading';
+    fabricComposition: string;
+    vogueIndex: number;
+  }
 }
 
 export interface ChatMessage {

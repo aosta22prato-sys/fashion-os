@@ -21,6 +21,9 @@ import {
   Minimize2,
   Volume2,
   VolumeX,
+  Share2,
+  Download,
+  Check,
   Send,
   LayoutGrid,
   Palette,
@@ -43,9 +46,9 @@ const HeroSection: React.FC<{
   const [isMuted, setIsMuted] = useState(true);
 
   return (
-    <section className="relative h-[90vh] w-full overflow-hidden flex items-center justify-center">
+    <section className="relative h-screen w-full overflow-hidden flex items-center justify-center bg-black">
       {/* Video Background */}
-      <div className="absolute inset-0 z-0">
+      <div className="absolute inset-0 z-0 opacity-60">
         <video 
           autoPlay 
           muted={isMuted} 
@@ -55,39 +58,46 @@ const HeroSection: React.FC<{
         >
           <source src="https://www.gstatic.com/aistudio/starter-apps/type-motion/smoke_v2.mp4" type="video/mp4" />
         </video>
-        <div className="absolute inset-0 bg-black/40 backdrop-grayscale-[0.2]" />
+        <div className="absolute inset-0 bg-gradient-to-b from-black/80 via-transparent to-black/80" />
       </div>
 
       {/* Content */}
-      <div className="relative z-10 w-full max-w-4xl px-6 text-center text-white">
-        <motion.h1 
-          initial={{ opacity: 0, y: 30 }}
+      <div className="relative z-10 w-full max-w-7xl px-6 text-center text-white">
+        <motion.div
+          initial={{ opacity: 0, y: 40 }}
           animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 1, ease: "easeOut" }}
-          className="font-serif text-6xl md:text-8xl mb-8 leading-tight tracking-tight whitespace-pre-line"
+          transition={{ duration: 1.2, ease: [0.22, 1, 0.36, 1] }}
         >
-          {t.hero.title}
-        </motion.h1>
+          <span className="text-[10px] uppercase font-bold tracking-[0.5em] mb-4 block text-white/50">Vogue Intelligence Core</span>
+          <h1 className="editorial-title font-serif text-[15vw] md:text-[18vw] mb-12 uppercase">
+            {t.hero.title.split('，').map((line: string, i: number) => (
+              <React.Fragment key={i}>
+                {i > 0 && <br />}
+                <span className={i === 1 ? 'italic font-light' : ''}>{line}</span>
+              </React.Fragment>
+            ))}
+          </h1>
+        </motion.div>
         
         <motion.div 
-          initial={{ opacity: 0, scale: 0.95 }}
+          initial={{ opacity: 0, scale: 0.98 }}
           animate={{ opacity: 1, scale: 1 }}
-          transition={{ delay: 0.5, duration: 0.8 }}
-          className="relative max-w-2xl mx-auto"
+          transition={{ delay: 0.8, duration: 1 }}
+          className="relative max-w-xl mx-auto"
         >
-          <div className="flex items-center glass rounded-full px-6 py-4 shadow-2xl">
-            <Search className="text-white/70 mr-4" size={24} />
+          <div className="flex items-center glass rounded-full px-8 py-5 shadow-[0_0_50px_rgba(255,255,255,0.1)] border-white/10 group focus-within:ring-2 focus-within:ring-white transition-all">
+            <Search className="text-white/40 mr-4" size={24} />
             <input 
               type="text"
               value={searchInput}
               onChange={(e) => setSearchInput(e.target.value)}
               placeholder={t.hero.placeholder}
-              className="bg-transparent border-none outline-none w-full text-lg placeholder:text-white/50 text-white"
+              className="bg-transparent border-none outline-none w-full text-lg placeholder:text-white/30 text-white font-serif"
               onKeyDown={(e) => e.key === 'Enter' && onSearch(searchInput)}
             />
             <button 
               onClick={() => onSearch(searchInput)}
-              className="ml-4 bg-white text-black hover:bg-brand-beige px-6 py-2 rounded-full font-medium transition-all flex items-center gap-2"
+              className="ml-4 bg-white text-black hover:bg-white/90 px-8 py-2.5 rounded-full font-bold uppercase text-[10px] tracking-widest transition-all flex items-center gap-2"
             >
               {t.hero.analyze} <Sparkles size={16} />
             </button>
@@ -95,14 +105,19 @@ const HeroSection: React.FC<{
         </motion.div>
       </div>
 
-      {/* Constraints/Indicators */}
-      <div className="absolute bottom-10 left-1/2 -translate-x-1/2 text-white/50 animate-bounce">
-        <div className="w-0.5 h-12 bg-white/30 rounded-full" />
+      {/* Navigation Indicators */}
+      <div className="absolute bottom-12 left-12 flex flex-col gap-8">
+        {[1, 2, 3].map(i => (
+          <div key={i} className="flex items-center gap-4 group cursor-pointer">
+            <span className="text-[10px] font-mono text-white/20 group-hover:text-white transition-colors">0{i}</span>
+            <div className="w-12 h-[1px] bg-white/20 group-hover:w-20 group-hover:bg-white transition-all" />
+          </div>
+        ))}
       </div>
 
       <button 
         onClick={() => setIsMuted(!isMuted)}
-        className="absolute bottom-10 right-10 p-3 glass rounded-full text-white hover:bg-white/20 transition-all"
+        className="absolute bottom-12 right-12 p-4 glass rounded-full text-white hover:bg-white/20 transition-all border-white/5"
       >
         {isMuted ? <VolumeX size={20} /> : <Volume2 size={20} />}
       </button>
@@ -231,79 +246,87 @@ const FashionCard: React.FC<{
     <motion.div 
       layout
       variants={{
-        hidden: { opacity: 0, y: 20 },
+        hidden: { opacity: 0, y: 30 },
         show: { opacity: 1, y: 0 }
       }}
       initial="hidden"
       animate="show"
       transition={{ 
-        delay: index * 0.05,
-        duration: 0.6,
+        delay: index * 0.08,
+        duration: 1,
         ease: [0.22, 1, 0.36, 1] 
       }}
-      whileHover={{ y: -8 }}
-      className="group relative bg-white rounded-2xl overflow-hidden cursor-pointer shadow-sm hover:shadow-2xl transition-all duration-500"
+      className="group relative bg-white overflow-hidden cursor-pointer shadow-sm hover:shadow-[0_40px_80px_rgba(0,0,0,0.15)] transition-all duration-700"
       onClick={() => onViewDetails(item)}
     >
       <div className="aspect-vogue overflow-hidden relative">
+        <div className="absolute inset-0 bg-brand-ink opacity-0 group-hover:opacity-20 transition-opacity duration-700 z-10" />
         <motion.img 
           src={item.imageUrl} 
           alt={item.description}
-          className="w-full h-full object-cover"
+          className="w-full h-full object-cover origin-center grayscale-[0.3] group-hover:grayscale-0"
           whileHover={{ scale: 1.05 }}
-          transition={{ duration: 0.8 }}
+          transition={{ duration: 1.5, ease: [0.22, 1, 0.36, 1] }}
         />
-        <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500" />
         
-        {/* Magic Tags - AI analysis teaser */}
-        <div className="absolute top-4 left-4 flex flex-wrap gap-2 opacity-0 group-hover:opacity-100 transition-all duration-500 translate-y-2 group-hover:translate-y-0">
-          {item.tags.map((tag, idx) => (
-            <motion.span 
-              key={idx} 
-              initial={{ opacity: 0, scale: 0.8 }}
-              whileHover={{ scale: 1.1 }}
-              className="px-3 py-1 glass text-[10px] uppercase tracking-widest text-white rounded-full font-bold"
+        {/* Luxury Meta */}
+        <div className="absolute top-8 left-8 right-8 flex justify-between items-start z-20 overflow-hidden">
+          <motion.div 
+            initial={{ y: -20, opacity: 0 }}
+            whileHover={{ y: 0, opacity: 1 }}
+            className="flex flex-col gap-1 transition-all duration-500 delay-100"
+          >
+            <span className="text-[8px] uppercase font-bold tracking-[0.4em] text-white/60">Registry</span>
+            <span className="text-[10px] text-white font-mono">00{item.id}/INT</span>
+          </motion.div>
+          <div className="flex flex-col gap-2">
+            <div className="p-3 border border-white/20 rounded-full group-hover:bg-white group-hover:text-black transition-all duration-500 mb-2">
+              <Maximize2 size={12} className="text-white group-hover:text-black" />
+            </div>
+            <button 
+              onClick={(e) => {
+                e.stopPropagation();
+                const link = document.createElement('a');
+                link.href = item.imageUrl;
+                link.download = `vogue-${item.id}.jpg`;
+                link.click();
+              }}
+              className="p-3 border border-white/20 rounded-full group-hover:bg-brand-beige group-hover:text-black transition-all duration-500"
             >
-              {tag}
-            </motion.span>
-          ))}
-        </div>
-
-        <div className="absolute top-4 right-4 opacity-0 group-hover:opacity-100 transition-all duration-500 translate-y-2 group-hover:translate-y-0">
-          <div className="p-2 glass rounded-full text-white">
-            <Maximize2 size={16} />
+              <Download size={12} className="text-white group-hover:text-black" />
+            </button>
           </div>
         </div>
 
-        <div className="absolute bottom-4 left-4 right-4 flex flex-col gap-2 opacity-0 group-hover:opacity-100 transition-all duration-500 translate-y-4 group-hover:translate-y-0 text-center">
+        <div className="absolute bottom-0 left-0 w-full p-8 translate-y-full group-hover:translate-y-0 transition-transform duration-700 ease-[0.22, 1, 0.36, 1] z-20 flex flex-col justify-end bg-gradient-to-t from-black/80 to-transparent pt-20">
           <button 
             onClick={(e) => {
               e.stopPropagation();
               onAddToMoodboard(item);
             }}
             disabled={isSaved}
-            className={`w-full py-2 rounded-lg text-[10px] font-bold uppercase tracking-widest transition-all flex items-center justify-center gap-2 ${
+            className={`w-full py-4 rounded-full text-[10px] font-bold uppercase tracking-[0.3em] transition-all flex items-center justify-center gap-3 ${
               isSaved 
-                ? 'bg-emerald-500 text-white cursor-default' 
-                : 'bg-white text-black hover:bg-brand-beige'
+                ? 'bg-white text-black opacity-100' 
+                : 'bg-white/10 text-white border border-white/20 hover:bg-white hover:text-black'
             }`}
           >
             {isSaved ? (
-              <><Sparkles size={12} /> Saved</>
+              <><Sparkles size={14} /> Curated</>
             ) : (
-              <><Upload size={12} className="rotate-180" /> Add to Moodboard</>
+              <><Upload size={14} className="rotate-180" /> Save to Archive</>
             )}
           </button>
         </div>
       </div>
       
-      <div className="p-6 border-x border-b border-zinc-50 rounded-b-2xl">
-        <div className="flex items-center justify-between mb-3 text-[10px] uppercase tracking-widest text-zinc-400 font-semibold">
-          <span className="bg-zinc-100 px-2 py-0.5 rounded">{item.category}</span>
-          <span className="flex items-center gap-1 text-emerald-600"><TrendingUp size={10} /> 94% Match</span>
+      <div className="p-8 border-b border-zinc-100 bg-white group-hover:bg-white transition-colors">
+        <div className="flex items-center gap-4 mb-4">
+          <div className="h-[1px] w-8 bg-zinc-200" />
+          <span className="text-[9px] uppercase tracking-[0.3em] text-zinc-400 font-bold">{item.category}</span>
         </div>
-        <h3 className="font-serif text-xl mb-2 group-hover:text-emerald-900 transition-colors uppercase leading-tight">{item.style}</h3>
-        <p className="text-sm text-zinc-500 line-clamp-2 italic font-serif leading-relaxed">{item.description}</p>
+        <h3 className="font-serif text-2xl mb-3 uppercase tracking-tighter transition-all group-hover:tracking-normal group-hover:italic">{item.style}</h3>
+        <p className="text-[11px] text-zinc-400 line-clamp-2 italic font-serif leading-relaxed uppercase tracking-wider">{item.description}</p>
       </div>
     </motion.div>
   );
@@ -386,8 +409,46 @@ const ItemDetailModal: React.FC<{
   onClose: () => void; 
   onAddToMoodboard: (item: FashionItem) => void;
   isSaved: boolean;
-}> = ({ item, onClose, onAddToMoodboard, isSaved }) => {
+  t: any;
+}> = ({ item, onClose, onAddToMoodboard, isSaved, t }) => {
+  const [isCopied, setIsCopied] = useState(false);
+
   if (!item) return null;
+
+  const handleDownload = async () => {
+    try {
+      const response = await fetch(item.imageUrl);
+      const blob = await response.blob();
+      const url = window.URL.createObjectURL(blob);
+      const link = document.createElement('a');
+      link.href = url;
+      link.download = `vogue-ai-${item.style.toLowerCase().replace(/\s+/g, '-')}.jpg`;
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+      window.URL.revokeObjectURL(url);
+    } catch (error) {
+      console.error("Download failed:", error);
+    }
+  };
+
+  const handleShare = async () => {
+    if (navigator.share) {
+      try {
+        await navigator.share({
+          title: `Vogue.AI - ${item.style}`,
+          text: item.description,
+          url: window.location.href,
+        });
+      } catch (error) {
+        console.error("Share failed:", error);
+      }
+    } else {
+      navigator.clipboard.writeText(window.location.href);
+      setIsCopied(true);
+      setTimeout(() => setIsCopied(false), 2000);
+    }
+  };
 
   return (
     <AnimatePresence>
@@ -395,78 +456,107 @@ const ItemDetailModal: React.FC<{
         initial={{ opacity: 0 }}
         animate={{ opacity: 1 }}
         exit={{ opacity: 0 }}
-        className="fixed inset-0 z-[150] flex items-center justify-center bg-black/90 backdrop-blur-xl p-4 md:p-10"
+        className="fixed inset-0 z-[150] flex items-center justify-center bg-black/95 backdrop-blur-3xl p-0 md:p-10"
         onClick={onClose}
       >
         <motion.div 
-          initial={{ scale: 0.9, opacity: 0, y: 20 }}
+          initial={{ scale: 0.95, opacity: 0, y: 100 }}
           animate={{ scale: 1, opacity: 1, y: 0 }}
-          exit={{ scale: 0.9, opacity: 0, y: 20 }}
-          transition={{ type: "spring", damping: 25, stiffness: 200 }}
-          className="bg-white max-w-6xl w-full h-full max-h-[90vh] rounded-3xl overflow-hidden flex flex-col md:flex-row shadow-[0_0_100px_rgba(0,0,0,0.5)]"
+          exit={{ scale: 1.05, opacity: 0, y: -50 }}
+          transition={{ type: "spring", damping: 30, stiffness: 300 }}
+          className="bg-white w-full h-full md:max-h-[85vh] md:max-w-7xl md:rounded-[40px] overflow-hidden flex flex-col md:flex-row relative"
           onClick={(e) => e.stopPropagation()}
         >
           {/* Main Visual */}
-          <div className="md:w-3/5 h-[50vh] md:h-full relative overflow-hidden bg-zinc-100">
-            <img src={item.imageUrl} className="w-full h-full object-cover" alt={item.style} />
-            <button 
-              onClick={onClose}
-              className="absolute top-6 left-6 p-3 glass rounded-full text-white hover:bg-black/40 transition-all md:hidden"
-            >
-              <X size={20} />
-            </button>
+          <div className="md:w-1/2 h-[50vh] md:h-full relative overflow-hidden">
+            <motion.img 
+              initial={{ scale: 1.2 }}
+              animate={{ scale: 1 }}
+              transition={{ duration: 1.5, ease: "easeOut" }}
+              src={item.imageUrl} 
+              className="w-full h-full object-cover" 
+              alt={item.style} 
+            />
           </div>
 
           {/* Details Content */}
-          <div className="flex-1 p-8 md:p-16 flex flex-col justify-center overflow-y-auto bg-brand-beige">
+          <div className="flex-1 p-8 md:p-20 overflow-y-auto no-scrollbar flex flex-col justify-between bg-white text-zinc-900">
             <button 
               onClick={onClose}
-              className="absolute top-10 right-10 p-4 hover:bg-zinc-200 rounded-full transition-all hidden md:block"
+              className="absolute top-8 right-8 p-4 hover:bg-zinc-100 rounded-full transition-all"
             >
-              <X size={24} />
+              <X size={32} strokeWidth={1} />
             </button>
 
-            <div className="mb-10 text-center md:text-left text-brand-ink">
-              <span className="text-[10px] uppercase font-bold tracking-[0.3em] text-zinc-400 mb-4 block">Archive Record #{item.id}</span>
-              <h2 className="font-serif text-5xl md:text-7xl uppercase tracking-tighter mb-6">{item.style}</h2>
-              <div className="flex flex-wrap justify-center md:justify-start gap-3 mb-8">
-                {item.tags.map(tag => (
-                  <span key={tag} className="px-4 py-1.5 bg-brand-ink text-white text-[10px] uppercase tracking-widest rounded-full font-bold">
-                    #{tag}
-                  </span>
-                ))}
+            <div>
+              <div className="flex items-center gap-6 mb-12">
+                <span className="text-[10px] uppercase font-bold tracking-[0.4em] text-zinc-300">Neural Hash: {item.id}x92</span>
+                <div className="h-[1px] flex-1 bg-zinc-100" />
               </div>
-              <p className="font-serif text-xl md:text-2xl text-zinc-600 leading-relaxed italic border-l-4 border-zinc-200 pl-6 mb-10">
+
+              <h2 className="font-serif text-5xl md:text-8xl uppercase leading-[0.85] tracking-tighter mb-10 w-full break-words">
+                {item.style}
+              </h2>
+
+              <p className="font-serif text-2xl text-zinc-400 italic leading-snug mb-16 max-w-xl">
                 "{item.description}"
               </p>
+
+              {/* Advanced Neural Insights */}
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-12 mb-16">
+                {[
+                  { label: t.gallery.sustainability, value: `${item.analysis?.sustainability || 85}%`, color: "bg-emerald-500" },
+                  { label: t.gallery.heritage, value: `${item.analysis?.heritageScore || 60}%`, color: "bg-indigo-500" },
+                  { label: t.gallery.velocity, value: item.analysis?.trendVelocity || "Rising", color: "bg-orange-500" },
+                  { label: t.gallery.composition, value: item.analysis?.fabricComposition || "Premium Blend", color: "bg-zinc-800" },
+                ].map((stat, i) => (
+                  <div key={i} className="group cursor-default">
+                    <div className="flex justify-between items-end mb-3">
+                      <span className="text-[10px] uppercase font-bold tracking-[0.2em] text-zinc-400">{stat.label}</span>
+                      <span className="text-sm font-bold font-mono">{stat.value}</span>
+                    </div>
+                    <div className="h-[2px] w-full bg-zinc-100 overflow-hidden">
+                      <motion.div 
+                        initial={{ x: '-100%' }}
+                        animate={{ x: 0 }}
+                        transition={{ delay: 0.5 + i * 0.1, duration: 1.5, ease: [0.22, 1, 0.36, 1] }}
+                        className={`h-full w-full ${stat.color}`}
+                      />
+                    </div>
+                  </div>
+                ))}
+              </div>
             </div>
 
-            <div className="grid grid-cols-2 gap-8 mb-12 text-brand-ink">
-              <div className="space-y-2">
-                <h4 className="text-[10px] uppercase font-bold tracking-widest text-zinc-400">Category</h4>
-                <p className="font-medium">{item.category}</p>
+            <div className="flex flex-col gap-6 mt-12">
+              <div className="flex flex-col sm:flex-row gap-4">
+                <button 
+                  onClick={() => onAddToMoodboard(item)}
+                  disabled={isSaved}
+                  className={`flex-1 py-6 rounded-full font-bold uppercase text-[11px] tracking-[0.4em] transition-all flex items-center justify-center gap-4 ${
+                    isSaved 
+                      ? 'bg-zinc-900 text-white cursor-default' 
+                      : 'bg-zinc-900 text-white hover:bg-zinc-800 shadow-2xl'
+                  }`}
+                >
+                  {isSaved ? <><Sparkles size={20} /> Verified Archive</> : <><Upload size={20} className="rotate-180" /> Append to Board</>}
+                </button>
               </div>
-              <div className="space-y-2">
-                <h4 className="text-[10px] uppercase font-bold tracking-widest text-zinc-400">Trend Score</h4>
-                <p className="font-medium text-emerald-600">94.8% Stable Expansion</p>
-              </div>
-            </div>
 
-            <div className="flex flex-col sm:flex-row gap-4 mt-auto">
-              <button 
-                onClick={() => onAddToMoodboard(item)}
-                disabled={isSaved}
-                className={`flex-1 py-5 rounded-full font-bold uppercase tracking-[0.2em] shadow-xl transition-all flex items-center justify-center gap-3 ${
-                  isSaved 
-                    ? 'bg-emerald-500 text-white cursor-default' 
-                    : 'bg-brand-ink text-white hover:scale-[1.02]'
-                }`}
-              >
-                {isSaved ? <><Sparkles size={18} /> In Moodboard</> : <><Upload size={18} className="rotate-180" /> Save to Board</>}
-              </button>
-              <button className="flex-1 py-5 border-2 border-brand-ink text-brand-ink rounded-full font-bold uppercase tracking-[0.2em] hover:bg-brand-ink hover:text-white transition-all flex items-center justify-center gap-3">
-                Style Guide <TrendingUp size={18} />
-              </button>
+              <div className="flex gap-4">
+                <button 
+                  onClick={handleDownload}
+                  className="flex-1 py-5 border border-zinc-200 rounded-full font-bold uppercase text-[10px] tracking-[0.3em] hover:bg-zinc-50 transition-all flex items-center justify-center gap-3"
+                >
+                  <Download size={18} /> {t.gallery.download}
+                </button>
+                <button 
+                  onClick={handleShare}
+                  className="flex-1 py-5 border border-zinc-200 rounded-full font-bold uppercase text-[10px] tracking-[0.3em] hover:bg-zinc-50 transition-all flex items-center justify-center gap-3"
+                >
+                  {isCopied ? <><Check size={18} /> {t.gallery.copied}</> : <><Share2 size={18} /> {t.gallery.share}</>}
+                </button>
+              </div>
             </div>
           </div>
         </motion.div>
@@ -826,49 +916,180 @@ export default function App() {
         {activeTab === 'design' && (
           <motion.div
             key="design"
-            initial={{ opacity: 0, y: 30 }}
-            animate={{ opacity: 1, y: 0 }}
-            exit={{ opacity: 0, y: -30 }}
-            className="flex-1 min-h-screen pt-32 px-6"
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            className="min-h-screen bg-brand-ink text-white pt-32 pb-20 px-6"
           >
-            {/* Visual Search Section (Moved here from footer area) */}
-            <section className="text-center pb-20">
-              <motion.div className="max-w-2xl mx-auto">
-                <Camera className={`mx-auto mb-8 ${isAnalyzingImage ? 'text-emerald-500 animate-pulse' : 'text-zinc-300'}`} size={48} />
-                <h2 className="font-serif text-5xl mb-6 uppercase tracking-tighter">AI Studio Workshop</h2>
-                <p className="text-zinc-500 mb-10 leading-relaxed italic">
-                  Upload references or explore your board. Our vision model identifies silhouettes, fabric weights, and historical style precedents in real-time.
-                </p>
-                
-                <input 
-                  type="file" 
-                  ref={fileInputRef}
-                  onChange={handleImageUpload}
-                  accept="image/*"
-                  className="hidden"
-                />
-                
-                <div className="flex flex-col sm:flex-row gap-4 justify-center">
-                  <button 
-                    onClick={() => fileInputRef.current?.click()}
-                    disabled={isAnalyzingImage}
-                    className="px-10 py-5 bg-brand-ink text-white rounded-full flex items-center justify-center gap-3 hover:scale-105 transition-all shadow-xl font-medium tracking-wide disabled:opacity-50"
-                  >
-                    {isAnalyzingImage ? (
-                      <>ANALYZING <Sparkles className="animate-spin" size={20} /></>
-                    ) : (
-                      <>UPLOAD REFERENCE <Upload size={20} /></>
-                    )}
-                  </button>
-                  <button 
-                    onClick={() => setIsMoodboardOpen(true)}
-                    className="px-10 py-5 bg-white border-2 border-brand-ink text-brand-ink rounded-full flex items-center justify-center gap-3 hover:scale-105 transition-all font-medium tracking-wide"
-                  >
-                    MY MOODBOARD <Filter size={20} />
-                  </button>
+            <div className="max-w-7xl mx-auto">
+              <div className="flex flex-col md:flex-row justify-between items-start mb-20 gap-8">
+                <div>
+                  <span className="text-[10px] uppercase font-bold tracking-[0.5em] text-white/40 mb-4 block">{t.design.subtitle}</span>
+                  <h2 className="editorial-title font-serif text-7xl md:text-9xl uppercase leading-[0.8]">{t.design.title}</h2>
                 </div>
-              </motion.div>
-            </section>
+                <div className="glass p-6 rounded-2xl flex items-center gap-4 border-white/5">
+                  <div className="w-3 h-3 bg-emerald-500 rounded-full animate-pulse" />
+                  <span className="text-[10px] uppercase font-bold tracking-widest">{t.design.labStatus}</span>
+                </div>
+              </div>
+
+              <div className="grid grid-cols-1 lg:grid-cols-2 gap-20">
+                <div className="space-y-12">
+                  <div className="space-y-4">
+                    <label className="text-[10px] uppercase font-bold tracking-[0.3em] text-white/40">{t.design.promptLabel}</label>
+                    <textarea 
+                      placeholder={t.design.placeholder}
+                      className="w-full bg-white/5 border border-white/10 rounded-3xl p-8 text-xl font-serif focus:outline-none focus:ring-1 focus:ring-white transition-all h-64 resize-none"
+                    />
+                  </div>
+                  
+                  <div className="grid grid-cols-2 gap-4">
+                    {['Silhouette', 'Fabric', 'Era', 'Mood'].map(param => (
+                      <div key={param} className="p-4 border border-white/10 rounded-2xl flex justify-between items-center group hover:bg-white/5 cursor-pointer transition-all">
+                        <span className="text-[10px] uppercase font-bold tracking-widest text-white/40 group-hover:text-white">{param}</span>
+                        <ChevronRight size={14} className="text-white/20" />
+                      </div>
+                    ))}
+                  </div>
+
+                  <div className="flex flex-col sm:flex-row gap-4">
+                    <button 
+                      onClick={() => fileInputRef.current?.click()}
+                      disabled={isAnalyzingImage}
+                      className="flex-1 py-6 border border-white/10 rounded-full font-bold uppercase text-[10px] tracking-[0.3em] hover:bg-white/5 transition-all flex items-center justify-center gap-3 relative overflow-hidden group"
+                    >
+                      {isAnalyzingImage && (
+                        <motion.div 
+                          className="absolute inset-0 bg-white/10"
+                          animate={{ x: ['-100%', '100%'] }}
+                          transition={{ duration: 1.5, repeat: Infinity, ease: "linear" }}
+                        />
+                      )}
+                      <Camera size={18} className={isAnalyzingImage ? 'animate-bounce' : ''} /> 
+                      {isAnalyzingImage ? t.gallery.analyzing : t.gallery.upload}
+                    </button>
+                    <button className="flex-1 py-6 bg-white text-black rounded-full font-bold uppercase text-[10px] tracking-[0.3em] hover:scale-[1.02] transition-transform shadow-[0_0_50px_rgba(255,255,255,0.1)]">
+                      {t.design.generate}
+                    </button>
+                  </div>
+                </div>
+
+                <div className="aspect-square bg-white/5 rounded-[40px] border border-white/10 flex items-center justify-center relative overflow-hidden group">
+                  <div className="absolute inset-0 bg-[radial-gradient(circle_at_center,_var(--tw-gradient-stops))] from-white/10 to-transparent opacity-50" />
+                  
+                  <AnimatePresence mode="wait">
+                    {isAnalyzingImage ? (
+                      <motion.div 
+                        key="analyzing"
+                        initial={{ opacity: 0, scale: 0.8 }}
+                        animate={{ opacity: 1, scale: 1 }}
+                        exit={{ opacity: 0, scale: 1.2 }}
+                        className="flex flex-col items-center"
+                      >
+                        <div className="relative">
+                          <Sparkles size={80} className="text-white animate-pulse" />
+                          <motion.div 
+                            className="absolute inset-0 border-2 border-white rounded-full"
+                            animate={{ scale: [1, 2], opacity: [1, 0] }}
+                            transition={{ duration: 2, repeat: Infinity }}
+                          />
+                        </div>
+                        <span className="mt-8 text-[10px] uppercase font-bold tracking-[0.5em] text-white/50">Neural Scanning...</span>
+                      </motion.div>
+                    ) : (
+                      <motion.div
+                        key="idle"
+                        initial={{ opacity: 0 }}
+                        animate={{ opacity: 1 }}
+                        className="flex flex-col items-center"
+                      >
+                        <Sparkles size={64} className="text-white/10 group-hover:text-white/20 transition-all group-hover:scale-110 duration-1000" />
+                      </motion.div>
+                    )}
+                  </AnimatePresence>
+
+                  <div className="absolute bottom-8 left-8 right-8 p-8 glass rounded-3xl border-white/5">
+                    <div className="flex justify-between items-center mb-6">
+                      <span className="text-[10px] font-mono text-white/40">GEN-PROT v2.0 / {activeCategory}</span>
+                      <span className="text-[10px] font-mono text-emerald-500">READY</span>
+                    </div>
+                    <div className="flex gap-1">
+                      {Array.from({ length: 40 }).map((_, i) => (
+                        <div key={i} className="flex-1 h-3 bg-white/5 overflow-hidden">
+                          <motion.div 
+                            animate={{ opacity: [0.1, 0.5, 0.1] }}
+                            transition={{ duration: 2, delay: i * 0.05, repeat: Infinity }}
+                            className="h-full w-full bg-white"
+                          />
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+            
+            <input 
+              type="file" 
+              className="hidden" 
+              ref={fileInputRef}
+              accept="image/*"
+              onChange={handleImageUpload}
+            />
+          </motion.div>
+        )}
+
+        {activeTab === 'interaction' && (
+          <motion.div
+            key="interaction"
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            className="min-h-screen bg-white pt-32 pb-20 px-6"
+          >
+            <div className="max-w-4xl mx-auto">
+              <div className="mb-20">
+                <span className="text-[10px] uppercase font-bold tracking-[0.5em] text-zinc-400 mb-4 block">{t.interaction.subtitle}</span>
+                <h2 className="editorial-title font-serif text-[12vw] md:text-8xl uppercase tracking-tighter leading-[0.8]">{t.interaction.title}</h2>
+              </div>
+
+              <div className="space-y-16">
+                <div className="space-y-8">
+                  <div className="p-10 border border-zinc-100 rounded-[40px] bg-zinc-50 flex items-start gap-8 relative overflow-hidden group">
+                    <div className="absolute top-0 right-0 w-32 h-32 bg-brand-ink opacity-0 group-hover:opacity-5 transition-opacity" />
+                    <div className="w-16 h-16 bg-white rounded-2xl flex items-center justify-center shadow-lg border border-zinc-100 flex-shrink-0">
+                      <Sparkles className="text-brand-ink" size={32} />
+                    </div>
+                    <div className="flex-1">
+                      <p className="text-2xl font-serif italic text-zinc-600 leading-relaxed">
+                        "Welcome to the Neural Archive. I can dissect trend velocities, material histories, and silhouette evolutions for you."
+                      </p>
+                    </div>
+                  </div>
+                </div>
+
+                <div className="relative group">
+                  <div className="absolute -inset-1 bg-gradient-to-r from-zinc-200 to-zinc-100 rounded-[50px] blur opacity-20 group-hover:opacity-40 transition duration-1000" />
+                  <div className="relative">
+                    <input 
+                      placeholder={t.interaction.placeholder}
+                      className="w-full bg-white border border-zinc-200 rounded-[50px] px-12 py-10 text-3xl font-serif focus:outline-none focus:ring-2 focus:ring-zinc-900 transition-all font-light"
+                    />
+                    <button className="absolute right-4 top-1/2 -translate-y-1/2 p-8 bg-zinc-900 text-white rounded-full hover:scale-105 transition-transform shadow-2xl">
+                      <Send size={28} />
+                    </button>
+                  </div>
+                </div>
+
+                <div className="flex flex-wrap gap-6 pt-8">
+                  {['2026 Trend Cycles', 'Material Scribing', 'DNA Analysis', 'Export Dataset'].map(cmd => (
+                    <button key={cmd} className="px-8 py-4 border border-zinc-100 rounded-full text-[10px] uppercase font-bold tracking-widest text-zinc-400 hover:text-zinc-900 hover:border-zinc-900 transition-all hover:bg-zinc-50">
+                      {cmd}
+                    </button>
+                  ))}
+                </div>
+              </div>
+            </div>
           </motion.div>
         )}
 
@@ -889,6 +1110,7 @@ export default function App() {
         onClose={() => setSelectedItem(null)} 
         onAddToMoodboard={addToMoodboard}
         isSaved={!!selectedItem && !!moodboard.find(m => m.id === selectedItem.id)}
+        t={t}
       />
 
       <MoodboardDrawer 
