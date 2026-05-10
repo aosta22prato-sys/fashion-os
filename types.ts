@@ -3,6 +3,11 @@
  * SPDX-License-Identifier: Apache-2.0
 */
 
+export enum Theme {
+  LIGHT = 'light',
+  DARK = 'dark'
+}
+
 export enum AppState {
   IDLE = 'IDLE',
   ANALYZING = 'ANALYZING',
@@ -19,6 +24,7 @@ export interface FashionItem {
   tags: string[];
   style: string;
   description: string;
+  isSearchResult?: boolean;
   analysis?: {
     sustainability: number;
     heritageScore: number;

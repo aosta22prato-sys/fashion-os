@@ -34,9 +34,11 @@ import {
   User,
   Globe,
   Library,
+  Activity,
+  Server,
   ChevronLeft
 } from 'lucide-react';
-import { AppState, FashionItem, ChatMessage } from './types';
+import { AppState, FashionItem, ChatMessage, Theme } from './types';
 import { MOCK_FASHION_GALLERY, FASHION_CATEGORIES, fileToBase64, optimizeImage } from './utils';
 import { analyzeFashionQuery, getFashionAssistantResponse, performVisualSearch, generateTextImage } from './services/geminiService';
 import { translations, getBrowserLanguage, Language } from './services/translationService';
@@ -229,17 +231,17 @@ const FashionAssistant: React.FC<{ isOpen: boolean; onClose: () => void }> = ({ 
           animate={{ x: 0 }}
           exit={{ x: '100%' }}
           transition={{ type: "spring", damping: 25, stiffness: 200 }}
-          className="fixed top-0 right-0 h-full w-full md:w-[400px] bg-white border-l border-zinc-100 shadow-2xl z-[100] flex flex-col"
+          className="fixed top-0 right-0 h-full w-full md:w-[400px] bg-white dark:bg-zinc-900 border-l border-zinc-100 dark:border-white/5 shadow-2xl z-[100] flex flex-col"
         >
           {/* Header */}
-          <div className="p-6 border-bottom flex items-center justify-between border-b border-zinc-100">
+          <div className="p-6 border-bottom flex items-center justify-between border-b border-zinc-100 dark:border-white/5">
             <div>
-              <h2 className="font-serif text-2xl font-semibold">AI Curator</h2>
+              <h2 className="font-serif text-2xl font-semibold dark:text-white">AI Curator</h2>
               <p className="text-xs text-zinc-400 flex items-center gap-1">
                 <span className="w-2 h-2 bg-green-500 rounded-full" /> Intelligent Style Assistant
               </p>
             </div>
-            <button onClick={onClose} className="p-2 hover:bg-zinc-100 rounded-full transition-all">
+            <button onClick={onClose} className="p-2 hover:bg-zinc-100 dark:hover:bg-white/5 rounded-full transition-all dark:text-white">
               <X size={20} />
             </button>
           </div>
@@ -323,10 +325,24 @@ const FashionCard: React.FC<{
         duration: 1,
         ease: [0.22, 1, 0.36, 1] 
       }}
-      className="group relative bg-white overflow-hidden cursor-pointer shadow-sm hover:shadow-[0_40px_80px_rgba(0,0,0,0.15)] transition-all duration-700"
+      className={`group relative overflow-hidden cursor-pointer shadow-sm transition-all duration-700 ${
+        item.isSearchResult 
+          ? 'ring-2 ring-emerald-500/50 shadow-[0_0_40px_rgba(16,185,129,0.2)] bg-emerald-50/5 dark:bg-emerald-950/10' 
+          : 'bg-white dark:bg-zinc-900 border border-transparent'
+      } hover:shadow-[0_40px_80px_rgba(0,0,0,0.15)]`}
       onClick={() => onViewDetails(item)}
     >
+      {item.isSearchResult && (
+        <div className="absolute top-0 left-0 right-0 h-1 bg-gradient-to-r from-emerald-400 via-white to-emerald-400 z-[30] animate-pulse" />
+      )}
       <div className="aspect-vogue overflow-hidden relative">
+        {item.isSearchResult && (
+          <div className="absolute top-4 left-1/2 -translate-x-1/2 z-[40] pointer-events-none">
+            <div className="bg-emerald-500 text-black px-4 py-1.5 rounded-full text-[9px] font-black uppercase tracking-widest flex items-center gap-2 shadow-xl border border-white/20">
+              <Sparkles size={10} className="animate-spin-slow" /> Visual AI Result
+            </div>
+          </div>
+        )}
         <div className="absolute inset-0 bg-brand-ink opacity-0 group-hover:opacity-20 transition-opacity duration-700 z-10" />
         <SafeImage 
           src={item.imageUrl} 
@@ -431,13 +447,27 @@ const FashionCard: React.FC<{
         </div>
       </div>
       
-      <div className="p-8 border-b border-zinc-100 bg-white group-hover:bg-zinc-50 transition-colors duration-500">
+      <div className={`p-8 border-b border-zinc-100 dark:border-white/5 transition-colors duration-500 ${
+        item.isSearchResult 
+          ? 'bg-emerald-50/50 dark:bg-emerald-900/5' 
+          : 'bg-white dark:bg-zinc-900 group-hover:bg-zinc-50 dark:group-hover:bg-white/5'
+      }`}>
         <div className="flex items-center gap-4 mb-4">
-          <div className="h-[1px] w-8 bg-zinc-400 group-hover:w-12 transition-all duration-500" />
-          <span className="text-[9px] uppercase tracking-[0.4em] text-zinc-400 font-black">{item.category}</span>
+          <div className={`h-[1px] ${item.isSearchResult ? 'bg-emerald-400 w-12' : 'bg-zinc-400 group-hover:w-12'} transition-all duration-500`} />
+          <span className={`text-[9px] uppercase tracking-[0.4em] font-black ${item.isSearchResult ? 'text-emerald-500' : 'text-zinc-400'}`}>{item.category}</span>
         </div>
-        <h3 className="font-serif text-3xl mb-3 uppercase tracking-tighter transition-all duration-700 group-hover:tracking-[-0.05em] group-hover:italic font-medium">{item.style}</h3>
-        <p className="text-[10px] text-zinc-400 line-clamp-2 italic font-serif leading-loose uppercase tracking-[0.1em] opacity-60 group-hover:opacity-100 transition-opacity">{item.description}</p>
+        <h3 className={`font-serif text-3xl mb-3 uppercase tracking-tighter transition-all duration-700 group-hover:tracking-[-0.05em] group-hover:italic font-medium ${item.isSearchResult ? 'text-zinc-900 dark:text-emerald-50' : 'dark:text-white'}`}>{item.style}</h3>
+        <p className={`text-[10px] line-clamp-2 italic font-serif leading-loose uppercase tracking-[0.1em] opacity-60 group-hover:opacity-100 transition-opacity ${item.isSearchResult ? 'text-emerald-800/60 dark:text-emerald-400/60' : 'text-zinc-400 dark:text-zinc-500'}`}>{item.description}</p>
+        
+        {item.isSearchResult && (
+          <div className="mt-6 flex flex-wrap gap-2">
+            {item.tags.slice(0, 3).map(tag => (
+              <span key={tag} className="px-3 py-1 bg-emerald-500/10 border border-emerald-500/20 text-emerald-600 dark:text-emerald-400 text-[8px] font-black uppercase tracking-widest rounded-full">
+                #{tag}
+              </span>
+            ))}
+          </div>
+        )}
       </div>
     </motion.div>
   );
@@ -527,10 +557,10 @@ const DesignGeneratorModal: React.FC<{
               </AnimatePresence>
             </div>
 
-            <div className="flex-1 p-10 md:p-16 flex flex-col justify-center bg-white">
+            <div className="flex-1 p-10 md:p-16 flex flex-col justify-center bg-white dark:bg-zinc-950">
               <div className="mb-12">
-                <span className="text-[10px] uppercase font-bold tracking-[0.4em] text-zinc-300 mb-2 block">AI Design Lab</span>
-                <h3 className="font-serif text-5xl uppercase tracking-tighter leading-none">{t.gallery.addToDesign}</h3>
+                <span className="text-[10px] uppercase font-bold tracking-[0.4em] text-zinc-300 dark:text-zinc-700 mb-2 block">AI Design Lab</span>
+                <h3 className="font-serif text-5xl uppercase tracking-tighter leading-none dark:text-white">{t.gallery.addToDesign}</h3>
               </div>
               
               {!generatedUrl ? (
@@ -541,7 +571,7 @@ const DesignGeneratorModal: React.FC<{
                       value={prompt}
                       onChange={e => setPrompt(e.target.value)}
                       placeholder={t.design.placeholder}
-                      className="w-full bg-zinc-50 border border-zinc-100 rounded-[30px] p-8 text-xl font-serif focus:outline-none focus:ring-1 focus:ring-brand-ink transition-all h-48 resize-none placeholder:text-zinc-200"
+                      className="w-full bg-zinc-50 dark:bg-zinc-900 border border-zinc-100 dark:border-white/5 rounded-[30px] p-8 text-xl font-serif focus:outline-none focus:ring-1 focus:ring-brand-ink transition-all h-48 resize-none placeholder:text-zinc-200 dark:placeholder:text-zinc-800 dark:text-white"
                     />
                   </div>
                   <button 
@@ -609,14 +639,14 @@ const MoodboardDrawer: React.FC<{
           animate={{ x: 0 }}
           exit={{ x: '100%' }}
           transition={{ type: "spring", damping: 25, stiffness: 200 }}
-          className="fixed top-0 right-0 h-full w-full md:w-[450px] bg-brand-beige border-l border-zinc-200 shadow-2xl z-[110] flex flex-col"
+          className="fixed top-0 right-0 h-full w-full md:w-[450px] bg-brand-beige dark:bg-zinc-950 border-l border-zinc-200 dark:border-white/5 shadow-2xl z-[110] flex flex-col"
         >
-          <div className="p-8 border-b border-zinc-200 flex items-center justify-between">
+          <div className="p-8 border-b border-zinc-200 dark:border-white/5 flex items-center justify-between">
             <div>
-              <h2 className="font-serif text-3xl uppercase tracking-tighter">{t.moodboard.title}</h2>
+              <h2 className="font-serif text-3xl uppercase tracking-tighter dark:text-white">{t.moodboard.title}</h2>
               <p className="text-xs text-zinc-400 mt-1 uppercase tracking-widest">{items.length} Elements</p>
             </div>
-            <button onClick={onClose} className="p-2 hover:bg-zinc-200 rounded-full transition-all">
+            <button onClick={onClose} className="p-2 hover:bg-zinc-200 dark:hover:bg-white/5 rounded-full transition-all dark:text-white">
               <X size={24} />
             </button>
           </div>
@@ -799,18 +829,18 @@ const ItemDetailModal: React.FC<{
             </div>
 
             {/* Details Content */}
-            <div className="flex-1 p-8 md:p-20 overflow-y-auto no-scrollbar flex flex-col justify-between bg-white text-zinc-900 scroll-smooth">
+            <div className="flex-1 p-8 md:p-20 overflow-y-auto no-scrollbar flex flex-col justify-between bg-white dark:bg-zinc-950 text-zinc-900 dark:text-white scroll-smooth font-sans">
               <button 
                 onClick={onClose}
-                className="absolute top-8 right-8 p-4 hover:bg-zinc-100 rounded-full transition-all z-30"
+                className="absolute top-8 right-8 p-4 hover:bg-zinc-100 dark:hover:bg-white/5 rounded-full transition-all z-30 dark:text-white"
               >
                 <X size={32} strokeWidth={1} />
               </button>
 
               <div className="relative">
                 <div className="flex items-center gap-6 mb-12">
-                  <span className="text-[10px] uppercase font-bold tracking-[0.4em] text-zinc-300">ModaUI ID: {item.id}x92</span>
-                  <div className="h-[1px] flex-1 bg-zinc-100" />
+                  <span className="text-[10px] uppercase font-bold tracking-[0.4em] text-zinc-300 dark:text-zinc-700">ModaUI ID: {item.id}x92</span>
+                  <div className="h-[1px] flex-1 bg-zinc-100 dark:bg-white/5" />
                 </div>
 
                 <h2 className="font-serif text-5xl md:text-8xl uppercase leading-[0.85] tracking-tighter mb-10 w-full break-words">
@@ -823,12 +853,12 @@ const ItemDetailModal: React.FC<{
 
                 {/* AI Intelligence Modules */}
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-10 mb-16">
-                  <div className="p-8 bg-zinc-50 rounded-[32px] border border-zinc-100 group transition-all duration-500 hover:bg-zinc-100">
+                  <div className="p-8 bg-zinc-50 dark:bg-zinc-900 rounded-[32px] border border-zinc-100 dark:border-white/5 group transition-all duration-500 hover:bg-zinc-100 dark:hover:bg-zinc-800">
                     <div className="flex items-center gap-3 mb-6">
-                      <div className="p-2 bg-white rounded-xl shadow-sm border border-zinc-100 group-hover:scale-110 transition-transform">
-                        <Palette size={14} className="text-zinc-600" />
+                      <div className="p-2 bg-white dark:bg-zinc-950 rounded-xl shadow-sm border border-zinc-100 dark:border-white/5 group-hover:scale-110 transition-transform">
+                        <Palette size={14} className="text-zinc-600 dark:text-zinc-400" />
                       </div>
-                      <span className="text-[10px] uppercase font-black tracking-widest text-zinc-900">Color DNA</span>
+                      <span className="text-[10px] uppercase font-black tracking-widest text-zinc-900 dark:text-white">Color DNA</span>
                     </div>
                     <div className="flex gap-2">
                       {item.analysis?.colors?.map((color, i) => (
@@ -846,21 +876,21 @@ const ItemDetailModal: React.FC<{
                     </div>
                   </div>
 
-                  <div className="p-8 bg-zinc-50 rounded-[32px] border border-zinc-100 group transition-all duration-500 hover:bg-zinc-100">
+                  <div className="p-8 bg-zinc-50 dark:bg-zinc-900 rounded-[32px] border border-zinc-100 dark:border-white/5 group transition-all duration-500 hover:bg-zinc-100 dark:hover:bg-zinc-800">
                     <div className="flex items-center gap-3 mb-6">
-                      <div className="p-2 bg-white rounded-xl shadow-sm border border-zinc-100 group-hover:scale-110 transition-transform">
-                        <Library size={14} className="text-zinc-600" />
+                      <div className="p-2 bg-white dark:bg-zinc-950 rounded-xl shadow-sm border border-zinc-100 dark:border-white/5 group-hover:scale-110 transition-transform">
+                        <Library size={14} className="text-zinc-600 dark:text-zinc-400" />
                       </div>
-                      <span className="text-[10px] uppercase font-black tracking-widest text-zinc-900">Textile Intelligence</span>
+                      <span className="text-[10px] uppercase font-black tracking-widest text-zinc-900 dark:text-white">Textile Intelligence</span>
                     </div>
                     <div className="flex flex-wrap gap-2">
                       {item.analysis?.fabrics?.map((fabric, i) => (
-                        <span key={i} className="px-3 py-1.5 bg-white border border-zinc-100 rounded-full text-[9px] font-bold uppercase tracking-widest text-zinc-600 hover:bg-zinc-900 hover:text-white transition-colors cursor-pointer">
+                        <span key={i} className="px-3 py-1.5 bg-white dark:bg-zinc-950 border border-zinc-100 dark:border-white/10 rounded-full text-[9px] font-bold uppercase tracking-widest text-zinc-600 dark:text-zinc-400 hover:bg-zinc-900 dark:hover:bg-white hover:text-white dark:hover:text-black transition-colors cursor-pointer">
                           {fabric}
                         </span>
                       )) || (
                         ['Organic Linen', 'Raw Silk', 'Recycled Wool'].map(f => (
-                          <span key={f} className="px-3 py-1.5 bg-white border border-zinc-100 rounded-full text-[9px] font-bold uppercase tracking-widest text-zinc-300">
+                          <span key={f} className="px-3 py-1.5 bg-white dark:bg-zinc-950 border border-zinc-100 dark:border-white/5 rounded-full text-[9px] font-bold uppercase tracking-widest text-zinc-300 dark:text-zinc-700">
                             {f}
                           </span>
                         ))
@@ -973,11 +1003,11 @@ const FilterPanel: React.FC<{
             animate={{ x: 0 }}
             exit={{ x: '100%' }}
             transition={{ type: "spring", damping: 30, stiffness: 300 }}
-            className="fixed top-0 right-0 h-full w-full md:w-[400px] bg-white z-[150] shadow-2xl flex flex-col"
+            className="fixed top-0 right-0 h-full w-full md:w-[400px] bg-white dark:bg-zinc-950 z-[150] shadow-2xl flex flex-col"
           >
-            <div className="p-8 border-b border-zinc-100 flex items-center justify-between">
-              <h3 className="font-serif text-2xl uppercase tracking-tighter">{t.gallery.filterByStyle}</h3>
-              <button onClick={onClose} className="p-2 hover:bg-zinc-100 rounded-full transition-all">
+            <div className="p-8 border-b border-zinc-100 dark:border-white/10 flex items-center justify-between">
+              <h3 className="font-serif text-2xl uppercase tracking-tighter dark:text-white">{t.gallery.filterByStyle}</h3>
+              <button onClick={onClose} className="p-2 hover:bg-zinc-100 dark:hover:bg-white/5 rounded-full transition-all dark:text-white">
                 <X size={24} />
               </button>
             </div>
@@ -986,7 +1016,7 @@ const FilterPanel: React.FC<{
               <section>
                 <div className="flex items-center justify-between mb-6">
                   <h4 className="text-[10px] uppercase font-bold tracking-[0.2em] text-zinc-400">{t.gallery.styles}</h4>
-                  <span className="text-[10px] font-mono text-zinc-300">{selectedStyles.length} Selected</span>
+                  <span className="text-[10px] font-mono text-zinc-300 dark:text-zinc-700">{selectedStyles.length} Selected</span>
                 </div>
                 <div className="flex flex-wrap gap-2">
                   {allStyles.map(style => (
@@ -996,7 +1026,7 @@ const FilterPanel: React.FC<{
                       className={`px-4 py-2 rounded-full text-xs transition-all ${
                         selectedStyles.includes(style)
                           ? 'bg-brand-ink text-white shadow-lg scale-105'
-                          : 'bg-zinc-50 text-zinc-500 hover:bg-zinc-100 border border-zinc-100'
+                          : 'bg-zinc-50 dark:bg-zinc-900 text-zinc-500 dark:text-zinc-400 hover:bg-zinc-100 dark:hover:bg-white/5 border border-zinc-100 dark:border-white/5'
                       }`}
                     >
                       {style}
@@ -1008,7 +1038,7 @@ const FilterPanel: React.FC<{
               <section>
                 <div className="flex items-center justify-between mb-6">
                   <h4 className="text-[10px] uppercase font-bold tracking-[0.2em] text-zinc-400">{t.gallery.tags}</h4>
-                  <span className="text-[10px] font-mono text-zinc-300">{selectedTags.length} Selected</span>
+                  <span className="text-[10px] font-mono text-zinc-300 dark:text-zinc-700">{selectedTags.length} Selected</span>
                 </div>
                 <div className="flex flex-wrap gap-2">
                   {allTags.map(tag => (
@@ -1017,8 +1047,8 @@ const FilterPanel: React.FC<{
                       onClick={() => toggleTag(tag)}
                       className={`px-4 py-2 rounded-full text-xs transition-all ${
                         selectedTags.includes(tag)
-                          ? 'bg-zinc-900 text-white shadow-lg scale-105'
-                          : 'bg-zinc-50 text-zinc-500 hover:bg-zinc-100 border border-zinc-100'
+                          ? 'bg-zinc-900 dark:bg-white text-white dark:text-black shadow-lg scale-105'
+                          : 'bg-zinc-50 dark:bg-zinc-900 text-zinc-500 dark:text-zinc-400 hover:bg-zinc-100 dark:hover:bg-white/5 border border-zinc-100 dark:border-white/5'
                       }`}
                     >
                       #{tag}
@@ -1028,10 +1058,10 @@ const FilterPanel: React.FC<{
               </section>
             </div>
 
-            <div className="p-8 border-t border-zinc-100 bg-zinc-50 flex gap-4">
+            <div className="p-8 border-t border-zinc-100 dark:border-white/10 bg-zinc-50 dark:bg-zinc-900 flex gap-4">
               <button 
                 onClick={resetFilters}
-                className="flex-1 py-4 border border-zinc-200 rounded-full text-[10px] font-bold uppercase tracking-widest text-zinc-500 hover:bg-white hover:text-red-500 transition-all"
+                className="flex-1 py-4 border border-zinc-200 dark:border-white/10 rounded-full text-[10px] font-bold uppercase tracking-widest text-zinc-500 hover:bg-white dark:hover:bg-zinc-800 hover:text-red-500 transition-all"
               >
                 {t.gallery.resetFilters}
               </button>
@@ -1049,12 +1079,42 @@ const FilterPanel: React.FC<{
   );
 };
 
-const SettingsPanel: React.FC = () => {
+const SettingsPanel: React.FC<{ 
+  theme: Theme; 
+  setTheme: (theme: Theme) => void;
+  t: any;
+}> = ({ theme, setTheme, t }) => {
   return (
     <section className="py-20 max-w-2xl mx-auto px-6">
       <h2 className="font-serif text-4xl mb-10 uppercase tracking-tighter">System Configuration</h2>
       <div className="space-y-8">
-        <div className="p-6 bg-white rounded-2xl border border-zinc-100 flex items-center justify-between">
+        {/* Theme Toggle */}
+        <div className="p-6 bg-white dark:bg-zinc-900 rounded-3xl border border-zinc-100 dark:border-white/5 flex items-center justify-between shadow-sm">
+          <div>
+            <h4 className="font-bold text-lg mb-1">{t.settings.theme}</h4>
+            <p className="text-zinc-400 text-sm italic">Switch between light and dark visual aesthetics.</p>
+          </div>
+          <div className="flex bg-zinc-100 dark:bg-black p-1 rounded-full border border-zinc-200 dark:border-white/10">
+            <button 
+              onClick={() => setTheme(Theme.LIGHT)}
+              className={`px-4 py-1.5 rounded-full text-[10px] font-bold uppercase tracking-widest transition-all ${
+                theme === Theme.LIGHT ? 'bg-white text-black shadow-md' : 'text-zinc-400 hover:text-zinc-600'
+              }`}
+            >
+              {t.settings.light}
+            </button>
+            <button 
+              onClick={() => setTheme(Theme.DARK)}
+              className={`px-4 py-1.5 rounded-full text-[10px] font-bold uppercase tracking-widest transition-all ${
+                theme === Theme.DARK ? 'bg-zinc-800 text-white shadow-md' : 'text-zinc-400 hover:text-white'
+              }`}
+            >
+              {t.settings.dark}
+            </button>
+          </div>
+        </div>
+
+        <div className="p-6 bg-white dark:bg-zinc-900 rounded-2xl border border-zinc-100 dark:border-white/5 flex items-center justify-between">
           <div>
             <h4 className="font-bold text-lg mb-1">AI Curation Sensitivity</h4>
             <p className="text-zinc-400 text-sm italic">Adjust how strictly the AI filters trends.</p>
@@ -1063,25 +1123,83 @@ const SettingsPanel: React.FC = () => {
             <div className="absolute right-1 top-1 w-4 h-4 bg-white rounded-full shadow-md" />
           </div>
         </div>
-        <div className="p-6 bg-white rounded-2xl border border-zinc-100 flex items-center justify-between">
+        <div className="p-6 bg-white dark:bg-zinc-900 rounded-2xl border border-zinc-100 dark:border-white/5 flex items-center justify-between">
           <div>
             <h4 className="font-bold text-lg mb-1">Creative Mode</h4>
             <p className="text-zinc-400 text-sm italic">Enable high-experimental trend detection.</p>
           </div>
-          <div className="w-12 h-6 bg-zinc-200 rounded-full relative">
+          <div className="w-12 h-6 bg-zinc-200 dark:bg-zinc-800 rounded-full relative">
             <div className="absolute left-1 top-1 w-4 h-4 bg-white rounded-full shadow-md" />
           </div>
         </div>
-        <div className="p-6 bg-white rounded-2xl border border-zinc-100">
+
+        {/* Neural Scraper Engine */}
+        <div className="p-8 bg-zinc-900 dark:bg-black rounded-[40px] border border-white/5 relative overflow-hidden group">
+          <div className="absolute top-0 right-0 w-64 h-64 bg-emerald-500/10 blur-[100px] rounded-full -translate-y-1/2 translate-x-1/2 group-hover:bg-emerald-500/20 transition-all duration-1000" />
+          
+          <div className="relative z-10">
+            <div className="flex items-center justify-between mb-8">
+              <div className="flex items-center gap-4">
+                <div className="w-12 h-12 bg-white/10 rounded-2xl flex items-center justify-center border border-white/10">
+                  <Server className="text-emerald-400" size={24} />
+                </div>
+                <div>
+                  <h4 className="font-bold text-xl text-white leading-tight">{t.settings.scraper.title}</h4>
+                  <p className="text-emerald-400/60 text-xs font-mono uppercase tracking-widest">{t.settings.scraper.subtitle}</p>
+                </div>
+              </div>
+              <div className="flex items-center gap-2 px-4 py-2 bg-emerald-500/10 border border-emerald-500/20 rounded-full">
+                <Activity size={12} className="text-emerald-400 animate-pulse" />
+                <span className="text-[10px] font-black text-emerald-400 uppercase tracking-tighter">{t.settings.scraper.status}</span>
+              </div>
+            </div>
+
+            <div className="grid grid-cols-2 gap-4 mb-8">
+              <div className="p-4 bg-white/5 rounded-2xl border border-white/5">
+                <span className="text-[10px] text-white/40 uppercase font-bold tracking-widest block mb-2">Sync Frequency</span>
+                <p className="text-white font-serif text-lg italic">Real-time / 5m</p>
+              </div>
+              <div className="p-4 bg-white/5 rounded-2xl border border-white/5">
+                <span className="text-[10px] text-white/40 uppercase font-bold tracking-widest block mb-2">Confidence Gate</span>
+                <p className="text-white font-serif text-lg italic">88% (YOLOv8)</p>
+              </div>
+            </div>
+
+            <div className="space-y-4 mb-8">
+              <p className="text-white/60 text-sm italic font-serif leading-relaxed">
+                {t.settings.scraper.sources}
+              </p>
+              <div className="h-1.5 w-full bg-white/5 rounded-full overflow-hidden">
+                <motion.div 
+                   initial={{ x: '-100%' }}
+                   animate={{ x: '100%' }}
+                   transition={{ duration: 3, repeat: Infinity, ease: "linear" }}
+                   className="h-full w-1/3 bg-gradient-to-r from-transparent via-emerald-400 to-transparent shadow-[0_0_15px_rgba(52,211,153,0.5)]"
+                />
+              </div>
+            </div>
+
+            <div className="flex gap-3">
+              <button className="flex-1 py-4 bg-emerald-500 hover:bg-emerald-600 text-black rounded-full text-[10px] font-black uppercase tracking-[0.2em] transition-all transform active:scale-95 shadow-[0_0_30px_rgba(16,185,129,0.3)]">
+                {t.settings.scraper.action}
+              </button>
+              <button className="px-6 py-4 border border-white/10 text-white rounded-full text-[10px] font-bold uppercase tracking-[0.2em] hover:bg-white/5 transition-all">
+                {t.settings.scraper.configure}
+              </button>
+            </div>
+          </div>
+        </div>
+
+        <div className="p-6 bg-white dark:bg-zinc-900 rounded-2xl border border-zinc-100 dark:border-white/5">
           <h4 className="font-bold text-lg mb-4">Neural Engine Status</h4>
           <div className="flex items-center gap-4 text-xs font-mono">
             <span className="flex items-center gap-2 text-emerald-600"><span className="w-2 h-2 bg-emerald-600 rounded-full animate-pulse" /> Gemini Pro Vision: Active</span>
-            <span className="text-zinc-300">|</span>
+            <span className="text-zinc-300 dark:text-zinc-700">|</span>
             <span className="flex items-center gap-2 text-zinc-400">VE-1.4: Syncing...</span>
           </div>
         </div>
       </div>
-      <div className="mt-20 pt-10 border-t border-zinc-100 text-center">
+      <div className="mt-20 pt-10 border-t border-zinc-100 dark:border-white/5 text-center">
         <p className="text-[10px] uppercase tracking-widest text-zinc-300">ModaUI Core Protocol v4.82</p>
       </div>
     </section>
@@ -1092,6 +1210,7 @@ const SettingsPanel: React.FC = () => {
 
 export default function App() {
   const [lang, setLang] = useState<Language>(getBrowserLanguage());
+  const [theme, setTheme] = useState<Theme>(Theme.LIGHT);
   const t = translations[lang];
 
   const [activeTab, setActiveTab] = useState<"gallery" | "design" | "interaction" | "settings">("gallery");
@@ -1252,9 +1371,19 @@ export default function App() {
         id: `img-${Date.now()}`,
         imageUrl: base64,
         category: analysis.category,
-        tags: [...analysis.tags, "Visual Search"],
-        style: "Visual Reference Found",
-        description: analysis.description
+        tags: [...analysis.tags, "Visual Intelligence", "Direct Analysis"],
+        style: "AI Identified Style",
+        description: analysis.description,
+        isSearchResult: true,
+        analysis: {
+          sustainability: 85,
+          heritageScore: 70,
+          trendVelocity: 'Rising',
+          fabricComposition: 'Detected via Neural Analysis',
+          vogueIndex: 92,
+          colors: analysis.colors || ['#000000', '#FFFFFF'],
+          fabrics: analysis.fabrics || ['Detected Textile']
+        }
       };
       
       setActiveCategory(analysis.category);
@@ -1272,9 +1401,41 @@ export default function App() {
   };
 
   return (
-    <div className={`min-h-screen font-sans selection:bg-brand-ink selection:text-white pb-24 md:pb-0 vogue-grain ${activeTab !== 'gallery' ? 'bg-zinc-50' : ''}`}>
+    <div className={`min-h-screen font-sans selection:bg-brand-ink selection:text-white pb-24 md:pb-0 vogue-grain ${theme === Theme.DARK ? 'dark bg-black text-white' : 'bg-white text-zinc-900'} ${activeTab !== 'gallery' && theme === Theme.LIGHT ? 'bg-zinc-50' : ''}`}>
       {/* Error Toast */}
       <AnimatePresence>
+        {isAnalyzingImage && (
+          <motion.div 
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            className="fixed inset-0 z-[300] bg-black/80 backdrop-blur-xl flex flex-col items-center justify-center text-white p-10"
+          >
+            <div className="relative mb-12">
+              <div className="w-32 h-32 border-4 border-emerald-500/20 border-t-emerald-500 rounded-full animate-spin" />
+              <div className="absolute inset-0 flex items-center justify-center">
+                <Camera size={40} className="text-emerald-500 animate-pulse" />
+              </div>
+            </div>
+            <motion.div
+              initial={{ y: 20, opacity: 0 }}
+              animate={{ y: 0, opacity: 1 }}
+              transition={{ delay: 0.2 }}
+              className="text-center"
+            >
+              <h2 className="font-serif text-5xl md:text-7xl uppercase tracking-tighter mb-4 italic">Neural Scan In Progress</h2>
+              <p className="text-[10px] uppercase font-bold tracking-[0.5em] text-emerald-400 animate-pulse">Dissecting style DNA • Identifying Silhouette • Mapping Category</p>
+            </motion.div>
+            
+            <div className="mt-20 w-full max-w-md h-[1px] bg-white/10 relative overflow-hidden">
+              <motion.div 
+                className="absolute inset-0 bg-emerald-500 shadow-[0_0_20px_rgba(16,185,129,1)]"
+                animate={{ x: ['-100%', '100%'] }}
+                transition={{ duration: 2, repeat: Infinity, ease: "easeInOut" }}
+              />
+            </div>
+          </motion.div>
+        )}
         {error && (
           <motion.div 
             initial={{ opacity: 0, y: 50, x: '-50%' }}
@@ -1394,22 +1555,22 @@ export default function App() {
                     </div>
                   </div>
 
-                  <div className="flex items-center gap-8 bg-zinc-50 border border-zinc-100 px-6 py-4 rounded-3xl">
-                    <div className="flex items-center gap-3">
+                  <div className="flex flex-wrap items-center gap-4">
+                    <div className="flex items-center gap-3 bg-zinc-50 dark:bg-zinc-900 border border-zinc-100 dark:border-white/5 px-5 py-3 rounded-2xl">
                       <div className="w-2 h-2 bg-emerald-500 rounded-full animate-pulse shadow-[0_0_12px_rgba(16,185,129,0.8)]" />
                       <div className="flex flex-col">
-                        <span className="text-[10px] uppercase font-black tracking-[0.15em] text-zinc-900 leading-none mb-1">Neural Cluster 07</span>
+                        <span className="text-[10px] uppercase font-black tracking-[0.15em] text-zinc-900 dark:text-white leading-none mb-1">Neural Cluster 07</span>
                         <span className="text-[8px] uppercase tracking-widest text-zinc-400 font-bold">Status: Synchronized</span>
                       </div>
                     </div>
-                    <div className="w-[1px] h-8 bg-zinc-200" />
-                    <div className="flex items-center gap-3">
-                      <div className="p-2 bg-white rounded-xl shadow-sm border border-zinc-100">
-                        <TrendingUp size={14} className="text-zinc-600" />
+                    
+                    <div className="flex items-center gap-3 bg-zinc-900 dark:bg-white px-5 py-3 rounded-2xl shadow-xl">
+                      <div className="p-1.5 bg-white/10 dark:bg-black/10 rounded-lg">
+                        <Activity size={12} className="text-emerald-400" />
                       </div>
                       <div className="flex flex-col">
-                        <span className="text-[10px] uppercase font-black tracking-[0.15em] text-zinc-900 leading-none mb-1">Trend Velocity</span>
-                        <span className="text-[8px] uppercase tracking-widest text-emerald-600 font-bold">Accelerator Peak</span>
+                        <span className="text-[10px] uppercase font-black tracking-[0.15em] text-white dark:text-black leading-none mb-1">Pulse Harvest</span>
+                        <span className="text-[8px] uppercase tracking-widest text-emerald-400 font-bold">Scraping Tokyo...</span>
                       </div>
                     </div>
                   </div>
@@ -1419,7 +1580,7 @@ export default function App() {
                 <div className="flex flex-col md:flex-row md:items-end justify-between mb-16 gap-8">
                   <div>
                     <span className="text-[10px] uppercase font-bold tracking-[0.3em] text-zinc-400 mb-2 block">{t.gallery.curation}</span>
-                    <h2 className="font-serif text-4xl uppercase tracking-tighter">{t.gallery.title}</h2>
+                    <h2 className="font-serif text-4xl uppercase tracking-tighter dark:text-zinc-100">{t.gallery.title}</h2>
                   </div>
                   
                   <div className="flex items-center gap-4">
@@ -1430,8 +1591,8 @@ export default function App() {
                           onClick={() => setActiveCategory(cat)}
                           className={`px-6 py-2 rounded-full whitespace-nowrap text-sm font-medium transition-all ${
                             activeCategory === cat 
-                              ? 'bg-brand-ink text-white' 
-                              : 'bg-white border border-zinc-200 text-zinc-500 hover:border-brand-ink'
+                              ? 'bg-brand-ink text-white shadow-xl shadow-brand-ink/20' 
+                              : 'bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-white/5 text-zinc-500 dark:text-zinc-400 hover:border-brand-ink'
                           }`}
                         >
                           {cat}
@@ -1521,7 +1682,7 @@ export default function App() {
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
-            className="min-h-screen bg-brand-ink text-white pt-32 pb-20 px-6"
+            className={`min-h-screen pt-32 pb-20 px-6 transition-colors duration-500 ${theme === Theme.DARK ? 'bg-black text-white' : 'bg-brand-ink text-white'}`}
           >
             <div className="max-w-7xl mx-auto">
               <div className="flex flex-col md:flex-row justify-between items-start mb-20 gap-8">
@@ -1647,7 +1808,7 @@ export default function App() {
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
-            className="min-h-screen bg-white pt-32 pb-20 px-6"
+            className={`min-h-screen pt-32 pb-20 px-6 transition-colors duration-500 ${theme === Theme.DARK ? 'bg-zinc-950 text-white' : 'bg-white text-zinc-900'}`}
           >
             <div className="max-w-4xl mx-auto">
               <div className="mb-20">
@@ -1657,13 +1818,13 @@ export default function App() {
 
               <div className="space-y-16">
                 <div className="space-y-8">
-                  <div className="p-10 border border-zinc-100 rounded-[40px] bg-zinc-50 flex items-start gap-8 relative overflow-hidden group">
+                  <div className="p-10 border border-zinc-100 dark:border-white/5 rounded-[40px] bg-zinc-50 dark:bg-zinc-900 flex items-start gap-8 relative overflow-hidden group">
                     <div className="absolute top-0 right-0 w-32 h-32 bg-brand-ink opacity-0 group-hover:opacity-5 transition-opacity" />
-                    <div className="w-16 h-16 bg-white rounded-2xl flex items-center justify-center shadow-lg border border-zinc-100 flex-shrink-0">
+                    <div className="w-16 h-16 bg-white dark:bg-black rounded-2xl flex items-center justify-center shadow-lg border border-zinc-100 dark:border-white/10 flex-shrink-0">
                       <Sparkles className="text-brand-ink" size={32} />
                     </div>
                     <div className="flex-1">
-                      <p className="text-2xl font-serif italic text-zinc-600 leading-relaxed">
+                      <p className="text-2xl font-serif italic text-zinc-600 dark:text-zinc-400 leading-relaxed">
                         "Welcome to the Neural Archive. I can dissect trend velocities, material histories, and silhouette evolutions for you."
                       </p>
                     </div>
@@ -1671,13 +1832,13 @@ export default function App() {
                 </div>
 
                 <div className="relative group">
-                  <div className="absolute -inset-1 bg-gradient-to-r from-zinc-200 to-zinc-100 rounded-[30px] blur opacity-20 group-hover:opacity-40 transition duration-1000" />
+                  <div className="absolute -inset-1 bg-gradient-to-r from-zinc-200 to-zinc-100 dark:from-white/10 dark:to-white/5 rounded-[30px] blur opacity-20 group-hover:opacity-40 transition duration-1000" />
                   <div className="relative">
                     <input 
                       placeholder={t.interaction.placeholder}
-                      className="w-full bg-white border border-zinc-200 rounded-[30px] px-8 py-6 text-xl font-serif focus:outline-none focus:ring-2 focus:ring-zinc-900 transition-all font-light"
+                      className="w-full bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-white/5 rounded-[30px] px-8 py-6 text-xl font-serif focus:outline-none focus:ring-2 focus:ring-zinc-900 dark:focus:ring-white transition-all font-light dark:text-white"
                     />
-                    <button className="absolute right-3 top-1/2 -translate-y-1/2 p-5 bg-zinc-900 text-white rounded-full hover:scale-105 transition-transform shadow-xl">
+                    <button className="absolute right-3 top-1/2 -translate-y-1/2 p-5 bg-zinc-900 dark:bg-white text-white dark:text-black rounded-full hover:scale-105 transition-transform shadow-xl">
                       <Send size={20} />
                     </button>
                   </div>
@@ -1685,7 +1846,7 @@ export default function App() {
 
                 <div className="flex flex-wrap gap-6 pt-8">
                   {['2026 Trend Cycles', 'Material Scribing', 'DNA Analysis', 'Export Dataset'].map(cmd => (
-                    <button key={cmd} className="px-8 py-4 border border-zinc-100 rounded-full text-[10px] uppercase font-bold tracking-widest text-zinc-400 hover:text-zinc-900 hover:border-zinc-900 transition-all hover:bg-zinc-50">
+                    <button key={cmd} className="px-8 py-4 border border-zinc-100 dark:border-white/5 rounded-full text-[10px] uppercase font-bold tracking-widest text-zinc-400 hover:text-zinc-900 dark:hover:text-white hover:border-zinc-900 dark:hover:border-white transition-all hover:bg-zinc-50 dark:hover:bg-white/5">
                       {cmd}
                     </button>
                   ))}
@@ -1701,8 +1862,9 @@ export default function App() {
             initial={{ opacity: 0, y: 30 }}
             animate={{ opacity: 1, y: 0 }}
             exit={{ opacity: 0, y: -30 }}
+            className={theme === Theme.DARK ? 'bg-black text-white' : 'bg-zinc-50 text-zinc-900'}
           >
-            <SettingsPanel />
+            <SettingsPanel theme={theme} setTheme={setTheme} t={t} />
           </motion.div>
         )}
       </AnimatePresence>
@@ -1790,11 +1952,11 @@ export default function App() {
       </main>
 
       {/* Footer */}
-      <footer className="bg-brand-ink text-white py-20 px-6 mt-20">
+      <footer className={`${theme === Theme.DARK ? 'bg-zinc-950 border-t border-white/5' : 'bg-brand-ink'} text-white py-20 px-6 mt-20`}>
         <div className="max-w-7xl mx-auto grid grid-cols-1 md:grid-cols-4 gap-12 border-b border-white/10 pb-20 mb-10">
           <div className="col-span-2">
-            <h2 className="font-serif text-4xl mb-6">VOGUE.AI</h2>
-            <p className="text-white/50 max-w-sm leading-relaxed text-sm">
+            <h2 className="font-serif text-4xl mb-6 tracking-tighter">MODAUI</h2>
+            <p className="text-white/50 max-w-sm leading-relaxed text-sm italic font-serif">
               The world's first intelligent fashion gallery. Powered by state-of-the-art vision and language models to curate, classify, and predict global trends.
             </p>
           </div>

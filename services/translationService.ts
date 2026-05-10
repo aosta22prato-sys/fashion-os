@@ -34,6 +34,19 @@ export interface Translations {
     export: string;
     remove: string;
   };
+  settings: {
+    theme: string;
+    light: string;
+    dark: string;
+    scraper: {
+      title: string;
+      subtitle: string;
+      status: string;
+      sources: string;
+      action: string;
+      configure: string;
+    };
+  };
 }
 
 export const translations: Record<Language, Translations> = {
@@ -103,6 +116,19 @@ export const translations: Record<Language, Translations> = {
       empty: "Your creative board is empty.",
       export: "Export Collection",
       remove: "Remove from board"
+    },
+    settings: {
+      theme: "Theme Mode",
+      light: "Light",
+      dark: "Dark",
+      scraper: {
+        title: "Neural Scraper Engine",
+        subtitle: "Global Trend Automated Harvesting",
+        status: "Active Streams",
+        sources: "Sources: IG, Pinterest, Vogue, Runway",
+        action: "Trigger Forced Sync",
+        configure: "Configure Sources"
+      }
     }
   },
   zh: {
@@ -171,6 +197,19 @@ export const translations: Record<Language, Translations> = {
       empty: "您的创意板目前为空。",
       export: "导出收藏",
       remove: "从板中移除"
+    },
+    settings: {
+      theme: "主题模式",
+      light: "浅色",
+      dark: "深色",
+      scraper: {
+        title: "神经自动采集引擎",
+        subtitle: "全球爆款趋势自动化收割",
+        status: "活跃流",
+        sources: "信源: IG, Pinterest, Vogue, 时装周",
+        action: "强制同步触发",
+        configure: "配置信源"
+      }
     }
   }
 };
