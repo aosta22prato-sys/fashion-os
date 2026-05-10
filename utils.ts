@@ -19,7 +19,12 @@ export const FASHION_CATEGORIES = [
 export const MOCK_FASHION_GALLERY: FashionItem[] = [
   {
     id: '1',
-    imageUrl: 'https://images.unsplash.com/photo-1539109132314-3477524c8830?auto=format&fit=crop&q=80&w=800',
+    imageUrl: 'https://images.unsplash.com/photo-1515886657613-9f3515b0c78f?auto=format&fit=crop&q=80&w=1200',
+    gallerySeries: [
+      'https://images.unsplash.com/photo-1515886657613-9f3515b0c78f?auto=format&fit=crop&q=80&w=800',
+      'https://images.unsplash.com/photo-1549439602-43ebca2327af?auto=format&fit=crop&q=80&w=800',
+      'https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&q=80&w=800'
+    ],
     category: 'Minimalist',
     tags: ['Sustainable', 'Linen', 'Beige'],
     style: 'Scandinavian Minimalist',
@@ -28,7 +33,12 @@ export const MOCK_FASHION_GALLERY: FashionItem[] = [
   },
   {
     id: '2',
-    imageUrl: 'https://images.unsplash.com/photo-1515886657613-9f3515b0c78f?auto=format&fit=crop&q=80&w=800',
+    imageUrl: 'https://images.unsplash.com/photo-1539109132314-3477524c8830?auto=format&fit=crop&q=80&w=1200',
+    gallerySeries: [
+      'https://images.unsplash.com/photo-1539109132314-3477524c8830?auto=format&fit=crop&q=80&w=800',
+      'https://images.unsplash.com/photo-1544441893-675973e31985?auto=format&fit=crop&q=80&w=800',
+      'https://images.unsplash.com/photo-1542272454315-4c01d7abdf4a?auto=format&fit=crop&q=80&w=800'
+    ],
     category: 'Streetwear',
     tags: ['Graphic', 'Oversized', 'Urban'],
     style: 'Tokyo Streetwear',
@@ -37,7 +47,7 @@ export const MOCK_FASHION_GALLERY: FashionItem[] = [
   },
   {
     id: '3',
-    imageUrl: 'https://images.unsplash.com/photo-1490481651871-ab68de25d43d?auto=format&fit=crop&q=80&w=800',
+    imageUrl: 'https://images.unsplash.com/photo-1490481651871-ab68de25d43d?auto=format&fit=crop&q=80&w=1200',
     category: 'Luxury Editorial',
     tags: ['Haute Couture', 'Satin', 'Evening'],
     style: 'Parisian Elegance',
@@ -46,7 +56,7 @@ export const MOCK_FASHION_GALLERY: FashionItem[] = [
   },
   {
     id: '4',
-    imageUrl: 'https://images.unsplash.com/photo-1529133039943-085215f6d58d?auto=format&fit=crop&q=80&w=800',
+    imageUrl: 'https://images.unsplash.com/photo-1483985988355-763728e1935b?auto=format&fit=crop&q=80&w=1200',
     category: 'Bohemian',
     tags: ['Floral', 'Flowy', 'Vintage'],
     style: 'Retro Boho',
@@ -55,7 +65,7 @@ export const MOCK_FASHION_GALLERY: FashionItem[] = [
   },
   {
     id: '5',
-    imageUrl: 'https://images.unsplash.com/photo-1558769130-22c92138ac2a?auto=format&fit=crop&q=80&w=800',
+    imageUrl: 'https://images.unsplash.com/photo-1558769130-22c92138ac2a?auto=format&fit=crop&q=80&w=1200',
     category: 'Cyberpunk',
     tags: ['Neon', 'Techwear', 'Synthetic'],
     style: 'Neo-Tokyo Night',
@@ -64,7 +74,7 @@ export const MOCK_FASHION_GALLERY: FashionItem[] = [
   },
   {
     id: '6',
-    imageUrl: 'https://images.unsplash.com/photo-1509631179647-0177331693bd?auto=format&fit=crop&q=80&w=800',
+    imageUrl: 'https://images.unsplash.com/photo-1509631179647-0177331693bd?auto=format&fit=crop&q=80&w=1200',
     category: 'Avant-Garde',
     tags: ['Sculptural', 'Deconstructed', 'Artistic'],
     style: 'Architectural Form',
@@ -73,7 +83,7 @@ export const MOCK_FASHION_GALLERY: FashionItem[] = [
   },
   {
     id: '7',
-    imageUrl: 'https://images.unsplash.com/photo-1483985988355-763728e1935b?auto=format&fit=crop&q=80&w=800',
+    imageUrl: 'https://images.unsplash.com/photo-1529133039943-085215f6d58d?auto=format&fit=crop&q=80&w=1200',
     category: 'Luxury Editorial',
     tags: ['Vogue', 'Gold', 'Catwalk'],
     style: 'Golden Hour Gown',
@@ -82,7 +92,7 @@ export const MOCK_FASHION_GALLERY: FashionItem[] = [
   },
   {
     id: '8',
-    imageUrl: 'https://images.unsplash.com/photo-1537832816519-689ad163238b?auto=format&fit=crop&q=80&w=800',
+    imageUrl: 'https://images.unsplash.com/photo-1496747611176-843222e1e57c?auto=format&fit=crop&q=80&w=1200',
     category: 'Bohemian',
     tags: ['Free-spirit', 'Embroidered', 'Summer'],
     style: 'Nomadic Chic',
@@ -91,7 +101,7 @@ export const MOCK_FASHION_GALLERY: FashionItem[] = [
   },
   {
     id: '9',
-    imageUrl: 'https://images.unsplash.com/photo-1512436991641-6745cdb1723f?auto=format&fit=crop&q=80&w=800',
+    imageUrl: 'https://images.unsplash.com/photo-1512436991641-6745cdb1723f?auto=format&fit=crop&q=80&w=1200',
     category: 'Minimalist',
     tags: ['Monochrome', 'Tailored', 'Wool'],
     style: 'Urban Monolith',
@@ -100,7 +110,7 @@ export const MOCK_FASHION_GALLERY: FashionItem[] = [
   },
   {
     id: '10',
-    imageUrl: 'https://images.unsplash.com/photo-1520006403945-5de815967f6b?auto=format&fit=crop&q=80&w=800',
+    imageUrl: 'https://images.unsplash.com/photo-1520006403945-5de815967f6b?auto=format&fit=crop&q=80&w=1200',
     category: 'Luxury Editorial',
     tags: ['Jewelry', 'Velvet', 'Midnight'],
     style: 'Stellar Nightwear',
@@ -433,7 +443,47 @@ export const cleanBase64 = (data: string): string => {
   return data.replace(/^data:.*,/, '');
 };
 
-export const fileToBase64 = (file: File): Promise<string> => {
+export const optimizeImage = async (file: File): Promise<{ blob: Blob; url: string }> => {
+  return new Promise((resolve, reject) => {
+    const img = new Image();
+    img.onerror = () => reject(new Error("Failed to load image"));
+    img.src = URL.createObjectURL(file);
+    img.onload = () => {
+      const canvas = document.createElement('canvas');
+      const ctx = canvas.getContext('2d');
+      
+      const MAX_DIM = 2000;
+      let width = img.width;
+      let height = img.height;
+      if (width > MAX_DIM || height > MAX_DIM) {
+        if (width > height) {
+          height *= MAX_DIM / width;
+          width = MAX_DIM;
+        } else {
+          width *= MAX_DIM / height;
+          height = MAX_DIM;
+        }
+      }
+      canvas.width = width;
+      canvas.height = height;
+      if (ctx) {
+        ctx.imageSmoothingEnabled = true;
+        ctx.imageSmoothingQuality = 'high';
+        ctx.drawImage(img, 0, 0, width, height);
+      }
+      canvas.toBlob((blob) => {
+        URL.revokeObjectURL(img.src);
+        if (blob) {
+          resolve({ blob, url: URL.createObjectURL(blob) });
+        } else {
+          reject(new Error("Encoding failed"));
+        }
+      }, 'image/webp', 0.85);
+    };
+  });
+};
+
+export const fileToBase64 = (file: File | Blob): Promise<string> => {
   return new Promise((resolve, reject) => {
     const reader = new FileReader();
     reader.readAsDataURL(file);

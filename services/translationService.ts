@@ -70,7 +70,20 @@ export const translations: Record<Language, Translations> = {
       composition: "Composition",
       download: "Download HD",
       share: "Share Concept",
-      copied: "Link Copied"
+      copied: "Link Copied",
+      sharePinterest: "Pinterest",
+      shareTwitter: "X / Twitter",
+      shareFacebook: "Facebook",
+      filterByStyle: "Filter by Style",
+      filterByTag: "Filter by Tag",
+      resetFilters: "Reset Filters",
+      styles: "Styles",
+      tags: "Tags",
+      addToDesign: "Add to Design",
+      designConcept: "Design Concept",
+      generatingDesign: "Generating Design...",
+      viewSeries: "View Series",
+      series: "Series"
     },
     design: {
       title: "AI Studio Workshop",
@@ -125,7 +138,20 @@ export const translations: Record<Language, Translations> = {
       composition: "面料成分",
       download: "下载高清图",
       share: "分享灵感",
-      copied: "链接已复制"
+      copied: "链接已复制",
+      sharePinterest: "Pinterest",
+      shareTwitter: "X / 推特",
+      shareFacebook: "Facebook",
+      filterByStyle: "按风格筛选",
+      filterByTag: "按标签筛选",
+      resetFilters: "重置筛选",
+      styles: "风格",
+      tags: "标签",
+      addToDesign: "加入设计",
+      designConcept: "设计概念",
+      generatingDesign: "正在生成设计...",
+      viewSeries: "查看系列",
+      series: "组图"
     },
     design: {
       title: "AI 创意实验室",

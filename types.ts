@@ -14,6 +14,7 @@ export enum AppState {
 export interface FashionItem {
   id: string;
   imageUrl: string;
+  gallerySeries?: string[];
   category: string;
   tags: string[];
   style: string;
