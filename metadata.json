@@ -1,0 +1,6 @@
+{
+  "name": "AI Fashion Gallery",
+  "description": "An intelligent fashion trend gallery with AI-driven discovery, visual search, and automated tagging.",
+  "requestFramePermissions": ["camera"],
+  "majorCapabilities": []
+}
