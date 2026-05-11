@@ -1,0 +1,54 @@
+{
+  "entities": {
+    "FashionItem": {
+      "title": "Fashion Item",
+      "description": "A garment or style item in the intelligent gallery.",
+      "type": "object",
+      "properties": {
+        "imageUrl": { "type": "string", "description": "URL of the item image." },
+        "category": { "type": "string", "description": "Garment category (e.g., dress, coat)." },
+        "tags": { "type": "array", "description": "AI generated tags." },
+        "style": { "type": "string", "description": "Style archetype." },
+        "description": { "type": "string", "description": "Full analysis description." },
+        "userId": { "type": "string", "description": "Owner ID if uploaded by user." },
+        "createdAt": { "type": "string", "format": "date-time" },
+        "analysis": {
+          "type": "object",
+          "properties": {
+            "sustainability": { "type": "integer" },
+            "trendVelocity": { "type": "string" },
+            "vogueIndex": { "type": "integer" },
+            "colors": { "type": "array" },
+            "fabrics": { "type": "array" }
+          }
+        }
+      },
+      "required": ["imageUrl", "category", "createdAt"]
+    },
+    "UserProfile": {
+      "title": "User Profile",
+      "description": "Information about the user and their fashion preferences.",
+      "type": "object",
+      "properties": {
+        "displayName": { "type": "string" },
+        "email": { "type": "string" },
+        "preferredStyles": { "type": "array" },
+        "recentSearches": { "type": "array" }
+      }
+    }
+  },
+  "firestore": {
+    "fashion_items": {
+      "schema": "FashionItem",
+      "description": "Global collection of curated and generated fashion items."
+    },
+    "users/{userId}": {
+      "schema": "UserProfile",
+      "description": "User specific profiles and settings."
+    },
+    "users/{userId}/moodboards": {
+      "schema": { "type": "object", "properties": { "name": { "type": "string" }, "itemIds": { "type": "array" } } },
+      "description": "User created moodboards."
+    }
+  }
+}

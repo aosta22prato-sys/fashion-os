@@ -3,7 +3,7 @@
  * SPDX-License-Identifier: Apache-2.0
 */
 
-import React, { useState, useEffect, useRef, useMemo } from 'react';
+import React, { useState, useEffect, useRef, useMemo, useCallback } from 'react';
 import { motion, AnimatePresence } from 'motion/react';
 import { useDropzone } from 'react-dropzone';
 import { 
@@ -41,11 +41,13 @@ import {
   ChevronLeft,
   MapPin,
   Cpu,
-  TrendingDown
+  TrendingDown,
+  Shirt,
+  CheckCircle2
 } from 'lucide-react';
 import { AppState, FashionItem, ChatMessage, Theme } from './types';
 import { MOCK_FASHION_GALLERY, FASHION_CATEGORIES, fileToBase64, optimizeImage } from './utils';
-import { analyzeFashionQuery, getFashionAssistantResponse, performVisualSearch, generateTextImage } from './services/geminiService';
+import { analyzeFashionQuery, getFashionAssistantResponse, performVisualSearch, generateTextImage, generateHeroBackground } from './services/geminiService';
 import { translations, getBrowserLanguage, Language } from './services/translationService';
 
 // --- Components ---
@@ -139,8 +141,8 @@ const SafeImage: React.FC<{
   className?: string;
   onLoad?: () => void;
 }> = ({ src, alt, className, onLoad }) => {
-  const [hasError, setHasError] = useState(false);
-  const [isLoading, setIsLoading] = useState(true);
+  const [hasError, setHasError] = React.useState(false);
+  const [isLoading, setIsLoading] = React.useState(true);
 
   return (
     <div className={`relative overflow-hidden group/img ${className}`}>
@@ -189,15 +191,39 @@ const SafeImage: React.FC<{
 
 const HeroSection: React.FC<{ 
   onSearch: (query: string) => void;
+  bgImage: string | null;
+  isGeneratingBg: boolean;
   t: any;
-}> = ({ onSearch, t }) => {
-  const [searchInput, setSearchInput] = useState("");
-  const [isMuted, setIsMuted] = useState(true);
+}> = ({ onSearch, bgImage, isGeneratingBg, t }) => {
+  const [searchInput, setSearchInput] = React.useState("");
+  const [isMuted, setIsMuted] = React.useState(true);
 
   return (
     <section className="relative h-screen w-full overflow-hidden flex items-center justify-center bg-black">
-      {/* Video Background */}
-      <div className="absolute inset-0 z-0 opacity-60">
+      {/* Dynamic AI Background Overlay */}
+      <AnimatePresence>
+        {bgImage && (
+          <motion.div 
+            key={bgImage}
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 0.6 }}
+            exit={{ opacity: 0 }}
+            transition={{ duration: 2 }}
+            className="absolute inset-0 z-[1]"
+          >
+            <img 
+              src={bgImage} 
+              className="w-full h-full object-cover" 
+              alt="AI Generated Background"
+              referrerPolicy="no-referrer"
+            />
+            <div className="absolute inset-0 bg-black/40" />
+          </motion.div>
+        )}
+      </AnimatePresence>
+
+      {/* Video Background Fallback/Base */}
+      <div className="absolute inset-0 z-0 opacity-40">
         <video 
           autoPlay 
           muted={isMuted} 
@@ -210,6 +236,13 @@ const HeroSection: React.FC<{
         <div className="absolute inset-0 bg-gradient-to-b from-black/80 via-transparent to-black/80" />
       </div>
 
+      {isGeneratingBg && (
+        <div className="absolute top-10 left-1/2 -translate-x-1/2 z-[20] flex items-center gap-3 glass px-6 py-2 rounded-full border-white/10">
+          <div className="w-2 h-2 bg-emerald-500 rounded-full animate-pulse shadow-[0_0_10px_rgba(16,185,129,1)]" />
+          <span className="text-[9px] uppercase font-black tracking-widest text-white/70">Neural Background Scribing...</span>
+        </div>
+      )}
+
       {/* Content */}
       <div className="relative z-10 w-full max-w-7xl px-6 text-center text-white">
         <motion.div
@@ -218,13 +251,13 @@ const HeroSection: React.FC<{
           transition={{ duration: 1.2, ease: [0.22, 1, 0.36, 1] }}
         >
           <span className="text-[10px] uppercase font-bold tracking-[0.5em] mb-4 block text-white/50">ModaUI Intelligence Core</span>
-          <h1 className="editorial-title font-serif text-[15vw] md:text-[18vw] mb-12 uppercase leading-[0.85] tracking-tighter">
-            {t.hero.title.split('，').map((line: string, i: number) => (
+          <h1 className="editorial-title font-serif text-[6vw] md:text-[4vw] lg:text-[3vw] mb-12 uppercase leading-[0.9] tracking-tighter">
+            {t.hero.title.split(/[，, ]/).filter(Boolean).map((line: string, i: number) => (
               <React.Fragment key={i}>
                 {i > 0 && <br />}
                 <span className={
                   i === 0 
-                  ? "font-black tracking-[-0.08em] block drop-shadow-[0_0_15px_rgba(255,255,255,0.2)]" 
+                  ? "font-black tracking-[-0.08em] block drop-shadow-[0_0_15px_rgba(255,255,255,0.15)]" 
                   : "italic font-light bg-gradient-to-r from-white to-white/40 bg-clip-text text-transparent block"
                 }>
                   {line}
@@ -281,14 +314,14 @@ const HeroSection: React.FC<{
 };
 
 const FashionAssistant: React.FC<{ isOpen: boolean; onClose: () => void }> = ({ isOpen, onClose }) => {
-  const [messages, setMessages] = useState<ChatMessage[]>([
+  const [messages, setMessages] = React.useState<ChatMessage[]>([
     { role: 'assistant', content: 'Welcome to the AI Fashion Curator. How can I inspire your style journey today?' }
   ]);
-  const [input, setInput] = useState("");
-  const [isTyping, setIsTyping] = useState(false);
-  const scrollRef = useRef<HTMLDivElement>(null);
+  const [input, setInput] = React.useState("");
+  const [isTyping, setIsTyping] = React.useState(false);
+  const scrollRef = React.useRef<HTMLDivElement>(null);
 
-  useEffect(() => {
+  React.useEffect(() => {
     if (scrollRef.current) {
       scrollRef.current.scrollTop = scrollRef.current.scrollHeight;
     }
@@ -393,14 +426,16 @@ const FashionAssistant: React.FC<{ isOpen: boolean; onClose: () => void }> = ({ 
 const StyleRemixModal: React.FC<{
   item: FashionItem;
   onClose: () => void;
-  onGenerate: (prompt: string, referenceImage: string, mutationLevel: number) => Promise<void>;
+  onGenerate: (prompt: string, referenceImage: string, creativity: number, fidelity: number) => Promise<void>;
   isLoading: boolean;
   generatedImageUrl: string | null;
-  initialMutationLevel: number;
+  initialCreativity: number;
+  initialFidelity: number;
   t: any;
-}> = ({ item, onClose, onGenerate, isLoading, generatedImageUrl, initialMutationLevel, t }) => {
-  const [prompt, setPrompt] = useState('');
-  const [mutationLevel, setMutationLevel] = useState(initialMutationLevel);
+}> = ({ item, onClose, onGenerate, isLoading, generatedImageUrl, initialCreativity, initialFidelity, t }) => {
+  const [prompt, setPrompt] = React.useState('');
+  const [creativity, setCreativity] = React.useState(initialCreativity || 0.5);
+  const [fidelity, setFidelity] = React.useState(initialFidelity || 0.5);
 
   return (
     <motion.div
@@ -444,43 +479,47 @@ const StyleRemixModal: React.FC<{
                 <textarea 
                   value={prompt}
                   onChange={(e) => setPrompt(e.target.value)}
-                  className="w-full bg-transparent border-none focus:outline-none text-xl font-serif italic text-zinc-900 dark:text-white placeholder:text-zinc-200 dark:placeholder:text-zinc-800 resize-none h-32"
+                  className="w-full bg-transparent border-none focus:outline-none text-xl font-serif italic text-zinc-900 dark:text-white placeholder:text-zinc-200 dark:placeholder:text-zinc-800 resize-none h-24"
                   placeholder="e.g. As a 3D digital sculpture in a neon rain city..."
                 />
               </div>
 
-              <div className="space-y-4">
-                <div className="flex justify-between items-center text-[10px] uppercase font-bold tracking-widest text-zinc-400">
-                  <div className="flex items-center gap-2">
-                    <span>Mutation Intensity</span>
-                    <span className={`px-2 py-0.5 rounded-full text-[8px] font-black ${mutationLevel > 0.7 ? 'bg-red-500 text-white' : 'bg-emerald-500/10 text-emerald-500'}`}>
-                      {mutationLevel > 0.7 ? 'EXPERIMENTAL' : 'POLISHED'}
-                    </span>
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <div className="space-y-4">
+                  <div className="flex justify-between items-center text-[10px] uppercase font-bold tracking-widest text-zinc-400">
+                    <span className="flex items-center gap-2">Creativity <Sparkles size={12} className="text-brand-ink" /></span>
+                    <span className="text-zinc-900 dark:text-white">{Math.round(creativity * 100)}%</span>
                   </div>
-                  <span className={mutationLevel > 0.7 ? 'text-red-500' : 'text-emerald-500'}>{Math.round(mutationLevel * 100)}%</span>
-                </div>
-                <div className="relative h-6 flex items-center">
                   <input 
                     type="range" 
                     min="0" 
                     max="1" 
                     step="0.01"
-                    value={mutationLevel}
-                    onChange={(e) => setMutationLevel(parseFloat(e.target.value))}
-                    className={`w-full h-1 bg-zinc-100 dark:bg-zinc-800 rounded-full appearance-none cursor-pointer accent-current ${mutationLevel > 0.7 ? 'text-red-500' : 'text-emerald-500'}`}
+                    value={creativity}
+                    onChange={(e) => setCreativity(parseFloat(e.target.value))}
+                    className="w-full h-1 bg-zinc-100 dark:bg-zinc-800 rounded-full appearance-none cursor-pointer accent-brand-ink"
                   />
                 </div>
-                <div className="flex justify-between text-[8px] text-zinc-300 dark:text-zinc-700 uppercase font-bold tracking-widest">
-                  <span>Conservative</span>
-                  <div className="flex items-center gap-1">
-                    {mutationLevel > 0.7 && <Zap size={8} className="text-red-500 animate-pulse" />}
-                    <span>Neuro-Shaking</span>
+
+                <div className="space-y-4">
+                  <div className="flex justify-between items-center text-[10px] uppercase font-bold tracking-widest text-zinc-400">
+                    <span className="flex items-center gap-2">Fidelity <Camera size={12} className="text-brand-ink" /></span>
+                    <span className="text-zinc-900 dark:text-white">{Math.round(fidelity * 100)}%</span>
                   </div>
+                  <input 
+                    type="range" 
+                    min="0" 
+                    max="1" 
+                    step="0.01"
+                    value={fidelity}
+                    onChange={(e) => setFidelity(parseFloat(e.target.value))}
+                    className="w-full h-1 bg-zinc-100 dark:bg-zinc-800 rounded-full appearance-none cursor-pointer accent-brand-ink"
+                  />
                 </div>
               </div>
 
               <button 
-                onClick={() => onGenerate(prompt, item.imageUrl, mutationLevel)}
+                onClick={() => onGenerate(prompt, item.imageUrl, creativity, fidelity)}
                 disabled={isLoading || !prompt.trim()}
                 className="w-full py-6 bg-brand-ink text-white rounded-full text-[12px] font-black uppercase tracking-[0.4em] disabled:opacity-30 flex items-center justify-center gap-3 shadow-xl hover:scale-[1.02] active:scale-95 transition-all"
               >
@@ -522,6 +561,162 @@ const StyleRemixModal: React.FC<{
   );
 };
 
+const TryOnPortal: React.FC<{
+  item: FashionItem | null;
+  onClose: () => void;
+  onGenerate: (item: FashionItem) => void;
+  isLoading: boolean;
+  resultUrl: string | null;
+  t: any;
+}> = ({ item, onClose, onGenerate, isLoading, resultUrl, t }) => {
+  if (!item) return null;
+  
+  return (
+    <motion.div 
+      initial={{ opacity: 0 }}
+      animate={{ opacity: 1 }}
+      exit={{ opacity: 0 }}
+      className="fixed inset-0 z-[300] flex items-center justify-center p-4 md:p-8 bg-black/95 backdrop-blur-3xl"
+    >
+      <div className="bg-white dark:bg-zinc-900 w-full max-w-6xl rounded-[3rem] overflow-hidden flex flex-col md:flex-row relative shadow-[0_0_100px_rgba(0,0,0,0.5)] border border-white/5">
+        <button 
+          onClick={onClose}
+          className="absolute top-8 right-8 p-4 bg-white/10 hover:bg-white/20 rounded-full z-[100] transition-all text-white backdrop-blur-xl border border-white/10"
+        >
+          <X size={24} />
+        </button>
+
+        <div className="flex-1 bg-zinc-100 dark:bg-zinc-800 relative min-h-[400px]">
+          <AnimatePresence mode="wait">
+            {isLoading ? (
+              <motion.div 
+                key="loading"
+                initial={{ opacity: 0 }}
+                animate={{ opacity: 1 }}
+                exit={{ opacity: 0 }}
+                className="absolute inset-0 flex flex-col items-center justify-center gap-6 z-50 bg-black/20 backdrop-blur-sm"
+              >
+                 <div className="relative">
+                    <div className="w-32 h-32 border-2 border-emerald-500/20 border-t-emerald-500 rounded-full animate-spin" />
+                    <div className="absolute inset-4 border-2 border-white/10 border-b-white/40 rounded-full animate-spin-slow" />
+                 </div>
+                 <div className="text-center">
+                    <p className="text-xl font-serif italic text-white animate-pulse">Neural Threading in Process...</p>
+                    <p className="text-[10px] uppercase font-bold tracking-[0.5em] text-emerald-500 mt-2 opacity-60">Synthesizing Manifold</p>
+                 </div>
+              </motion.div>
+            ) : resultUrl ? (
+              <motion.div
+                key="result"
+                initial={{ opacity: 0, scale: 1.05 }}
+                animate={{ opacity: 1, scale: 1 }}
+                className="w-full h-full"
+              >
+                <img 
+                  src={resultUrl}
+                  className="w-full h-full object-cover"
+                  alt="Try-On Result"
+                />
+                <div className="absolute bottom-8 left-8 bg-emerald-500/90 backdrop-blur-md px-4 py-2 rounded-full flex items-center gap-2 border border-white/20 shadow-xl">
+                  <CheckCircle2 size={14} className="text-black" />
+                  <span className="text-[10px] font-black uppercase tracking-widest text-black">Aesthetic Match 98.4%</span>
+                </div>
+              </motion.div>
+            ) : (
+              <motion.div
+                key="original"
+                initial={{ opacity: 0 }}
+                animate={{ opacity: 1 }}
+                className="w-full h-full relative"
+              >
+                <img 
+                  src={item.imageUrl}
+                  className="w-full h-full object-cover"
+                  alt="Original Item"
+                />
+                <div className="absolute inset-0 bg-black/40 backdrop-blur-[2px] transition-all hover:backdrop-blur-none duration-700" />
+                <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
+                  <div className="w-full h-[1px] bg-emerald-500/30 absolute animate-scan" />
+                </div>
+              </motion.div>
+            )}
+          </AnimatePresence>
+        </div>
+
+        <div className="w-full md:w-[450px] p-16 flex flex-col justify-center">
+          <div className="mb-12">
+            <div className="flex items-center gap-3 mb-4">
+               <div className="w-8 h-[1px] bg-brand-ink" />
+               <span className="text-[10px] uppercase font-black tracking-[0.5em] text-zinc-400">Fitting Room v4.2</span>
+            </div>
+            <h2 className="text-5xl font-serif italic text-zinc-900 dark:text-white capitalize leading-tight">
+              Virtual <br />Manifold
+            </h2>
+          </div>
+
+          {!resultUrl ? (
+            <div className="space-y-10">
+              <p className="text-zinc-500 dark:text-zinc-400 text-base leading-relaxed font-light">
+                Our neural fashion core will project this garment onto a 3D digital manifold based on your visual profile. The engine analyzes fabric drape, lighting environment, and skeletal articulation to simulate a perfect fit.
+              </p>
+              
+              <div className="space-y-4">
+                <div className="flex justify-between items-end">
+                  <span className="text-[9px] uppercase font-bold text-zinc-400 tracking-widest">Engine Readiness</span>
+                  <span className="text-[10px] font-mono text-emerald-500">OPTIMAL</span>
+                </div>
+                <div className="h-[2px] w-full bg-zinc-100 dark:bg-white/5 rounded-full overflow-hidden">
+                   <div className="h-full w-full bg-emerald-500 origin-left animate-progress" />
+                </div>
+              </div>
+
+              <button 
+                onClick={() => onGenerate(item)}
+                disabled={isLoading}
+                className="w-full py-7 bg-brand-ink text-white rounded-full text-[13px] font-black uppercase tracking-[0.3em] flex items-center justify-center gap-4 shadow-2xl hover:bg-black hover:scale-[1.02] active:scale-95 transition-all disabled:opacity-50"
+              >
+                {isLoading ? (
+                  <><Cpu size={20} className="animate-spin" /> Processing...</>
+                ) : (
+                  <><Shirt size={20} /> Initiate Projection</>
+                )}
+              </button>
+            </div>
+          ) : (
+             <div className="space-y-8">
+                <div className="p-8 bg-zinc-50 dark:bg-zinc-800/50 rounded-[2.5rem] border border-zinc-100 dark:border-white/5 group-hover:border-emerald-500/30 transition-all">
+                  <p className="text-zinc-400 text-[10px] uppercase font-bold tracking-widest mb-4">Intelligence Report</p>
+                  <p className="text-zinc-600 dark:text-zinc-300 text-sm italic leading-relaxed">
+                    The item has been successfully mapped to your digital twin. Synthetic textures rendered at 120fps with ray-traced ambient occlusion.
+                  </p>
+                </div>
+
+                <div className="flex flex-col gap-4">
+                  <button className="w-full py-5 bg-zinc-900 dark:bg-white text-white dark:text-black rounded-full text-[11px] font-black uppercase tracking-widest flex items-center justify-center gap-3 shadow-xl hover:opacity-90 transition-all">
+                    <Download size={16} /> Save to Archive
+                  </button>
+                  <button 
+                    onClick={() => onGenerate(item)}
+                    className="w-full py-5 border border-zinc-200 dark:border-white/10 rounded-full text-[11px] font-black uppercase tracking-widest hover:bg-zinc-50 dark:hover:bg-white/5 transition-all text-zinc-900 dark:text-white"
+                  >
+                    Retry Simulation
+                  </button>
+                </div>
+                
+                <button 
+                  onClick={onClose}
+                  className="w-full py-4 text-zinc-400 hover:text-zinc-900 dark:hover:text-white transition-all text-[9px] font-bold uppercase tracking-[0.5em]"
+                >
+                  Exit Chamber
+                </button>
+             </div>
+          )}
+        </div>
+      </div>
+    </motion.div>
+  );
+};
+
 const FashionCard: React.FC<{ 
   item: FashionItem; 
   index: number; 
@@ -529,10 +724,11 @@ const FashionCard: React.FC<{
   onViewDetails: (item: FashionItem) => void;
   onAddToDesign: (item: FashionItem) => void;
   onRemix: (item: FashionItem) => void;
+  onTryOn: (item: FashionItem) => void;
   isSaved: boolean;
   t: any;
-}> = ({ item, index, onAddToMoodboard, onViewDetails, onAddToDesign, onRemix, isSaved, t }) => {
-  const [isAddedToDesign, setIsAddedToDesign] = useState(false);
+}> = ({ item, index, onAddToMoodboard, onViewDetails, onAddToDesign, onRemix, onTryOn, isSaved, t }) => {
+  const [isAddedToDesign, setIsAddedToDesign] = React.useState(false);
 
   const handleAddToDesign = (e: React.MouseEvent) => {
     e.stopPropagation();
@@ -641,6 +837,15 @@ const FashionCard: React.FC<{
             className="p-3 bg-emerald-500/10 backdrop-blur-md border border-emerald-500/20 rounded-full hover:bg-emerald-500 hover:text-black transition-all group/remix"
           >
             <Zap size={12} className="text-emerald-400 group-hover/remix:text-black" />
+          </button>
+          <button 
+            onClick={(e) => {
+              e.stopPropagation();
+              onTryOn(item);
+            }}
+            className="p-3 bg-brand-ink/10 backdrop-blur-md border border-white/20 rounded-full hover:bg-brand-ink hover:text-white transition-all group/tryon"
+          >
+            <Shirt size={12} className="text-white group-hover/tryon:text-white" />
           </button>
           <div className="p-3 bg-white/10 backdrop-blur-md border border-white/20 rounded-full hover:bg-white hover:text-black transition-all">
             <Maximize2 size={12} className="text-white hover:text-black" />
@@ -786,7 +991,7 @@ const DesignGeneratorModal: React.FC<{
   setGeneratedUrl: (url: string | null) => void;
   t: any;
 }> = ({ item, isOpen, onClose, onGenerate, isGenerating, generatedUrl, setGeneratedUrl, t }) => {
-  const [prompt, setPrompt] = useState("");
+  const [prompt, setPrompt] = React.useState("");
 
   if (!item) return null;
 
@@ -1007,10 +1212,10 @@ const ItemDetailModal: React.FC<{
   isSaved: boolean;
   t: any;
 }> = ({ item, onClose, onAddToMoodboard, onRemix, isSaved, t }) => {
-  const [isCopied, setIsCopied] = useState(false);
-  const [currentImageIndex, setCurrentImageIndex] = useState(0);
+  const [isCopied, setIsCopied] = React.useState(false);
+  const [currentImageIndex, setCurrentImageIndex] = React.useState(0);
 
-  useEffect(() => {
+  React.useEffect(() => {
     setCurrentImageIndex(0);
   }, [item]);
 
@@ -1549,10 +1754,19 @@ const SettingsPanel: React.FC<{
 
         <div className="p-6 bg-white dark:bg-zinc-900 rounded-2xl border border-zinc-100 dark:border-white/5">
           <h4 className="font-bold text-lg mb-4">Neural Engine Status</h4>
-          <div className="flex items-center gap-4 text-xs font-mono">
-            <span className="flex items-center gap-2 text-emerald-600"><span className="w-2 h-2 bg-emerald-600 rounded-full animate-pulse" /> Gemini Pro Vision: Active</span>
+          <div className="flex flex-wrap items-center gap-4 text-xs font-mono">
+            <span className={`flex items-center gap-2 ${runtimeHealth?.services?.ollama === 'running' ? 'text-emerald-500' : 'text-red-500'}`}>
+              <span className={`w-2 h-2 rounded-full ${runtimeHealth?.services?.ollama === 'running' ? 'bg-emerald-500 animate-pulse' : 'bg-red-500'}`} /> 
+              Ollama/Qwen: {runtimeHealth?.services?.ollama || 'Offline'}
+            </span>
             <span className="text-zinc-300 dark:text-zinc-700">|</span>
-            <span className="flex items-center gap-2 text-zinc-400">VE-1.4: Syncing...</span>
+            <span className={`flex items-center gap-2 ${runtimeHealth?.services?.sdxl === 'running' ? 'text-emerald-500' : 'text-zinc-400'}`}>
+              Stable Diffusion: {runtimeHealth?.services?.sdxl || 'Waiting'}
+            </span>
+            <span className="text-zinc-300 dark:text-zinc-700">|</span>
+            <span className="text-zinc-400">GPU: {runtimeHealth?.services?.gpu || 'Scanning'}</span>
+            <span className="text-zinc-300 dark:text-zinc-700">|</span>
+            <span className="text-zinc-500 uppercase tracking-widest text-[9px]">Uptime: {Math.round(runtimeHealth?.uptime || 0)}s</span>
           </div>
         </div>
       </div>
@@ -1566,31 +1780,58 @@ const SettingsPanel: React.FC<{
 // --- Main App ---
 
 export default function App() {
-  const [lang, setLang] = useState<Language>(getBrowserLanguage());
-  const [theme, setTheme] = useState<Theme>(Theme.LIGHT);
+  const [lang, setLang] = React.useState<Language>(getBrowserLanguage());
+  const [theme, setTheme] = React.useState<Theme>(Theme.LIGHT);
   const t = translations[lang];
 
-  const [activeTab, setActiveTab] = useState<"gallery" | "design" | "interaction" | "settings">("gallery");
-  const [activeCategory, setActiveCategory] = useState("All Trends");
-  const [selectedStyles, setSelectedStyles] = useState<string[]>([]);
-  const [selectedTags, setSelectedTags] = useState<string[]>([]);
-  const [isFilterPanelOpen, setIsFilterPanelOpen] = useState(false);
-  const [isAssistantOpen, setIsAssistantOpen] = useState(false);
-  const [gallery, setGallery] = useState<FashionItem[]>(MOCK_FASHION_GALLERY);
-  const [searchStatus, setSearchStatus] = useState<AppState>(AppState.IDLE);
-  const [aiAnalysis, setAiAnalysis] = useState<{ category: string, tags: string[], description: string } | null>(null);
-  const [isAnalyzingImage, setIsAnalyzingImage] = useState(false);
-  const [remixItem, setRemixItem] = useState<FashionItem | null>(null);
-  const [isRemixing, setIsRemixing] = useState(false);
-  const [remixResult, setRemixResult] = useState<string | null>(null);
-  const [mutationLevel, setMutationLevel] = useState(0.3);
-  const [labStatus, setLabStatus] = useState<'IDLE' | 'SCANNING' | 'REMIXING'>('IDLE');
+  const [activeTab, setActiveTab] = React.useState<"gallery" | "design" | "interaction" | "settings">("gallery");
+  const [activeCategory, setActiveCategory] = React.useState("All Trends");
+  const [selectedStyles, setSelectedStyles] = React.useState<string[]>([]);
+  const [selectedTags, setSelectedTags] = React.useState<string[]>([]);
+  const [isFilterPanelOpen, setIsFilterPanelOpen] = React.useState(false);
+  const [isAssistantOpen, setIsAssistantOpen] = React.useState(false);
+  const [gallery, setGallery] = React.useState<FashionItem[]>(MOCK_FASHION_GALLERY);
+  const [searchStatus, setSearchStatus] = React.useState<AppState>(AppState.IDLE);
+  const [aiAnalysis, setAiAnalysis] = React.useState<{ category: string, tags: string[], description: string } | null>(null);
+  const [isAnalyzingImage, setIsAnalyzingImage] = React.useState(false);
+  const [remixItem, setRemixItem] = React.useState<FashionItem | null>(null);
+  const [isRemixing, setIsRemixing] = React.useState(false);
+  const [remixResult, setRemixResult] = React.useState<string | null>(null);
+  const [mutationLevel, setMutationLevel] = React.useState(0.3);
+  const [labStatus, setLabStatus] = React.useState<'IDLE' | 'SCANNING' | 'REMIXING'>('IDLE');
+  const [heroBg, setHeroBg] = React.useState<string | null>(null);
+  const [isGeneratingHeroBg, setIsGeneratingHeroBg] = React.useState(false);
+  const [moodboard, setMoodboard] = React.useState<FashionItem[]>([]);
+  const [isMoodboardOpen, setIsMoodboardOpen] = React.useState(false);
+  const [selectedItem, setSelectedItem] = React.useState<FashionItem | null>(null);
+  const [designItem, setDesignItem] = React.useState<FashionItem | null>(null);
+  const [isGeneratingDesign, setIsGeneratingDesign] = React.useState(false);
+  const [generatedDesignUrl, setGeneratedDesignUrl] = React.useState<string | null>(null);
+  const [isTryingOn, setIsTryingOn] = React.useState(false);
+  const [tryOnResult, setTryOnResult] = React.useState<string | null>(null);
+  const [tryOnItem, setTryOnItem ] = React.useState<FashionItem | null>(null);
+  const [error, setError] = React.useState<string | null>(null);
+  const fileInputRef = React.useRef<HTMLInputElement>(null);
 
-  // Simulated Stats
-  const [flowRate, setFlowRate] = useState("1.2");
-  const [confidence, setConfidence] = useState("98.2");
+  // Real Runtime Stats
+  const [runtimeHealth, setRuntimeHealth] = React.useState<any>(null);
 
-  const onDrop = useCallback(async (acceptedFiles: File[]) => {
+  React.useEffect(() => {
+    const checkHealth = async () => {
+      try {
+        const res = await fetch("/api/runtime/health");
+        const data = await res.json();
+        setRuntimeHealth(data);
+      } catch (e) {
+        console.error("Health check failed");
+      }
+    };
+    checkHealth();
+    const interval = setInterval(checkHealth, 30000);
+    return () => clearInterval(interval);
+  }, []);
+
+  const onDrop = React.useCallback(async (acceptedFiles: File[]) => {
     const file = acceptedFiles[0];
     if (!file) return;
 
@@ -1641,7 +1882,7 @@ export default function App() {
     accept: { 'image/*': [] }
   });
 
-  useEffect(() => {
+  React.useEffect(() => {
     const interval = setInterval(() => {
       setFlowRate((parseFloat(flowRate) + (Math.random() - 0.5) * 0.1).toFixed(1));
       setConfidence((parseFloat(confidence) + (Math.random() - 0.5) * 0.2).toFixed(1));
@@ -1649,12 +1890,29 @@ export default function App() {
     return () => clearInterval(interval);
   }, [flowRate, confidence]);
 
-  const handleRemix = async (prompt: string, referenceImage: string, level: number) => {
-    setIsRemixing(true);
-    setMutationLevel(level);
+  const updateHeroBackground = async (prompt: string) => {
+    setIsGeneratingHeroBg(true);
     try {
-      // Incorporate mutation level into the prompt or params if the service supports it
-      const enhancedPrompt = `Mutation Level: ${level}. ${prompt}`;
+      const url = await generateHeroBackground(prompt);
+      setHeroBg(url);
+    } catch (e) {
+      console.error("Hero BG generation failed", e);
+    } finally {
+      setIsGeneratingHeroBg(false);
+    }
+  };
+
+  React.useEffect(() => {
+    // Initial global trend background
+    updateHeroBackground("luxury minimalist high-fashion editorial, abstract artistic lighting, neutral tones");
+  }, []);
+
+  const handleRemix = async (prompt: string, referenceImage: string, creativity: number, fidelity: number) => {
+    setIsRemixing(true);
+    try {
+      // Incorporate mutation levels into the prompt as a demonstration
+      const enhancedPrompt = `User Style Request: ${prompt}. AI Guidance - Creativity: ${creativity}, Fidelity: ${fidelity}. Maintain the essence of the reference image while applying the requested changes.`;
+      
       const result = await generateTextImage({
         text: enhancedPrompt,
         style: remixItem?.style || '',
@@ -1667,18 +1925,39 @@ export default function App() {
       setIsRemixing(false);
     }
   };
-  const [moodboard, setMoodboard] = useState<FashionItem[]>([]);
-  const [isMoodboardOpen, setIsMoodboardOpen] = useState(false);
-  const [selectedItem, setSelectedItem] = useState<FashionItem | null>(null);
-  const [designItem, setDesignItem] = useState<FashionItem | null>(null);
-  const [isGeneratingDesign, setIsGeneratingDesign] = useState(false);
-  const [generatedDesignUrl, setGeneratedDesignUrl] = useState<string | null>(null);
-  const [error, setError] = useState<string | null>(null);
-  
-  const fileInputRef = useRef<HTMLInputElement>(null);
+
+  const handleTryOn = async (item: FashionItem) => {
+    setIsTryingOn(true);
+    setTryOnResult(null);
+    try {
+      const response = await fetch("/api/fashion/try-on", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          item_id: item.id,
+          image_url: item.imageUrl,
+          timestamp: Date.now()
+        })
+      });
+      const data = await response.json();
+      if (data.success) {
+        // Since the mock returns status "processing" and null result_url, 
+        // we simulate a delay for the actual AI processing
+        setTimeout(() => {
+          setTryOnResult(`https://picsum.photos/seed/tryon_${item.id}/1024/1024`);
+          setIsTryingOn(false);
+        }, 2500);
+      } else {
+        throw new Error(data.error || "Try-On failed");
+      }
+    } catch (err) {
+      setError(err instanceof Error ? err.message : "Try-On Service Error");
+      setIsTryingOn(false);
+    }
+  };
 
   // Load moodboard from localStorage on mount
-  useEffect(() => {
+  React.useEffect(() => {
     const saved = localStorage.getItem('vogue_moodboard');
     if (saved) {
       try {
@@ -1690,7 +1969,7 @@ export default function App() {
   }, []);
 
   // Save moodboard to localStorage whenever it changes
-  useEffect(() => {
+  React.useEffect(() => {
     localStorage.setItem('vogue_moodboard', JSON.stringify(moodboard));
   }, [moodboard]);
 
@@ -1703,7 +1982,7 @@ export default function App() {
     setMoodboard(prev => prev.filter(item => item.id !== id));
   };
 
-  const filteredGallery = useMemo(() => {
+  const filteredGallery = React.useMemo(() => {
     return gallery.filter(item => {
       const categoryMatch = activeCategory === "All Trends" || item.category === activeCategory;
       const styleMatch = selectedStyles.length === 0 || selectedStyles.includes(item.style);
@@ -1712,13 +1991,13 @@ export default function App() {
     });
   }, [activeCategory, gallery, selectedStyles, selectedTags]);
 
-  const allAvailableStyles = useMemo(() => {
+  const allAvailableStyles = React.useMemo(() => {
     const styles = new Set<string>();
     MOCK_FASHION_GALLERY.forEach(item => styles.add(item.style));
     return Array.from(styles).sort();
   }, []);
 
-  const allAvailableTags = useMemo(() => {
+  const allAvailableTags = React.useMemo(() => {
     const tags = new Set<string>();
     MOCK_FASHION_GALLERY.forEach(item => item.tags.forEach(tag => tags.add(tag)));
     return Array.from(tags).sort();
@@ -1771,6 +2050,9 @@ export default function App() {
 
     setSearchStatus(AppState.SEARCHING);
     try {
+      // Trigger dynamic background generation based on search
+      updateHeroBackground(`high-fashion editorial concept for: ${query}`);
+
       const analysis = await analyzeFashionQuery(query);
       setAiAnalysis(analysis);
       
@@ -2139,7 +2421,12 @@ export default function App() {
               exit={{ opacity: 0 }}
             >
               {/* Hero */}
-              <HeroSection onSearch={handleSmartSearch} t={t} />
+              <HeroSection 
+                onSearch={handleSmartSearch} 
+                bgImage={heroBg}
+                isGeneratingBg={isGeneratingHeroBg}
+                t={t} 
+              />
 
               {/* Main Content Area */}
               <div className="max-w-7xl mx-auto px-6 py-20">
@@ -2273,6 +2560,7 @@ export default function App() {
                           onViewDetails={setSelectedItem}
                           onAddToDesign={setDesignItem}
                           onRemix={setRemixItem}
+                          onTryOn={setTryOnItem}
                           isSaved={moodboard.some(m => m.id === item.id)}
                           t={t}
                         />
@@ -2497,7 +2785,25 @@ export default function App() {
             onGenerate={handleRemix}
             isLoading={isRemixing}
             generatedImageUrl={remixResult}
-            initialMutationLevel={mutationLevel}
+            initialCreativity={mutationLevel}
+            initialFidelity={0.5}
+            t={t}
+          />
+        )}
+      </AnimatePresence>
+
+      <AnimatePresence>
+        {tryOnItem && (
+          <TryOnPortal 
+            item={tryOnItem}
+            onClose={() => {
+              setTryOnItem(null);
+              setTryOnResult(null);
+              setIsTryingOn(false);
+            }}
+            onGenerate={handleTryOn}
+            isLoading={isTryingOn}
+            resultUrl={tryOnResult}
             t={t}
           />
         )}
