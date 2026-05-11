@@ -629,7 +629,6 @@ const GenerationsSection: React.FC<{ tasks: FashionTask[]; t: any }> = ({ tasks,
 export default function App() {
   const [lang] = useState<Language>(getBrowserLanguage());
   const t = translations[lang];
-  const [theme, setTheme] = useState<Theme>(Theme.LIGHT);
   const [activeTab, setActiveTab] = useState<"gallery" | "generations" | "laboratory" | "settings">("gallery");
   const [health, setHealth] = useState<any>(null);
   const [healthStatus, setHealthStatus] = useState<'online' | 'offline' | 'reconnecting'>('reconnecting');
@@ -654,6 +653,22 @@ export default function App() {
     content: "Fashion OS initialized. Neural pathways standing by. How shall we manifest today's aesthetic?"
   }]);
   const [isTyping, setIsTyping] = useState(false);
+  const [theme, setTheme] = useState<Theme>(() => {
+    if (typeof window !== 'undefined') {
+      const saved = localStorage.getItem('moda-theme');
+      return saved === Theme.DARK ? Theme.DARK : Theme.LIGHT;
+    }
+    return Theme.LIGHT;
+  });
+
+  useEffect(() => {
+    if (theme === Theme.DARK) {
+      document.documentElement.classList.add('dark');
+    } else {
+      document.documentElement.classList.remove('dark');
+    }
+    localStorage.setItem('moda-theme', theme);
+  }, [theme]);
 
   // Poll Health, Registry & History
   useEffect(() => {
@@ -739,13 +754,13 @@ export default function App() {
   };
 
   return (
-    <div className={`min-h-screen transition-colors duration-700 ${theme === Theme.DARK ? 'dark bg-black' : 'bg-white'}`}>
+    <div className="min-h-screen">
       {/* Navigation */}
       <nav className="fixed top-0 inset-x-0 z-[400] flex justify-center py-8 pointer-events-none">
-        <div className="glass px-8 py-3 rounded-full border border-white/10 flex items-center gap-10 pointer-events-auto shadow-2xl">
-           <div className="flex items-center gap-3 pr-8 border-r border-white/10">
-              <div className="w-8 h-8 bg-white text-black rounded-xl flex items-center justify-center font-black italic tracking-tighter">F</div>
-              <span className="text-[10px] font-black uppercase tracking-[0.4em] text-white">Fashion_OS</span>
+        <div className="glass px-8 py-3 rounded-full border border-black/5 dark:border-white/10 flex items-center gap-10 pointer-events-auto shadow-2xl transition-all">
+           <div className="flex items-center gap-3 pr-8 border-r border-black/5 dark:border-white/10">
+              <div className="w-8 h-8 bg-black dark:bg-white text-white dark:text-black rounded-xl flex items-center justify-center font-black italic tracking-tighter transition-all">F</div>
+              <span className="text-[10px] font-black uppercase tracking-[0.4em] text-zinc-900 dark:text-white transition-all">Fashion_OS</span>
            </div>
            
            <div className="flex items-center gap-6">
@@ -758,7 +773,7 @@ export default function App() {
                 <button
                   key={item.id}
                   onClick={() => setActiveTab(item.id as any)}
-                  className={`flex items-center gap-2 group transition-all ${activeTab === item.id ? 'text-white' : 'text-white/40 hover:text-white'}`}
+                  className={`flex items-center gap-2 group transition-all ${activeTab === item.id ? 'text-zinc-900 dark:text-white' : 'text-zinc-400 dark:text-white/40 hover:text-zinc-900 dark:hover:text-white'}`}
                 >
                    <item.icon size={14} className={activeTab === item.id ? 'text-emerald-500' : ''} />
                    <span className="text-[9px] font-black uppercase tracking-widest">{item.label}</span>
@@ -766,18 +781,18 @@ export default function App() {
               ))}
            </div>
 
-           <div className="flex items-center gap-4 pl-8 border-l border-white/10">
+           <div className="flex items-center gap-4 pl-8 border-l border-black/5 dark:border-white/10">
               <button 
                 onClick={() => setIsAssistantOpen(true)}
-                className="relative p-2 rounded-full hover:bg-white/10 transition-all text-white"
+                className="relative p-2 rounded-full hover:bg-black/5 dark:hover:bg-white/10 transition-all text-zinc-900 dark:text-white"
               >
                 <div className="w-1.5 h-1.5 bg-emerald-500 rounded-full absolute top-1.5 right-1.5 animate-pulse" />
                 <MessageSquare size={18} />
               </button>
-              <div className="h-8 w-[1px] bg-white/10" />
+              <div className="h-8 w-[1px] bg-black/5 dark:bg-white/10" />
               <button 
                 onClick={() => setTheme(theme === Theme.DARK ? Theme.LIGHT : Theme.DARK)}
-                className="p-2 rounded-full hover:bg-white/10 transition-all text-white"
+                className="p-2 rounded-full hover:bg-black/5 dark:hover:bg-white/10 transition-all text-zinc-900 dark:text-white"
               >
                 {theme === Theme.DARK ? <Sparkles size={18} /> : <Zap size={18} />}
               </button>
