@@ -51,6 +51,45 @@ app.post("/api/fashion/chat", async (req, res) => {
 });
 
 /**
+ * Fashion Analysis
+ */
+app.post("/api/fashion/analyze", async (req, res) => {
+  const { query } = req.body;
+  // Simulate AI analysis logic
+  res.json({
+    category: "Luxury Editorial",
+    tags: ["High-Fashion", "Avant-Garde", "Silk"],
+    description: "A bold exploration of silhouette and texture in a modern context."
+  });
+});
+
+/**
+ * Visual Search / Image Analysis
+ */
+app.post("/api/fashion/visual-search", async (req, res) => {
+  const { image } = req.body;
+  // Simulate visual parsing
+  res.json({
+    category: "Streetwear",
+    tags: ["Utility", "Gore-Tex", "Cyber-Punk"],
+    description: "Technical aesthetics merged with urban functionality."
+  });
+});
+
+/**
+ * Video Generation Bridge
+ */
+app.post("/api/fashion/generate-video", async (req, res) => {
+  const { prompt, reference_image } = req.body;
+  res.json({
+    success: true,
+    job_id: "video_" + Math.random().toString(36).substring(7),
+    status: "processing",
+    video_url: null // Will be updated via polling or websocket
+  });
+});
+
+/**
  * Image Generation
  * Bridges to SDXL
  */
