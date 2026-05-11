@@ -69,3 +69,30 @@ body {
   opacity: 0.04;
   mix-blend-mode: overlay;
 }
+
+@keyframes scan {
+  from { transform: translateY(-100%); }
+  to { transform: translateY(100%); }
+}
+
+@keyframes progress {
+  0% { transform: scaleX(0); }
+  100% { transform: scaleX(1); }
+}
+
+@keyframes spin-slow {
+  from { transform: rotate(0deg); }
+  to { transform: rotate(360deg); }
+}
+
+.animate-scan {
+  animation: scan 3s linear infinite;
+}
+
+.animate-progress {
+  animation: progress 20s ease-in-out infinite;
+}
+
+.animate-spin-slow {
+  animation: spin-slow 8s linear infinite;
+}

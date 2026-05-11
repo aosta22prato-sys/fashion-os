@@ -39,4 +39,40 @@ export interface FashionItem {
 export interface ChatMessage {
   role: 'user' | 'assistant';
   content: string;
+  suggestions?: string[];
+  moodboard?: any[];
+  generation_actions?: any[];
+}
+
+export interface ChatResponse {
+  success: boolean;
+  reply: string;
+  suggestions: string[];
+  moodboard: any[];
+  generation_actions: any[];
+}
+
+export interface GenerationResponse {
+  success: boolean;
+  generation_id: string | number;
+  status: string;
+}
+
+export interface HealthResponse {
+  success: boolean;
+  health: {
+    status: string;
+    gpu_runtime: boolean;
+    redis: boolean;
+  }
+}
+
+export interface HistoryResponse {
+  success: boolean;
+  data: Array<{
+    id: string | number;
+    prompt: string;
+    status: string;
+    image_url: string;
+  }>;
 }
