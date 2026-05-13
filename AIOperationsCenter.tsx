@@ -117,7 +117,7 @@ export const AIOperationsCenter: React.FC<{ lang: Language }> = ({ lang }) => {
                 onClick={() => setActiveTab(tab as any)}
                 className="!rounded-full px-8"
               >
-                {translations[lang].tabs[tab as keyof typeof translations[typeof lang]['tabs']] || tab}
+                {(translations[lang].ops as any)[tab] || tab}
               </QuantumButton>
             ))}
           </div>
@@ -158,7 +158,7 @@ export const AIOperationsCenter: React.FC<{ lang: Language }> = ({ lang }) => {
                           <span>{w.gpu || 'A100_G5'} / 80GB</span>
                           <span className="flex items-center gap-1.5">
                              <div className={`w-1 h-1 rounded-full ${w.status === 'busy' ? 'bg-amber-500' : 'bg-primary animate-pulse'}`} />
-                             {translations[lang].common[w.status as keyof typeof translations[typeof lang]['common']] || w.status}
+                             {(translations[lang].common as any)[w.status] || w.status}
                           </span>
                         </div>
                       </div>

@@ -1,4 +1,5 @@
 import React, { useEffect, useRef } from 'react';
+import { Terminal } from 'lucide-react';
 
 import { Language } from '../../../../types';
 import { translations } from '../../../../services/translationService';

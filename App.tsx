@@ -56,7 +56,7 @@ const FashionItemCard: React.FC<{
       onClick={onClick}
     >
        <div className="aspect-[3/4] relative overflow-hidden rounded-[3rem] border border-zinc-100 dark:border-white/5 bg-zinc-50 dark:bg-zinc-900 group-hover:shadow-[0_40px_80px_rgba(0,0,0,0.2)] transition-all">
-          <SafeImage src={item.imageUrl} alt={item.style} className="w-full h-full object-cover transition-transform duration-1000 group-hover:scale-110 dark-suppress" />
+          <SafeImage src={item.imageUrl} alt={item.style} lang={lang} className="w-full h-full object-cover transition-transform duration-1000 group-hover:scale-110 dark-suppress" />
           <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/20 to-transparent opacity-0 group-hover:opacity-100 transition-all duration-500" />
           
           <div className="absolute top-8 left-8 right-8 flex justify-between items-start opacity-0 group-hover:opacity-100 transition-all duration-500 translate-y-[-20px] group-hover:translate-y-0">
@@ -291,11 +291,12 @@ const TaskNotification: React.FC<{ task: FashionTask }> = ({ task }) => (
 
 const FashionOSConsole: React.FC<{ 
   health: any; 
-  status: string; 
+  status: 'online' | 'offline' | 'busy' | string; 
   t: any; 
   registry?: any;
   globalQueue?: { id: string, progress: number, status: string } | null;
-}> = ({ health, status, t, registry, globalQueue }) => {
+  lang: Language;
+}> = ({ health, status, t, registry, globalQueue, lang }) => {
   const [isOpen, setIsOpen] = useState(false);
 
   return (
@@ -311,7 +312,7 @@ const FashionOSConsole: React.FC<{
           <div className="flex items-center gap-2">
              <div className={`w-1.5 h-1.5 rounded-full ${status === 'online' ? 'bg-primary animate-pulse' : 'bg-red-500'}`} />
              <span className="text-[9px] font-black uppercase tracking-[0.2em] text-white/70">
-               {translations[lang].common.sysStatus}: <span className={status === 'online' ? 'text-primary' : 'text-red-500'}>{translations[lang].common[status as keyof typeof translations[typeof lang]['common']]}</span>
+               {translations[lang].common.sysStatus}: <span className={status === 'online' ? 'text-primary' : 'text-red-500'}>{(translations[lang].common as any)[status] || status}</span>
              </span>
           </div>
           <div className="h-4 w-[1px] bg-white/10" />
@@ -455,7 +456,8 @@ const SafeImage: React.FC<{
   alt: string; 
   className?: string;
   onLoad?: () => void;
-}> = ({ src, alt, className, onLoad }) => {
+  lang: Language;
+}> = ({ src, alt, className, onLoad, lang }) => {
   const [hasError, setHasError] = useState(false);
   const [isLoading, setIsLoading] = useState(true);
 
@@ -498,7 +500,8 @@ const NeuralViewport: React.FC<{
   item: FashionItem;
   is3D: boolean;
   onToggle3D: () => void;
-}> = ({ item, is3D, onToggle3D }) => {
+  lang: Language;
+}> = ({ item, is3D, onToggle3D, lang }) => {
   const [isReconstructing, setIsReconstructing] = useState(false);
 
   useEffect(() => {
@@ -523,6 +526,7 @@ const NeuralViewport: React.FC<{
             <SafeImage 
               src={item.imageUrl} 
               alt={item.style} 
+              lang={lang}
               className="w-full h-full object-cover" 
             />
           </motion.div>
@@ -593,7 +597,8 @@ const SuperShareHub: React.FC<{
   data: any; 
   onClose: () => void; 
   onPush: (target: string, data: any) => void;
-}> = ({ data, onClose, onPush }) => {
+  lang: Language;
+}> = ({ data, onClose, onPush, lang }) => {
   const [permission, setPermission] = useState<'public' | 'private' | 'team'>('team');
   const [isProcessing, setIsProcessing] = useState(false);
 
@@ -1178,7 +1183,7 @@ export default function App() {
                      transition={{ delay: idx * 0.1 }}
                      className="aspect-square relative rounded-[3rem] overflow-hidden group border border-zinc-100 dark:border-white/5"
                    >
-                     <SafeImage src={item.url} alt={item.title} className="w-full h-full object-cover transition-transform duration-[2s] group-hover:scale-110" />
+                     <SafeImage src={item.url} alt={item.title} lang={lang} className="w-full h-full object-cover transition-transform duration-[2s] group-hover:scale-110" />
                      <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-all p-10 flex flex-col justify-end">
                         <span className="text-[10px] font-black uppercase tracking-widest text-primary mb-2">Trend_Reference</span>
                         <h4 className="text-3xl font-serif italic text-white uppercase tracking-tighter">{item.title}</h4>
@@ -1385,6 +1390,7 @@ export default function App() {
         t={t} 
         registry={registry} 
         globalQueue={globalQueue}
+        lang={lang}
       />
 
       {/* Task Stack */}
@@ -1419,6 +1425,7 @@ export default function App() {
                   item={selectedItem} 
                   is3D={is3DActive} 
                   onToggle3D={() => setIs3DActive(!is3DActive)} 
+                  lang={lang}
                 />
                 
                 <button 
@@ -1699,7 +1706,7 @@ export default function App() {
             data={hubData} 
             onClose={() => setHubData(null)} 
             onPush={handleHubPush}
-            userRole={userRole}
+            lang={lang}
           />
         )}
       </AnimatePresence>
