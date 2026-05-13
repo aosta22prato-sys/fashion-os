@@ -63,7 +63,7 @@ const FashionItemCard: React.FC<{
              <div className="px-4 py-2 bg-white/10 backdrop-blur-md rounded-2xl border border-white/20 text-[10px] font-black uppercase text-white tracking-widest neon-purple">
                 #{item.category}
              </div>
-             <div className="p-4 bg-emerald-500 rounded-full text-black shadow-[0_0_20px_rgba(16,185,129,0.5)] hover:scale-110 transition-all dark:bg-emerald-400">
+             <div className="p-4 bg-primary rounded-full text-black shadow-[0_0_20px_rgba(0,184,217,0.5)] hover:scale-110 transition-all dark:bg-primary">
                 <Zap size={20} className="fill-current" />
              </div>
           </div>
@@ -73,10 +73,10 @@ const FashionItemCard: React.FC<{
                                 {displayTitle}
                              </h3>
                              <div className="grid grid-cols-2 gap-3 en:grid-cols-1">
-                                <button className="px-3 py-4 bg-emerald-500 text-black rounded-2xl text-[10px] font-black uppercase tracking-widest hover:scale-105 active:scale-95 transition-all shadow-[0_0_20px_rgba(16,185,129,0.3)]">
-                                   Remix Concept
+                                <button className="px-3 py-4 bg-primary text-black rounded-2xl text-[10px] font-black uppercase tracking-widest hover:scale-105 active:scale-95 transition-all shadow-[0_0_20px_rgba(0,184,217,0.3)]">
+                                   {translations[lang].gallery.remix}
                                 </button>
-                                <button className="p-4 bg-white/10 backdrop-blur-md border border-white/20 rounded-2xl text-white hover:bg-emerald-500 hover:text-black hover:border-emerald-500 transition-all flex items-center justify-center">
+                                <button className="p-4 bg-white/10 backdrop-blur-md border border-white/20 rounded-2xl text-white hover:bg-primary hover:text-black hover:border-primary transition-all flex items-center justify-center">
                                    <Download size={18} />
                                 </button>
                              </div>
@@ -84,19 +84,19 @@ const FashionItemCard: React.FC<{
        </div>
        <div className="p-8">
           <div className="flex items-center gap-3 mb-2">
-             <span className="text-[10px] font-black uppercase tracking-widest neon-green">Neural_Match_88%</span>
+             <span className="text-[10px] font-black uppercase tracking-widest neon-cyan">{translations[lang].common.neuralMatch}_88%</span>
              <div className="h-[1px] flex-1 bg-zinc-100 dark:bg-white/10" />
           </div>
           <div className="flex justify-between items-end">
              <div className="flex-1 min-w-0 pr-4">
-                <h4 className="text-sm font-serif italic text-zinc-400 uppercase tracking-tighter mb-1">Global Artifact</h4>
+                <h4 className="text-sm font-serif italic text-zinc-400 uppercase tracking-tighter mb-1">{translations[lang].gallery.globalArtifact}</h4>
                 <p className="font-bold dark:text-white leading-none zh:text-2xl en:text-xl en:tracking-tight en:break-words truncate elastic-text">
                    {displayTitle}
                 </p>
              </div>
              <div className="text-right flex-shrink-0">
-                <h4 className="text-[9px] font-black text-zinc-400 uppercase tracking-widest mb-1">Liquidity</h4>
-                <p className="text-xl font-mono font-bold text-emerald-500 leading-none neon-green">
+                <h4 className="text-[9px] font-black text-zinc-400 uppercase tracking-widest mb-1">{translations[lang].gallery.liquidity}</h4>
+                <p className="text-xl font-mono font-bold text-primary leading-none neon-cyan">
                    {ModaTranslator.formatCurrency(item.price || 299, lang)}
                 </p>
              </div>
@@ -267,20 +267,20 @@ const TaskNotification: React.FC<{ task: FashionTask }> = ({ task }) => (
     exit={{ opacity: 0, x: 20 }}
     className="bg-black/90 backdrop-blur-xl border border-white/10 rounded-2xl p-4 flex items-center gap-4 w-72 mb-3 shadow-2xl"
   >
-    <div className="relative w-10 h-10 flex-shrink-0">
-       <div className={`absolute inset-0 rounded-full border-2 border-white/5 ${task.status === TaskStatus.PROCESSING ? 'border-t-emerald-500 animate-spin' : ''}`} />
+     <div className="relative w-10 h-10 flex-shrink-0">
+       <div className={`absolute inset-0 rounded-full border-2 border-white/5 ${task.status === TaskStatus.PROCESSING ? 'border-t-primary animate-spin' : ''}`} />
        <div className="absolute inset-0 flex items-center justify-center">
-          {task.status === TaskStatus.COMPLETED ? <CheckCircle2 className="text-emerald-500" size={20} /> : <Zap size={18} className="text-emerald-500/50" />}
+          {task.status === TaskStatus.COMPLETED ? <CheckCircle2 className="text-primary" size={20} /> : <Zap size={18} className="text-primary/50" />}
        </div>
     </div>
     <div className="flex-1 overflow-hidden">
       <div className="flex justify-between items-center mb-1">
         <span className="text-[9px] font-black uppercase tracking-widest text-white/40">{task.type}</span>
-        <span className="text-[10px] font-mono text-emerald-400">{task.progress}%</span>
+        <span className="text-[10px] font-mono text-primary">{task.progress}%</span>
       </div>
       <div className="h-1 bg-white/5 rounded-full overflow-hidden">
          <motion.div 
-           className="h-full bg-emerald-500"
+           className="h-full aurora-progress"
            initial={{ width: 0 }}
            animate={{ width: `${task.progress}%` }}
          />
@@ -309,37 +309,37 @@ const FashionOSConsole: React.FC<{
       >
         <div className="flex items-center gap-6">
           <div className="flex items-center gap-2">
-             <div className={`w-1.5 h-1.5 rounded-full ${status === 'online' ? 'bg-emerald-500 animate-pulse' : 'bg-red-500'}`} />
+             <div className={`w-1.5 h-1.5 rounded-full ${status === 'online' ? 'bg-primary animate-pulse' : 'bg-red-500'}`} />
              <span className="text-[9px] font-black uppercase tracking-[0.2em] text-white/70">
-               SYS_STATUS: <span className={status === 'online' ? 'text-emerald-500' : 'text-red-500'}>{status}</span>
+               {translations[lang].common.sysStatus}: <span className={status === 'online' ? 'text-primary' : 'text-red-500'}>{translations[lang].common[status as keyof typeof translations[typeof lang]['common']]}</span>
              </span>
           </div>
           <div className="h-4 w-[1px] bg-white/10" />
           <div className="hidden md:flex items-center gap-6">
-            <span className="text-[9px] font-black uppercase tracking-widest text-white/40">GPU: {health?.gpu_runtime ? 'ARMED' : 'OFFLINE'}</span>
+            <span className="text-[9px] font-black uppercase tracking-widest text-white/40">{translations[lang].common.gpu}: {health?.gpu_runtime ? translations[lang].common.armed : translations[lang].common.offline}</span>
             
             {globalQueue && (
-              <div className="flex items-center gap-3 px-3 py-1 bg-emerald-500/10 rounded-full border border-emerald-500/20">
-                <Rocket size={10} className="text-emerald-500 animate-pulse" />
-                <span className="text-[8px] font-black text-emerald-500 uppercase tracking-widest">{globalQueue.status}</span>
+              <div className="flex items-center gap-3 px-3 py-1 bg-primary/10 rounded-full border border-primary/20">
+                <Rocket size={10} className="text-primary animate-pulse" />
+                <span className="text-[8px] font-black text-primary uppercase tracking-widest">{globalQueue.status}</span>
                 <div className="w-12 h-1 bg-white/10 rounded-full overflow-hidden">
-                   <div className="h-full bg-emerald-500 transition-all duration-300" style={{ width: `${globalQueue.progress}%` }} />
+                   <div className="h-full aurora-progress transition-all duration-300" style={{ width: `${globalQueue.progress}%` }} />
                 </div>
               </div>
             )}
 
-            <span className="flex items-center gap-1.5 text-[9px] font-mono text-emerald-400/80">
-              <Cpu size={10} /> {health?.gpu_stats?.raw || 'IDLE'}
+            <span className="flex items-center gap-1.5 text-[9px] font-mono text-primary/80">
+              <Cpu size={10} /> {health?.gpu_stats?.raw || translations[lang].common.idle}
             </span>
             <span className="flex items-center gap-1.5 text-[9px] font-mono text-purple-400/80">
-              <Server size={10} /> {health?.workers?.active || 0} WORKERS
+              <Server size={10} /> {health?.workers?.active || 0} {translations[lang].common.workers}
             </span>
           </div>
         </div>
 
         <div className="flex items-center gap-4">
            <div className="flex items-center gap-1 text-[8px] font-mono text-white/30 uppercase">
-              <Database size={10} className={health?.redis ? 'text-emerald-500' : 'text-red-500'} /> REDIS
+              <Database size={10} className={health?.redis ? 'text-primary' : 'text-red-500'} /> {translations[lang].common.redis}
            </div>
            <button className="p-2 hover:bg-white/10 rounded-full transition-all text-white/50 group-hover:text-white">
               <motion.div animate={{ rotate: isOpen ? 180 : 0 }}>
@@ -362,12 +362,12 @@ const FashionOSConsole: React.FC<{
               {/* Ollama Section */}
               <div className="space-y-4">
                 <div className="flex items-center gap-2 text-[10px] font-black uppercase tracking-widest text-zinc-500">
-                  <Radio size={12} className={health?.python_runtime ? 'text-emerald-500' : 'text-red-500'} />
-                  FastAPI_Bridge
+                  <Radio size={12} className={health?.python_runtime ? 'text-primary' : 'text-red-500'} />
+                  {translations[lang].ops.orchestrator}
                 </div>
                 <div className="space-y-2">
                   <p className="text-xl font-serif italic text-white leading-tight">Qwen2.5:7b</p>
-                  <p className="text-[9px] font-mono text-zinc-500 uppercase">State: Active</p>
+                  <p className="text-[9px] font-mono text-zinc-500 uppercase">{translations[lang].ops.state}: {translations[lang].common.active}</p>
                 </div>
               </div>
 
@@ -375,12 +375,12 @@ const FashionOSConsole: React.FC<{
               <div className="space-y-4">
                 <div className="flex items-center gap-2 text-[10px] font-black uppercase tracking-widest text-zinc-500">
                   <Zap size={12} className="text-yellow-500" />
-                  GPU_Compute
+                  {translations[lang].ops.gpuFabric}
                 </div>
                 <div className="space-y-2">
                   <p className="text-xl font-serif italic text-white leading-tight truncate">{health?.gpu_stats?.raw || 'N/A'}</p>
                   <div className="flex items-center gap-3">
-                     <span className="text-[9px] font-mono text-emerald-500">ONLINE</span>
+                     <span className="text-[9px] font-mono text-primary">{translations[lang].common.online}</span>
                   </div>
                 </div>
               </div>
@@ -389,14 +389,14 @@ const FashionOSConsole: React.FC<{
               <div className="space-y-4">
                 <div className="flex items-center gap-2 text-[10px] font-black uppercase tracking-widest text-zinc-500">
                   <Database size={12} className="text-blue-500" />
-                  Cluster_Data
+                  {translations[lang].ops.clusterSync}
                 </div>
                 <div className="space-y-1">
                   <p className="text-[10px] font-medium text-white flex justify-between">
-                    Redis <span className={health?.redis ? "text-emerald-500 uppercase" : "text-red-500 uppercase"}>{health?.redis ? "Online" : "Offline"}</span>
+                    {translations[lang].common.redis} <span className={health?.redis ? "text-primary uppercase" : "text-red-500 uppercase"}>{health?.redis ? translations[lang].common.online : translations[lang].common.offline}</span>
                   </p>
                   <p className="text-[10px] font-medium text-white flex justify-between">
-                    Workers <span className="text-emerald-500 uppercase">{health?.workers?.active} Ready</span>
+                    {translations[lang].common.workers} <span className="text-primary uppercase">{health?.workers?.active} {translations[lang].common.ready}</span>
                   </p>
                 </div>
               </div>
@@ -405,11 +405,11 @@ const FashionOSConsole: React.FC<{
               <div className="space-y-4">
                 <div className="flex items-center gap-2 text-[10px] font-black uppercase tracking-widest text-zinc-500">
                   <Network size={12} className="text-purple-500" />
-                  Task_Bus
+                  {translations[lang].ops.matrix}
                 </div>
                 <div className="space-y-2">
-                  <p className="text-3xl font-serif italic text-white leading-none">Healthy</p>
-                  <p className="text-[9px] font-black uppercase tracking-widest text-zinc-500 underline decoration-purple-500 underline-offset-4">Stream Ready</p>
+                  <p className="text-3xl font-serif italic text-white leading-none">{translations[lang].ops.optimal}</p>
+                  <p className="text-[9px] font-black uppercase tracking-widest text-zinc-500 underline decoration-purple-500 underline-offset-4">{translations[lang].common.streamReady}</p>
                 </div>
               </div>
             </div>
@@ -419,7 +419,7 @@ const FashionOSConsole: React.FC<{
                <div className="px-10 pb-10">
                   <div className="p-6 bg-white/5 rounded-3xl border border-white/10 space-y-4">
                      <div className="flex items-center gap-2 text-[9px] font-black uppercase tracking-widest text-white/30 mb-2">
-                        <List size={12} /> Model_Inventory
+                        <List size={12} /> {translations[lang].ops.modelsInventory}
                      </div>
                      <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
                         {registry.models?.map((m: any) => (
@@ -435,12 +435,12 @@ const FashionOSConsole: React.FC<{
 
             <div className="bg-white/5 py-4 px-10 flex justify-between items-center border-t border-white/10">
                <div className="flex items-center gap-4 text-[8px] font-mono text-zinc-500">
-                  <span>PROTO: FOS-V2</span>
-                  <span>BUILD: PRODUCTION</span>
-                  <span>NODE: LOCAL_CLUSTER</span>
+                  <span>{translations[lang].common.proto}: {translations[lang].system.protoV2}</span>
+                  <span>{translations[lang].common.build}: {translations[lang].system.buildProduction}</span>
+                  <span>{translations[lang].common.node}: {translations[lang].system.nodeLocal}</span>
                </div>
-               <div className="text-[8px] font-black uppercase tracking-[0.4em] text-emerald-500/50 animate-pulse">
-                  Kernel Authorized & Synchronized
+               <div className="text-[8px] font-black uppercase tracking-[0.4em] text-primary/50 animate-pulse">
+                  {translations[lang].system.kernelAuthorized}
                </div>
             </div>
           </motion.div>
@@ -463,13 +463,14 @@ const SafeImage: React.FC<{
     <div className={`relative overflow-hidden group/img ${className}`}>
       {isLoading && !hasError && (
         <div className="absolute inset-0 bg-zinc-100 dark:bg-zinc-900 flex items-center justify-center">
+          <div className="shimmer-dark absolute inset-0" />
           <div className="w-8 h-8 border-[1px] border-zinc-200 border-t-zinc-800 dark:border-zinc-800 dark:border-t-white rounded-full animate-spin z-10" />
         </div>
       )}
       {hasError ? (
         <div className="absolute inset-0 bg-zinc-50 dark:bg-zinc-900 flex flex-col items-center justify-center text-zinc-300 dark:text-zinc-800 p-4 text-center">
           <Camera size={24} className="mb-2 opacity-30" />
-          <span className="text-[10px] uppercase font-bold tracking-[0.3em] leading-tight opacity-50">Archive Integrity<br/>Failure</span>
+          <span className="text-[10px] uppercase font-bold tracking-[0.3em] leading-tight opacity-50">{translations[lang].system.archiveIntegrityFailure}</span>
         </div>
       ) : (
         <motion.img 
@@ -478,7 +479,7 @@ const SafeImage: React.FC<{
           initial={{ opacity: 0 }}
           animate={{ opacity: isLoading ? 0 : 1 }}
           transition={{ duration: 0.8 }}
-          className={`${className} object-cover`}
+          className={`${className} object-cover dark:brightness-95 hover:dark:brightness-100 transition-all duration-500`}
           onLoad={() => {
             setIsLoading(false);
             onLoad?.();
@@ -535,10 +536,10 @@ const NeuralViewport: React.FC<{
           >
             {isReconstructing ? (
               <div className="absolute inset-0 flex flex-col items-center justify-center space-y-6 z-20 bg-black">
-                <div className="w-16 h-16 border-t-2 border-emerald-500 rounded-full animate-spin" />
+                <div className="w-16 h-16 border-t-2 border-primary rounded-full animate-spin" />
                 <div className="text-center">
-                  <p className="text-[10px] font-black uppercase tracking-[0.4em] text-emerald-500 mb-2">Neural_Reconstruction_Active</p>
-                  <p className="text-xs font-mono text-zinc-500">Processing volumetric point cloud...</p>
+                  <p className="text-[10px] font-black uppercase tracking-[0.4em] text-primary mb-2">{translations[lang].system.reconstructionActive}</p>
+                  <p className="text-xs font-mono text-zinc-500">{translations[lang].system.processingCloud}</p>
                 </div>
               </div>
             ) : (
@@ -556,10 +557,10 @@ const NeuralViewport: React.FC<{
             )}
             
             <div className="absolute top-1/2 left-10 -translate-y-1/2 space-y-2">
-               {['VOX_ALIGNED', 'QUAD_REFLOW', 'TEX_SYNTH'].map(status => (
+               {[translations[lang].system.voxAligned, translations[lang].system.quadReflow, translations[lang].system.texSynth].map(status => (
                   <div key={status} className="flex items-center gap-2">
-                     <div className="w-1 h-1 bg-emerald-500 rounded-full" />
-                     <span className="text-[8px] font-mono text-emerald-500/50 uppercase">{status}</span>
+                     <div className="w-1 h-1 bg-primary rounded-full" />
+                     <span className="text-[8px] font-mono text-primary/50 uppercase">{status}</span>
                   </div>
                ))}
             </div>
@@ -571,7 +572,7 @@ const NeuralViewport: React.FC<{
       
       <div className="absolute bottom-12 left-12 right-12 flex justify-between items-end pointer-events-none">
          <div className="max-w-[70%]">
-            <span className="text-[10px] font-black uppercase tracking-[0.4em] text-emerald-500 mb-4 block">FOS_ARCHIVE_MATCH</span>
+            <span className="text-[10px] font-black uppercase tracking-[0.4em] text-primary mb-4 block">{translations[lang].system.archiveMatch}</span>
             <h2 className="text-5xl font-serif italic text-white leading-tight uppercase tracking-tighter truncate">{item.style}</h2>
          </div>
          <button 
@@ -581,7 +582,7 @@ const NeuralViewport: React.FC<{
            }}
            className="pointer-events-auto w-16 h-16 glass border-white/20 rounded-full flex items-center justify-center text-white hover:scale-110 transition-all active:scale-95 group/btn shadow-2xl"
          >
-           {is3D ? <Maximize2 size={24} /> : <Box size={24} className="group-hover/btn:text-emerald-500 transition-colors" />}
+           {is3D ? <Maximize2 size={24} /> : <Box size={24} className="group-hover/btn:text-primary transition-colors" />}
          </button>
       </div>
     </div>
@@ -630,13 +631,13 @@ const SuperShareHub: React.FC<{
            />
            <div className="absolute inset-0 bg-gradient-to-t from-black via-black/20 to-transparent" />
            <div className="absolute bottom-12 left-12">
-              <span className="text-[10px] font-black uppercase tracking-[0.4em] text-emerald-500 mb-4 block underline">OS_HUB_READY</span>
+              <span className="text-[10px] font-black uppercase tracking-[0.4em] text-primary mb-4 block underline">{translations[lang].system.hubReady}</span>
               <h2 className="text-4xl font-serif italic text-white leading-tight uppercase tracking-tighter">
                 Quantum<br/>Distribution Hub
               </h2>
               <div className="mt-8 flex gap-3">
-                 <div className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse shadow-[0_0_8px_#10b981]" />
-                 <span className="text-[8px] font-black text-emerald-400 uppercase tracking-widest leading-none">Team Sync Active</span>
+                 <div className="w-2 h-2 rounded-full bg-primary animate-pulse shadow-[0_0_8px_#00b8d9]" />
+                 <span className="text-[8px] font-black text-primary uppercase tracking-widest leading-none">{translations[lang].hub.syncActive}</span>
               </div>
            </div>
         </div>
@@ -645,8 +646,8 @@ const SuperShareHub: React.FC<{
         <div className="flex-1 p-12 space-y-10 overflow-y-auto no-scrollbar">
            <div className="flex justify-between items-start">
               <div>
-                 <p className="text-[10px] font-black uppercase tracking-widest text-zinc-400 mb-2">Cross-Module Operations</p>
-                 <h3 className="text-2xl dark:text-white font-serif italic">Manifest neural inspiration across all sectors.</h3>
+                 <p className="text-[10px] font-black uppercase tracking-widest text-zinc-400 mb-2">{translations[lang].hub.crossModule}</p>
+                 <h3 className="text-2xl dark:text-white font-serif italic">{translations[lang].hub.manifestNeural}</h3>
               </div>
               <button 
                 onClick={onClose}
@@ -659,9 +660,9 @@ const SuperShareHub: React.FC<{
            {/* Permission Matrix */}
            <div className="grid grid-cols-3 gap-3 p-2 bg-zinc-100 dark:bg-white/5 rounded-full border border-black/5 dark:border-white/10">
               {[
-                { id: 'public', label: 'Global', icon: Globe },
-                { id: 'team', label: 'Team', icon: Shield },
-                { id: 'private', label: 'Encrypted', icon: Lock }
+                { id: 'public', label: translations[lang].hub.global, icon: Globe },
+                { id: 'team', label: translations[lang].hub.team, icon: Shield },
+                { id: 'private', label: translations[lang].hub.encrypted, icon: Lock }
               ].map(opt => (
                 <button
                   key={opt.id}
@@ -679,12 +680,12 @@ const SuperShareHub: React.FC<{
               <button 
                 disabled={isProcessing}
                 onClick={() => handleShare('archival')}
-                className="p-8 bg-zinc-100 dark:bg-white/5 rounded-[2.5rem] border border-black/5 dark:border-white/10 flex flex-col items-start gap-4 hover:border-emerald-500/30 hover:bg-emerald-500/5 group transition-all text-left"
+                className="p-8 bg-zinc-100 dark:bg-white/5 rounded-[2.5rem] border border-black/5 dark:border-white/10 flex flex-col items-start gap-4 hover:border-primary/30 hover:bg-primary/5 group transition-all text-left"
               >
-                 <Library size={24} className="text-emerald-500" />
+                 <Library size={24} className="text-primary" />
                  <div>
-                    <h5 className="text-[11px] font-black dark:text-white uppercase tracking-widest mb-1">Push to Archival</h5>
-                    <p className="text-[9px] text-zinc-500 uppercase font-mono">Sync style metadata into registry</p>
+                    <h5 className="text-[11px] font-black dark:text-white uppercase tracking-widest mb-1">{translations[lang].hub.pushArchival}</h5>
+                    <p className="text-[9px] text-zinc-500 uppercase font-mono">{translations[lang].hub.syncStyle}</p>
                  </div>
               </button>
 
@@ -695,8 +696,8 @@ const SuperShareHub: React.FC<{
               >
                  <Zap size={24} className="text-purple-500" />
                  <div>
-                    <h5 className="text-[11px] font-black dark:text-white uppercase tracking-widest mb-1">Inject Synthesis</h5>
-                    <p className="text-[9px] text-zinc-500 uppercase font-mono">Map prompt variables to engine</p>
+                    <h5 className="text-[11px] font-black dark:text-white uppercase tracking-widest mb-1">{translations[lang].hub.injectSynthesis}</h5>
+                    <p className="text-[9px] text-zinc-500 uppercase font-mono">{translations[lang].hub.mapPrompt}</p>
                  </div>
               </button>
 
@@ -707,8 +708,8 @@ const SuperShareHub: React.FC<{
               >
                  <Box size={24} className="text-blue-500" />
                  <div>
-                    <h5 className="text-[11px] font-black dark:text-white uppercase tracking-widest mb-1">Load to VTO_Lab</h5>
-                    <p className="text-[9px] text-zinc-500 uppercase font-mono">Pre-cache garment in fitting room</p>
+                    <h5 className="text-[11px] font-black dark:text-white uppercase tracking-widest mb-1">{translations[lang].hub.loadLab}</h5>
+                    <p className="text-[9px] text-zinc-500 uppercase font-mono">{translations[lang].hub.preCache}</p>
                  </div>
               </button>
 
@@ -725,21 +726,21 @@ const SuperShareHub: React.FC<{
               >
                  <Share2 size={24} className="text-yellow-500" />
                  <div>
-                    <h5 className="text-[11px] font-black dark:text-white uppercase tracking-widest mb-1">Neural Collaborative</h5>
-                    <p className="text-[9px] text-zinc-500 uppercase font-mono">Generate dynamic session link</p>
+                    <h5 className="text-[11px] font-black dark:text-white uppercase tracking-widest mb-1">{translations[lang].hub.neuralCollab}</h5>
+                    <p className="text-[9px] text-zinc-500 uppercase font-mono">{translations[lang].hub.generateLink}</p>
                  </div>
               </button>
            </div>
 
            {isProcessing && (
               <div className="pt-4 space-y-3">
-                 <div className="flex justify-between items-center text-[9px] font-black uppercase tracking-widest text-emerald-500">
-                    <span>Compressing Neural Weights...</span>
+                 <div className="flex justify-between items-center text-[9px] font-black uppercase tracking-widest text-primary">
+                    <span>{translations[lang].hub.compressing}</span>
                     <span>72%</span>
                  </div>
                  <div className="h-1 bg-zinc-200 dark:bg-white/5 rounded-full overflow-hidden">
                     <motion.div 
-                      className="h-full bg-emerald-500" 
+                      className="h-full aurora-progress" 
                       initial={{ width: 0 }}
                       animate={{ width: '72%' }}
                     />
@@ -758,7 +759,7 @@ const SuperShareHub: React.FC<{
 // --- Main App ---
 
 export default function App() {
-  const [lang, setLang] = useState<Language>(getBrowserLanguage());
+  const [lang, setLang] = useState<Language>('zh');
   const t = translations[lang];
   const [activeTab, setActiveTab] = useState<"gallery" | "moodboard" | "settings" | "operations">("gallery");
   const [health, setHealth] = useState<any>(null);
@@ -781,9 +782,9 @@ export default function App() {
   const [isAssistantOpen, setIsAssistantOpen] = useState(false);
   const [assistantMessages, setAssistantMessages] = useState<ChatMessage[]>([{
     role: 'assistant',
-    content: "Fashion OS initialized. Neural pathways standing by. Based on the latest high-fashion reports for Summer 2025, I've curated a trend moodboard for you.",
+    content: translations[lang].interaction.initMsg,
     moodboard: TRENDING_MOODBOARD,
-    suggestions: ["Analyze trends", "Generate synthesis", "Start search"]
+    suggestions: translations[lang].interaction.suggestions
   }]);
   const [isTyping, setIsTyping] = useState(false);
   const [theme, setTheme] = useState<Theme>(() => {
@@ -983,17 +984,17 @@ export default function App() {
           };
           setCuratedItems(prev => [newItem, ...prev]);
           setActiveTab('gallery');
-          setNotification("Concept registered in Archival Matrix.");
+          setNotification(translations[lang].system.archivalPushed);
         } else if (target === 'synthesis') {
           setPreloadedPrompt(data.content || data.title || "Experimental Style Synthesis");
           setActiveTab('operations');
-          setNotification("Parametric variables injected into Synthesis core.");
+          setNotification(translations[lang].system.variableInjected);
         } else if (target === 'laboratory') {
           setPreloadedGarment(data.url || data.imageUrl || (data.moodboard && data.moodboard[0]?.url));
           setActiveTab('operations');
-          setNotification("Garment pre-cached in Lab-VRAM.");
+          setNotification(translations[lang].system.garmentPrecached);
         } else if (target === 'link') {
-          setNotification("Collaborative Neural Link active in clipboard.");
+          setNotification(translations[lang].system.linkActive);
         }
       }
     }, 200);
@@ -1006,22 +1007,22 @@ export default function App() {
         <div className="glass px-8 py-3 rounded-full border border-black/5 dark:border-white/10 flex items-center gap-10 pointer-events-auto shadow-2xl transition-all">
            <div className="flex items-center gap-3 pr-8 border-r border-black/5 dark:border-white/10">
               <div className="w-8 h-8 bg-black dark:bg-white text-white dark:text-black rounded-xl flex items-center justify-center font-black italic tracking-tighter transition-all">F</div>
-              <span className="text-[10px] font-black uppercase tracking-[0.4em] text-zinc-900 dark:text-white transition-all">Fashion_OS</span>
+              <span className="text-[10px] font-black uppercase tracking-[0.4em] text-zinc-900 dark:text-white transition-all">FASHION_OS</span>
            </div>
            
            <div className="flex items-center gap-6">
               {[
-                { id: 'gallery', label: 'Archival', icon: Library },
-                { id: 'moodboard', label: 'Inspiration', icon: LayoutGrid },
-                { id: 'operations', label: 'AI Operations Center', icon: Activity },
-                { id: 'settings', label: 'Kernel', icon: Cpu }
+                { id: 'gallery', label: translations[lang].tabs.gallery, icon: Library },
+                { id: 'moodboard', label: translations[lang].nav.moodboard, icon: LayoutGrid },
+                { id: 'operations', label: translations[lang].nav.operations, icon: Activity },
+                { id: 'settings', label: translations[lang].nav.settings, icon: Cpu }
               ].map(item => (
                 <button
                   key={item.id}
                   onClick={() => setActiveTab(item.id as any)}
                   className={`flex items-center gap-2 group transition-all ${activeTab === item.id ? 'text-zinc-900 dark:text-white' : 'text-zinc-400 dark:text-white/40 hover:text-zinc-900 dark:hover:text-white'}`}
                 >
-                   <item.icon size={14} className={activeTab === item.id ? 'text-emerald-500' : ''} />
+                   <item.icon size={14} className={activeTab === item.id ? 'text-primary' : ''} />
                    <span className="text-[9px] font-black uppercase tracking-widest">{item.label}</span>
                 </button>
               ))}
@@ -1032,7 +1033,7 @@ export default function App() {
                 onClick={() => setIsAssistantOpen(true)}
                 className="relative p-2 rounded-full hover:bg-black/5 dark:hover:bg-white/10 transition-all text-zinc-900 dark:text-white"
               >
-                <div className="w-1.5 h-1.5 bg-emerald-500 rounded-full absolute top-1.5 right-1.5 animate-pulse" />
+                <div className="w-1.5 h-1.5 bg-primary rounded-full absolute top-1.5 right-1.5 animate-pulse" />
                 <MessageSquare size={18} />
               </button>
               <div className="h-8 w-[1px] bg-black/5 dark:bg-white/10" />
@@ -1075,18 +1076,18 @@ export default function App() {
                          animate={{ opacity: 1, y: 0 }}
                          transition={{ delay: 0.5 }}
                        >
-                          <span className="text-[10px] font-black uppercase tracking-[1em] text-emerald-500 mb-6 block">Future_Manifest</span>
+                          <span className="text-[10px] font-black uppercase tracking-[1em] text-primary mb-6 block">{translations[lang].gallery.futureManifest}</span>
                           <h2 className="text-7xl md:text-9xl font-serif text-white uppercase tracking-tighter leading-none mb-8">
-                             Neural<br/><span className="italic">Aesthetics</span>
+                             Neural<br/><span className="italic">{translations[lang].gallery.futureManifest === '未来宣言' ? '审美革命' : 'Aesthetics'}</span>
                           </h2>
                           <div className="flex justify-center gap-6">
                              <div className="flex items-center gap-2 px-6 py-3 glass rounded-full border border-white/20">
-                                <Activity size={14} className="text-emerald-500" />
-                                <span className="text-[10px] font-black text-white uppercase tracking-widest">Real-time Analysis</span>
+                                <Activity size={14} className="text-primary" />
+                                <span className="text-[10px] font-black text-white uppercase tracking-widest">{translations[lang].gallery.realTimeAnalysis}</span>
                              </div>
                              <div className="flex items-center gap-2 px-6 py-3 glass rounded-full border border-white/20">
                                 <Sparkles size={14} className="text-purple-400" />
-                                <span className="text-[10px] font-black text-white uppercase tracking-widest">Generative Core</span>
+                                <span className="text-[10px] font-black text-white uppercase tracking-widest">{translations[lang].gallery.generativeCore}</span>
                              </div>
                           </div>
                        </motion.div>
@@ -1097,7 +1098,7 @@ export default function App() {
                        </div>
                        <div className="h-0.5 w-32 bg-white/10 rounded-full overflow-hidden">
                           <motion.div 
-                            className="h-full bg-emerald-500"
+                            className="h-full aurora-progress"
                             animate={{ width: ['0%', '100%'] }}
                             transition={{ duration: 10, repeat: Infinity, ease: "linear" }}
                           />
@@ -1107,16 +1108,16 @@ export default function App() {
 
                  <div className="flex flex-col md:flex-row justify-between items-end mb-20 gap-8">
                     <div>
-                      <span className="text-[11px] font-black uppercase tracking-[0.5em] text-emerald-500 mb-4 block">Fashion Global Pulse</span>
-                      <h1 className="font-serif text-6xl md:text-8xl leading-none uppercase tracking-tighter dark:text-white">Trend DNA<br/><span className="italic">Sub-Matrix</span></h1>
+                      <span className="text-[11px] font-black uppercase tracking-[0.5em] text-primary mb-4 block">{translations[lang].gallery.futureManifest}</span>
+                      <h1 className="font-serif text-6xl md:text-8xl leading-none uppercase tracking-tighter dark:text-white">{translations[lang].gallery.trendDna}<br/><span className="italic">{translations[lang].gallery.subMatrix}</span></h1>
                     </div>
                     <div className="flex gap-4">
                        <div className="glass px-8 py-5 rounded-[2rem] border border-white/10 text-center">
-                          <p className="text-[10px] font-black text-white/50 uppercase tracking-widest mb-1">Queue Load</p>
-                          <p className="text-3xl font-mono text-emerald-500 font-bold leading-none">{activeTasksCount}</p>
+                          <p className="text-[10px] font-black text-white/50 uppercase tracking-widest mb-1">{translations[lang].gallery.queueLoad}</p>
+                          <p className="text-3xl font-mono text-primary font-bold leading-none">{activeTasksCount}</p>
                        </div>
                        <div className="glass px-8 py-5 rounded-[2rem] border border-white/10 text-center">
-                          <p className="text-[10px] font-black text-white/50 uppercase tracking-widest mb-1">Registry Uptime</p>
+                          <p className="text-[10px] font-black text-white/50 uppercase tracking-widest mb-1">{translations[lang].gallery.registryUptime}</p>
                           <p className="text-3xl font-mono text-white font-bold leading-none">99.9%</p>
                        </div>
                     </div>
@@ -1148,8 +1149,8 @@ export default function App() {
            >
               <div className="flex justify-between items-end mb-16">
                  <div>
-                    <span className="text-[10px] font-black uppercase tracking-[0.4em] text-emerald-500 mb-2 block">Curation Matrix</span>
-                    <h2 className="font-serif text-7xl uppercase tracking-tighter dark:text-white leading-none">Aesthetic<br/><span className="italic">Moodboard</span></h2>
+                    <span className="text-[10px] font-black uppercase tracking-[0.4em] text-primary mb-2 block">{translations[lang].moodboard.curationMatrix}</span>
+                    <h2 className="font-serif text-7xl uppercase tracking-tighter dark:text-white leading-none">Aesthetic<br/><span className="italic">{translations[lang].moodboard.title}</span></h2>
                  </div>
                  <div className="flex gap-4">
                     <button 
@@ -1162,8 +1163,8 @@ export default function App() {
                       }}
                       className="px-8 py-4 glass border border-zinc-200 dark:border-white/10 rounded-full flex items-center gap-3 hover:bg-black dark:hover:bg-white hover:text-white dark:hover:text-black transition-all group"
                     >
-                       <Share2 size={16} className="text-emerald-500 group-hover:text-current" />
-                       <span className="text-[10px] font-black uppercase tracking-widest">Share moodboard</span>
+                       <Share2 size={16} className="text-primary group-hover:text-current" />
+                       <span className="text-[10px] font-black uppercase tracking-widest">{translations[lang].moodboard.share}</span>
                     </button>
                  </div>
               </div>
@@ -1179,7 +1180,7 @@ export default function App() {
                    >
                      <SafeImage src={item.url} alt={item.title} className="w-full h-full object-cover transition-transform duration-[2s] group-hover:scale-110" />
                      <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-all p-10 flex flex-col justify-end">
-                        <span className="text-[10px] font-black uppercase tracking-widest text-emerald-500 mb-2">Trend_Reference</span>
+                        <span className="text-[10px] font-black uppercase tracking-widest text-primary mb-2">Trend_Reference</span>
                         <h4 className="text-3xl font-serif italic text-white uppercase tracking-tighter">{item.title}</h4>
                      </div>
                    </motion.div>
@@ -1210,14 +1211,14 @@ export default function App() {
           >
              <div className="flex justify-between items-end mb-16">
                 <div>
-                   <span className="text-[10px] font-black uppercase tracking-[0.4em] text-emerald-500 mb-2 block">AI Kernel Registry</span>
-                   <h2 className="font-serif text-6xl uppercase tracking-tighter dark:text-white leading-none">Cluster<br/><span className="italic">Inventory</span></h2>
+                   <span className="text-[10px] font-black uppercase tracking-[0.4em] text-primary mb-2 block">{translations[lang].ops.kernelSync}</span>
+                   <h2 className="font-serif text-6xl uppercase tracking-tighter dark:text-white leading-none">Cluster<br/><span className="italic">{translations[lang].common.inventory}</span></h2>
                 </div>
                 <div className="text-right space-y-2">
                    <p className="text-[9px] font-mono text-zinc-400 uppercase tracking-widest bg-zinc-100 dark:bg-white/5 px-4 py-2 rounded-full border border-zinc-200 dark:border-white/10">
-                      SYS_UUID: FOS-88A2-X
+                      UUID: FOS-88A2-X
                    </p>
-                   <p className="text-[9px] font-mono text-emerald-500 uppercase tracking-widest">STATE: SYNCHRONIZED</p>
+                   <p className="text-[9px] font-mono text-primary uppercase tracking-widest">{translations[lang].common.state}: {translations[lang].common.sync.toUpperCase()}</p>
                 </div>
              </div>
              
@@ -1226,18 +1227,18 @@ export default function App() {
                 <div className="space-y-8">
                    <div className="p-10 bg-white dark:bg-zinc-900 rounded-[3rem] border border-zinc-100 dark:border-white/5 shadow-sm">
                       <div className="flex items-center gap-3 mb-8">
-                         <List size={20} className="text-emerald-500" />
-                         <h4 className="text-2xl font-serif italic dark:text-white uppercase tracking-tighter">Model Stack</h4>
+                         <List size={20} className="text-primary" />
+                         <h4 className="text-2xl font-serif italic dark:text-white uppercase tracking-tighter">{translations[lang].settings.modelStack}</h4>
                       </div>
                       <div className="space-y-4">
                          {registry?.models?.map((m: any) => (
-                           <div key={m.id} className="p-6 bg-zinc-50 dark:bg-black/40 rounded-3xl border border-zinc-100 dark:border-white/5 flex items-center justify-between group hover:border-emerald-500/30 transition-all">
+                           <div key={m.id} className="p-6 bg-zinc-50 dark:bg-black/40 rounded-3xl border border-zinc-100 dark:border-white/5 flex items-center justify-between group hover:border-primary/30 transition-all">
                               <div>
                                  <p className="text-[11px] font-black text-zinc-900 dark:text-white uppercase tracking-widest">{m.id}</p>
                                  <p className="text-[9px] text-zinc-400 uppercase font-mono mt-1">{m.type}</p>
                               </div>
                               <div className="flex items-center gap-3">
-                                 <span className="text-[8px] font-black uppercase text-emerald-500 px-3 py-1 bg-emerald-500/10 rounded-full border border-emerald-500/20">READY</span>
+                                 <span className="text-[8px] font-black uppercase text-primary px-3 py-1 bg-primary/10 rounded-full border border-primary/20">{translations[lang].common.ready}</span>
                               </div>
                            </div>
                          ))}
@@ -1247,7 +1248,7 @@ export default function App() {
                    <div className="p-10 bg-white dark:bg-zinc-900 rounded-[3rem] border border-zinc-100 dark:border-white/5 shadow-sm">
                       <div className="flex items-center gap-3 mb-8">
                          <Code size={20} className="text-blue-500" />
-                         <h4 className="text-2xl font-serif italic dark:text-white uppercase tracking-tighter">Fashion LoRAs</h4>
+                         <h4 className="text-2xl font-serif italic dark:text-white uppercase tracking-tighter">{translations[lang].settings.neuralScraper.title}</h4>
                       </div>
                       <div className="space-y-4">
                          {registry?.loras?.map((l: any) => (
@@ -1265,7 +1266,7 @@ export default function App() {
                            </div>
                          ))}
                          {(!registry?.loras || registry.loras.length === 0) && (
-                            <p className="text-sm text-zinc-500 italic text-center py-4">No active style LoRAs attached</p>
+                            <p className="text-sm text-zinc-500 italic text-center py-4">{translations[lang].common.type === '类型' ? '暂无活动的风格 LoRA' : 'No active style LoRAs attached'}</p>
                          )}
                       </div>
                    </div>
@@ -1275,15 +1276,15 @@ export default function App() {
                 <div className="space-y-8">
                    <div className="p-10 bg-white dark:bg-zinc-900 rounded-[3rem] border border-zinc-100 dark:border-white/5 shadow-sm">
                       <div className="flex items-center gap-3 mb-8">
-                         <Shield size={20} className="text-emerald-500" />
-                         <h4 className="text-2xl font-serif italic dark:text-white uppercase tracking-tighter">Authority Level</h4>
+                         <Shield size={20} className="text-primary" />
+                         <h4 className="text-2xl font-serif italic dark:text-white uppercase tracking-tighter">{translations[lang].ops.authorityLevel}</h4>
                       </div>
                          <div className="grid grid-cols-2 gap-4 p-2 bg-zinc-100 dark:bg-black/40 rounded-[2rem] border border-zinc-200 dark:border-white/10">
                             {['en', 'zh', 'it', 'fr'].map(l => (
                                <button 
                                  key={l}
                                  onClick={() => setLang(l as any)}
-                                 className={`py-3 px-2 rounded-2xl text-[9px] font-black uppercase tracking-widest transition-all ${lang === l ? 'bg-emerald-500 text-black shadow-xl' : 'text-zinc-500 hover:text-zinc-900 dark:hover:text-white'}`}
+                                 className={`py-3 px-2 rounded-2xl text-[9px] font-black uppercase tracking-widest transition-all ${lang === l ? 'bg-primary text-black shadow-xl' : 'text-zinc-500 hover:text-zinc-900 dark:hover:text-white'}`}
                                >
                                   {l === 'en' ? 'EN_NEURAL' : l === 'zh' ? 'ZH_SYNC' : l === 'it' ? 'IT_CRAFT' : 'FR_ATELIER'}
                                </button>
@@ -1293,17 +1294,20 @@ export default function App() {
 
                       <div className="p-10 bg-white dark:bg-zinc-900 rounded-[3rem] border border-zinc-100 dark:border-white/5 shadow-sm">
                          <div className="flex items-center gap-3 mb-8">
-                            <Shield size={20} className="text-emerald-500" />
-                            <h4 className="text-2xl font-serif italic dark:text-white uppercase tracking-tighter">Authority Level</h4>
+                         <Shield size={20} className="text-primary" />
+                            <h4 className="text-2xl font-serif italic dark:text-white uppercase tracking-tighter">{translations[lang].ops.authorityLevel}</h4>
                          </div>
                          <div className="grid grid-cols-2 gap-4 p-2 bg-zinc-100 dark:bg-black/40 rounded-[2rem] border border-zinc-200 dark:border-white/10">
                             {['SOURCING', 'DESIGNER', 'MARKETER', 'CEO'].map(role => (
                                <button 
                                  key={role}
                                  onClick={() => setUserRole(role as any)}
-                                 className={`py-6 px-4 rounded-3xl text-[9px] font-black uppercase tracking-widest transition-all ${userRole === role ? 'bg-emerald-500 text-black shadow-xl shadow-emerald-500/20Scale-105' : 'text-zinc-500 hover:text-zinc-900 dark:hover:text-white'}`}
+                                 className={`py-6 px-4 rounded-3xl text-[9px] font-black uppercase tracking-widest transition-all ${userRole === role ? 'bg-primary text-black shadow-xl shadow-primary/20 scale-105' : 'text-zinc-500 hover:text-zinc-900 dark:hover:text-white'}`}
                                >
-                                  {role.replace('_', ' ')}
+                                  {role === 'SOURCING' ? (translations[lang].common.type === '类型' ? '供应链' : 'SOURCING') : 
+                                   role === 'DESIGNER' ? (translations[lang].common.type === '类型' ? '设计师' : 'DESIGNER') : 
+                                   role === 'MARKETER' ? (translations[lang].common.type === '类型' ? '市场经理' : 'MARKETER') : 
+                                   (translations[lang].common.type === '类型' ? '首席执行官' : 'CEO')}
                                </button>
                             ))}
                          </div>
@@ -1313,43 +1317,43 @@ export default function App() {
                       <div className="flex items-center justify-between mb-10">
                          <div className="flex items-center gap-3">
                             <Server size={20} className="text-purple-500" />
-                            <h4 className="text-2xl font-serif italic dark:text-white uppercase tracking-tighter">GPU Clusters</h4>
+                            <h4 className="text-2xl font-serif italic dark:text-white uppercase tracking-tighter">{translations[lang].ops.gpuMonitorDesc}</h4>
                          </div>
                       </div>
                       <div className="space-y-4">
                          {registry?.workers?.map((w: any) => (
                            <div key={w.id} className="p-6 bg-zinc-50 dark:bg-black/40 rounded-3xl border border-zinc-100 dark:border-white/5 flex items-center justify-between group">
                               <div className="flex items-center gap-4">
-                                 <div className="w-3 h-3 bg-emerald-500 rounded-full animate-pulse" />
+                                 <div className="w-3 h-3 bg-primary rounded-full animate-pulse" />
                                  <div>
                                     <p className="text-[11px] font-black text-zinc-900 dark:text-white uppercase tracking-widest">{w.id}</p>
                                     <p className="text-[9px] text-zinc-400 uppercase font-mono">{w.gpu || 'RTX Cluster'}</p>
                                  </div>
                               </div>
-                              <span className="text-[8px] font-black uppercase tracking-[0.3em] text-zinc-400 bg-white/5 px-3 py-1 rounded-full border border-white/10">ONLINE</span>
+                              <span className="text-[8px] font-black uppercase tracking-[0.3em] text-zinc-400 bg-white/5 px-3 py-1 rounded-full border border-white/10">{translations[lang].common.online}</span>
                            </div>
                          ))}
                       </div>
                    </div>
 
                    <div className="p-10 bg-black rounded-[3rem] border border-white/10 relative overflow-hidden group">
-                      <div className="absolute top-0 right-0 w-64 h-64 bg-emerald-500/10 blur-[100px] rounded-full -translate-y-1/2 translate-x-1/2 group-hover:bg-emerald-500/20 transition-all duration-1000" />
+                      <div className="absolute top-0 right-0 w-64 h-64 bg-primary/10 blur-[100px] rounded-full -translate-y-1/2 translate-x-1/2 group-hover:bg-primary/20 transition-all duration-1000" />
                       <div className="relative z-10 flex flex-col items-start gap-8">
                          <div>
                            <h4 className="text-3xl font-serif italic text-white flex items-center gap-3">
-                              <Zap className="text-emerald-500" /> Neural Pipeline
+                              <Zap className="text-primary" /> {translations[lang].ops.neuralPipeline}
                            </h4>
                            <p className="text-zinc-500 text-sm mt-4 max-w-sm leading-relaxed">
-                              Flush the VRAM buffers across the distributed cluster. Recommended after heavy Synthesis sessions.
+                              {translations[lang].ops.vramPurgeDesc}
                            </p>
                          </div>
                          <button 
                             onClick={async () => {
                               await fetch("/api/fashion/runtime/op", { method: "POST", body: JSON.stringify({ action: 'CLEAR_VRAM' }) });
                             }}
-                            className="w-full py-6 bg-emerald-500 text-black rounded-3xl text-[11px] font-black uppercase tracking-[0.4em] hover:scale-[1.02] active:scale-95 transition-all shadow-[0_0_50px_rgba(16,185,129,0.3)]"
+                            className="w-full py-6 bg-primary text-black rounded-3xl text-[11px] font-black uppercase tracking-[0.4em] hover:scale-[1.02] active:scale-95 transition-all shadow-[0_0_50px_rgba(0,184,217,0.3)]"
                          >
-                            Purge Global VRAM
+                            {translations[lang].ops.vramPurgeAction}
                          </button>
                       </div>
                    </div>
@@ -1368,7 +1372,7 @@ export default function App() {
             exit={{ opacity: 0, y: 50, x: '-50%' }}
             className="fixed bottom-12 left-1/2 z-[2000] bg-black text-white dark:bg-white dark:text-black px-8 py-4 rounded-full border border-white/20 shadow-2xl flex items-center gap-4"
           >
-            <div className="w-2 h-2 bg-emerald-500 rounded-full animate-pulse" />
+            <div className="w-2 h-2 bg-primary rounded-full animate-pulse" />
             <span className="text-[10px] font-black uppercase tracking-widest leading-none">{notification}</span>
           </motion.div>
         )}
@@ -1451,8 +1455,8 @@ export default function App() {
                   {/* AI Style Analysis Section */}
                   <div className="space-y-10">
                     <div className="flex items-center gap-4 pb-6 border-b border-zinc-100 dark:border-white/10">
-                      <div className="p-3 bg-emerald-500/10 rounded-2xl border border-emerald-500/20">
-                        <Cpu size={24} className="text-emerald-500" />
+                      <div className="p-3 bg-primary/10 rounded-2xl border border-primary/20">
+                        <Cpu size={24} className="text-primary" />
                       </div>
                       <div>
                         <h4 className="text-3xl font-serif italic dark:text-white uppercase tracking-tighter">AI Style Analysis</h4>
@@ -1462,23 +1466,23 @@ export default function App() {
 
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
                       {/* Metric Card: Sustainability */}
-                      <div className="p-10 bg-zinc-50 dark:bg-black/40 rounded-[3rem] border border-zinc-100 dark:border-white/5 space-y-8 group hover:border-emerald-500/30 transition-all">
+                      <div className="p-10 bg-zinc-50 dark:bg-black/40 rounded-[3rem] border border-zinc-100 dark:border-white/5 space-y-8 group hover:border-primary/30 transition-all">
                          <div className="flex justify-between items-center">
-                            <div className="w-10 h-10 bg-emerald-500/10 rounded-full flex items-center justify-center border border-emerald-500/20 group-hover:scale-110 transition-transform">
-                              <Globe size={18} className="text-emerald-500" />
+                            <div className="w-10 h-10 bg-primary/10 rounded-full flex items-center justify-center border border-primary/20 group-hover:scale-110 transition-transform">
+                              <Globe size={18} className="text-primary" />
                             </div>
-                            <span className="text-[10px] font-black uppercase tracking-[0.2em] text-zinc-400 group-hover:text-emerald-500 transition-colors">Sustainability</span>
+                            <span className="text-[10px] font-black uppercase tracking-[0.2em] text-zinc-400 group-hover:text-primary transition-colors">Sustainability</span>
                          </div>
                          <div className="space-y-4">
                             <div className="flex justify-between items-end">
                                <p className="text-5xl font-serif italic text-zinc-900 dark:text-white">{selectedItem.analysis?.sustainability || 72}%</p>
-                               <span className="text-[9px] font-mono text-emerald-500 mb-2 px-3 py-1 bg-emerald-500/10 rounded-full border border-emerald-500/20">NODE_TRUST</span>
+                               <span className="text-[9px] font-mono text-primary mb-2 px-3 py-1 bg-primary/10 rounded-full border border-primary/20">NODE_TRUST</span>
                             </div>
                             <div className="h-2 w-full bg-zinc-200 dark:bg-white/5 rounded-full overflow-hidden p-[2px]">
                                <motion.div 
                                  initial={{ width: 0 }}
                                  animate={{ width: `${selectedItem.analysis?.sustainability || 72}%` }}
-                                 className="h-full bg-gradient-to-r from-emerald-500 to-teal-400 rounded-full shadow-[0_0_10px_rgba(16,185,129,0.5)]"
+                                 className="h-full bg-gradient-to-r from-primary to-teal-400 rounded-full shadow-[0_0_10px_rgba(0,184,217,0.5)]"
                                />
                             </div>
                          </div>
@@ -1531,18 +1535,18 @@ export default function App() {
                       </div>
 
                       {/* ESG Compliance Indicator */}
-                      <div className="p-10 bg-black rounded-[3rem] border border-emerald-500/20 space-y-6">
+                      <div className="p-10 bg-black rounded-[3rem] border border-primary/20 space-y-6">
                          <div className="flex justify-between items-center">
-                            <div className="w-10 h-10 bg-emerald-500/10 rounded-full flex items-center justify-center border border-emerald-500/20">
-                              <ShieldCheck size={18} className="text-emerald-500" />
+                            <div className="w-10 h-10 bg-primary/10 rounded-full flex items-center justify-center border border-primary/20">
+                              <ShieldCheck size={18} className="text-primary" />
                             </div>
-                            <span className="text-[10px] font-black uppercase tracking-widest text-emerald-500">{t.gallery.esg}</span>
+                            <span className="text-[10px] font-black uppercase tracking-widest text-primary">{t.gallery.esg}</span>
                          </div>
                          <div className="space-y-2">
-                           <p className="text-xs font-mono text-emerald-500/80 uppercase">EU_REGULATION_REACH_COMPLIANT</p>
+                           <p className="text-xs font-mono text-primary/80 uppercase">EU_REGULATION_REACH_COMPLIANT</p>
                            <p className="text-[9px] font-mono text-zinc-500 uppercase">Verification Hash: 0x88...F2A</p>
                          </div>
-                         <button className="w-full py-4 border border-emerald-500/20 rounded-2xl text-[10px] font-black text-emerald-500 uppercase tracking-widest hover:bg-emerald-500 hover:text-black transition-all">
+                         <button className="w-full py-4 border border-primary/20 rounded-2xl text-[10px] font-black text-primary uppercase tracking-widest hover:bg-primary hover:text-black transition-all">
                             View Compliance Certificate
                          </button>
                       </div>
@@ -1577,7 +1581,7 @@ export default function App() {
                                {selectedItem.analysis?.fabricComposition || "Recycled Polyester Blend"}
                             </p>
                             <p className="text-[9px] font-mono text-zinc-500 uppercase tracking-[0.4em] flex items-center gap-2">
-                               <CheckCircle2 size={10} className="text-emerald-500" /> Molecularly Verified
+                               <CheckCircle2 size={10} className="text-primary" /> Molecularly Verified
                             </p>
                          </div>
                       </div>
@@ -1585,7 +1589,7 @@ export default function App() {
 
                     {/* Color Palette Sub-section */}
                     <div className="p-12 bg-black rounded-[3rem] border border-white/5 relative overflow-hidden group">
-                       <div className="absolute top-0 right-0 w-64 h-64 bg-emerald-500/5 blur-[80px] rounded-full -translate-y-1/2 translate-x-1/2 group-hover:bg-emerald-500/10 transition-all duration-1000" />
+                       <div className="absolute top-0 right-0 w-64 h-64 bg-primary/5 blur-[80px] rounded-full -translate-y-1/2 translate-x-1/2 group-hover:bg-primary/10 transition-all duration-1000" />
                        <div className="relative z-10 space-y-10">
                           <div className="flex items-center justify-between">
                              <div className="flex items-center gap-4">
@@ -1623,7 +1627,7 @@ export default function App() {
                   <div className="space-y-8">
                      <div className="flex items-center justify-between">
                         <div className="flex items-center gap-3">
-                           <RefreshCw size={18} className={`text-emerald-500 ${isGeneratingVariant ? 'animate-spin' : ''}`} />
+                           <RefreshCw size={18} className={`text-primary ${isGeneratingVariant ? 'animate-spin' : ''}`} />
                            <h4 className="text-xl font-serif italic dark:text-white uppercase tracking-tighter">Neural Variants</h4>
                         </div>
                         <button 
@@ -1636,7 +1640,7 @@ export default function App() {
                               setIsGeneratingVariant(false);
                             }, 3000);
                           }}
-                          className="px-6 py-2 bg-emerald-500 text-black text-[9px] font-black uppercase tracking-widest rounded-full hover:scale-105 transition-all disabled:opacity-50"
+                          className="px-6 py-2 bg-primary text-black text-[9px] font-black uppercase tracking-widest rounded-full hover:scale-105 transition-all disabled:opacity-50"
                         >
                            {isGeneratingVariant ? 'Processing...' : 'Generate New Variation'}
                         </button>
@@ -1670,7 +1674,7 @@ export default function App() {
                           }}
                           className="flex-1 py-8 bg-black dark:bg-white text-white dark:text-black rounded-[2.5rem] text-[11px] font-black uppercase tracking-[0.5em] shadow-2xl hover:scale-105 active:scale-95 transition-all flex items-center justify-center gap-4 group"
                         >
-                           <Zap size={20} className="fill-current neon-green group-hover:animate-pulse" />
+                           <Zap size={20} className="fill-current neon-cyan group-hover:animate-pulse" />
                            Dispatch to All Sectors
                         </button>
                         <button className="p-8 glass border border-zinc-200 dark:border-white/10 rounded-[2.5rem] text-zinc-900 dark:text-white hover:bg-black dark:hover:bg-white hover:text-white dark:hover:text-black transition-all">
@@ -1678,7 +1682,7 @@ export default function App() {
                         </button>
                      </div>
                      <p className="text-[9px] font-mono text-center text-zinc-400 uppercase tracking-[0.3em]">
-                        Neural Hash: <span className="text-emerald-500">{selectedItem.id}</span> | State: <span className="text-blue-500">Volatile</span>
+                        Neural Hash: <span className="text-primary">{selectedItem.id}</span> | State: <span className="text-blue-500">Volatile</span>
                      </p>
                   </div>
                 </div>
@@ -1716,7 +1720,7 @@ export default function App() {
                 <div className="md:w-1/3 p-12 border-r border-zinc-100 dark:border-white/5 flex flex-col bg-zinc-50/50 dark:bg-black/20">
                    <div className="mb-12">
                       <div className="flex items-center gap-3 mb-2">
-                         <div className="w-2 h-2 bg-emerald-500 rounded-full animate-pulse" />
+                         <div className="w-2 h-2 bg-primary rounded-full animate-pulse" />
                          <span className="text-[10px] font-black uppercase tracking-[0.4em] text-zinc-400">Neural Assistant</span>
                       </div>
                       <h3 className="text-4xl font-serif italic dark:text-white leading-tight">Digital<br/>Curator</h3>
@@ -1763,7 +1767,7 @@ export default function App() {
                                     <button 
                                       key={idx}
                                       onClick={() => handleAssistantAction(s)}
-                                      className="px-4 py-2 bg-emerald-500/10 border border-emerald-500/20 rounded-full text-[10px] font-black uppercase text-emerald-500 hover:bg-emerald-500 hover:text-black transition-all"
+                                      className="px-4 py-2 bg-primary/10 border border-primary/20 rounded-full text-[10px] font-black uppercase text-primary hover:bg-primary hover:text-black transition-all"
                                     >
                                        {s}
                                     </button>
@@ -1787,7 +1791,7 @@ export default function App() {
                                     title: "Neural Inspiration Board",
                                     context: "Assistant Intelligence"
                                   })}
-                                  className="flex items-center gap-2 px-4 py-2 bg-zinc-100 dark:bg-white/5 hover:bg-emerald-400 dark:hover:bg-emerald-400 hover:text-black rounded-full transition-all text-zinc-500 dark:text-zinc-400 group"
+                                  className="flex items-center gap-2 px-4 py-2 bg-zinc-100 dark:bg-white/5 hover:bg-primary dark:hover:bg-primary hover:text-black rounded-full transition-all text-zinc-500 dark:text-zinc-400 group"
                                 >
                                    <Share2 size={12} className="group-hover:rotate-12 transition-transform" />
                                    <span className="text-[9px] font-black uppercase tracking-widest">Quantum Hub Dispatch</span>
@@ -1814,7 +1818,7 @@ export default function App() {
                          <input 
                            id="assistant-input"
                            placeholder="Type command or query..."
-                           className="w-full bg-zinc-50 dark:bg-white/5 border border-zinc-200 dark:border-white/10 rounded-full px-10 py-6 text-base italic font-serif focus:outline-none focus:ring-1 focus:ring-emerald-500/50 transition-all dark:text-white"
+                           className="w-full shadow-inner dark:bg-neutral-800 dark:text-white dark:border-neutral-700 border border-zinc-200 rounded-full px-10 py-6 text-base italic font-serif focus:outline-none focus:ring-1 focus:ring-primary/50 transition-all"
                            onKeyDown={(e) => {
                              if (e.key === 'Enter') {
                                handleAssistantAction((e.target as HTMLInputElement).value);
@@ -1822,7 +1826,7 @@ export default function App() {
                              }
                            }}
                          />
-                         <button className="absolute right-4 top-1/2 -translate-y-1/2 p-4 bg-emerald-500 text-black rounded-full shadow-xl hover:scale-110 active:scale-95 transition-all">
+                         <button className="absolute right-4 top-1/2 -translate-y-1/2 p-4 bg-primary text-black rounded-full shadow-xl hover:scale-110 active:scale-95 transition-all">
                             <Send size={20} />
                          </button>
                       </div>

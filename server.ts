@@ -24,9 +24,9 @@ interface Worker {
 interface Agent {
   id: string;
   name: string;
-  role: 'Runtime' | 'Trend' | 'Campaign' | 'Director' | 'Styling';
-  status: 'idle' | 'active' | 'thinking';
-  permission: 'Observer' | 'Operator' | 'Director' | 'Admin' | 'Autonomous';
+  role: 'Runtime' | 'Trend' | 'Campaign' | 'Director' | 'Styling' | 'Memory' | 'Sourcing' | 'Dataset';
+  status: 'idle' | 'busy' | 'offline' | 'restarting';
+  permission: 'Observer' | 'Operator' | 'Director' | 'Admin' | 'Autonomous' | 'Superuser' | 'Read/Write' | 'Execution' | 'System' | 'Cluster';
 }
 
 interface Task {
@@ -52,9 +52,12 @@ const REGISTRY = {
     { id: 'worker-03', name: 'RTX-6000-ADAX', type: 'GPU', status: 'idle', gpu_memory: 49152, load: 12 }
   ] as Worker[],
   agents: [
-    { id: 'agent-director', name: 'AURA_CORE', role: 'Director', status: 'active', permission: 'Autonomous' },
-    { id: 'agent-trend', name: 'NEURAL_PULSE', role: 'Trend', status: 'idle', permission: 'Operator' },
-    { id: 'agent-runtime', name: 'MATRIX_WATCHDOG', role: 'Runtime', status: 'active', permission: 'Admin' }
+    { id: 'a1', name: 'AURA_CORE_01', role: 'Director', status: 'idle', permission: 'Superuser' },
+    { id: 'a2', name: 'NEURAL_PULSE_01', role: 'Trend', status: 'idle', permission: 'Read/Write' },
+    { id: 'a3', name: 'VANITY_LLM_01', role: 'Styling', status: 'idle', permission: 'Execution' },
+    { id: 'a4', name: 'CAMPAIGN_GEN_01', role: 'Campaign', status: 'idle', permission: 'Execution' },
+    { id: 'a5', name: 'RUNTIME_WATCHDOG', role: 'Runtime', status: 'idle', permission: 'System' },
+    { id: 'a6', name: 'MEMORY_SYNC_01', role: 'Memory', status: 'idle', permission: 'Cluster' }
   ] as Agent[]
 };
 
@@ -63,10 +66,21 @@ const FASHION_MEMORY = {
   trends: [
     { id: 't1', topic: 'Bio-Digital Textures', velocity: 0.85, region: 'Global', nodes: ['Sustainable', 'Cyber', 'Organic'] },
     { id: 't2', topic: 'Neo-Italian Heritage', velocity: 0.72, region: 'Europe', nodes: ['Classic', 'Luxe', 'Modernist'] },
-    { id: 't3', topic: 'Hyper-Functional Utility', velocity: 0.94, region: 'Asia', nodes: ['Techwear', 'Modular', 'Urban'] }
+    { id: 't3', topic: 'Hyper-Functional Utility', velocity: 0.94, region: 'Asia', nodes: ['Techwear', 'Modular', 'Urban'] },
+    { id: 't4', topic: 'Cyber-Feminism', velocity: 0.65, region: 'North America', nodes: ['Aggressive', 'Glow', 'Mesh'] }
   ],
   brand_dna: {
-    'ModaAI': { aesthetic: 'Minimalist Tech', colors: ['#000000', '#FFFFFF', '#00FF41'], materials: ['Recycled Nylon', 'Graphene Fiber'] }
+    'ModaAI': { 
+      aesthetic: 'Minimalist Tech', 
+      colors: ['#000000', '#FFFFFF', '#00FF41'], 
+      materials: ['Recycled Nylon', 'Graphene Fiber'],
+      style_graph: ['A1-Tech', 'B2-Lux', 'C3-Post-Human']
+    },
+    'QuantumWear': {
+      aesthetic: 'Brutalist High-Fashion',
+      colors: ['#333333', '#111111', '#FF0000'],
+      materials: ['Crushed Concrete Fiber', 'Lead-Lined Leather']
+    }
   },
   history: [
     { timestamp: Date.now() - 3600000, event: 'System Boot', actor: 'AURA_CORE' },
@@ -176,23 +190,60 @@ app.get("/api/fashion/runtime/health", (req, res) => {
 setInterval(() => {
   const roll = Math.random();
   if (roll > 0.8) {
-    const alerts = [
-      "VRAM depth reaching 85% on Worker_01 - initiating partial buffer flush",
-      "Trend velocity spike detected in Neo-Italian Heritage - re-weighting embedding bias",
-      "Model flux.1-dev-fp8 loaded into VRAM cache for designer agents",
-      "Shared Memory sync complete: Global artifacts consolidated",
-      "GPU Watchdog verified all 4 runtime kernels operational",
-      "Detected suboptimal queue routing - re-balancing task distribution"
-    ];
+    const agents = REGISTRY.agents;
+    const randomAgent = agents[Math.floor(Math.random() * agents.length)];
+    
+    const logsByRole = {
+      'Director': [
+        "VRAM depth reaching 85% on Worker_01 - initiating partial buffer flush",
+        "Orchestrating multi-agent sync on Shared Memory bus",
+        "Director Hub: Re-balancing task distribution across fabric"
+      ],
+      'Trend': [
+        "Trend velocity spike detected in Neo-Italian Heritage - re-weighting embedding bias",
+        "Detected emerging style node: 'Cyber-Feminism' (Velocity +0.12)",
+        "Syncing local Trend Graph with Global Persistence Layer"
+      ],
+      'Styling': [
+        "Styling Agent: Optimized outfit graph for upcoming campaign",
+        "Rendering recommendation matrix for user interaction",
+        "Refining LoRA weights for aesthetic consistency"
+      ],
+      'Runtime': [
+        "GPU Watchdog verified all runtime kernels operational",
+        "Memory leak detected in latent-buffer - recycling worker_02",
+        "Allocating additional 4GB VRAM for Flux.1 high-res generation"
+      ],
+      'Campaign': [
+        "Generating marketing artifacts for 'Bio-Digital' capsule",
+        "Optimizing social media embedding for Trend A1",
+        "Autonomous campaign loop active: Targeting Asia-Pacific matrix"
+      ]
+    };
+
+    const messages = logsByRole[randomAgent.role as keyof typeof logsByRole] || ["Agent pulse detected on matrix", "Synchronizing neural weights"];
+    
     const log = {
       timestamp: new Date().toLocaleTimeString(),
-      level: roll > 0.95 ? 'warn' : 'info',
-      module: 'DIRECTOR',
-      message: alerts[Math.floor(Math.random() * alerts.length)]
+      level: roll > 0.96 ? 'warn' : 'info',
+      module: randomAgent.name,
+      message: messages[Math.floor(Math.random() * messages.length)]
     };
+    
+    // Update Agent status temporarily if busy
+    if (roll > 0.9) {
+      const originalStatus = randomAgent.status;
+      randomAgent.status = 'busy';
+      broadcast({ type: 'registry_update', registry: REGISTRY });
+      setTimeout(() => {
+        randomAgent.status = originalStatus;
+        broadcast({ type: 'registry_update', registry: REGISTRY });
+      }, 4000);
+    }
+
     broadcast({ type: 'log', log });
   }
-}, 5000);
+}, 4000);
 
 // System Registry
 app.get("/api/fashion/registry", (req, res) => {
@@ -354,11 +405,45 @@ app.post("/api/runtime/watchdog/sync", (req, res) => {
 });
 
 app.post("/api/runtime/oom/flush", (req, res) => {
-  console.log("[RUNTIME] OOM Flush initiated...");
-  res.json({ success: true, message: "Memory pressure released" });
+  addLog("CRITICAL: Out-Of-Memory (OOM) sequence initiated by Director.", "WARN");
+  addLog("Purging ephemeral VRAM buffers and recycling latent containers...", "INFO");
+  
+  // Simulate memory drop in stats
+  REGISTRY.workers.forEach(w => {
+    if (w.status === 'busy') w.load = Math.max(0, w.load - 40);
+  });
+  
+  broadcast({ type: 'registry_update', registry: REGISTRY });
+  res.json({ success: true, message: "OOM Flush Sequence Complete. 14.2GB VRAM reclaimed." });
 });
 
 // Model Management
+app.post("/api/models/:id/load", (req, res) => {
+  const modelId = req.params.id;
+  const model = REGISTRY.models.find(m => m.id === modelId);
+  if (model) {
+    model.status = 'online';
+    addLog(`Model ${model.name} manually loaded into VRAM.`, 'ACTION');
+    broadcast({ type: 'registry_update', registry: REGISTRY });
+    res.json({ success: true, message: `${model.name} is now online` });
+  } else {
+    res.status(404).json({ success: false, message: "Model not found" });
+  }
+});
+
+app.post("/api/models/:id/unload", (req, res) => {
+  const modelId = req.params.id;
+  const model = REGISTRY.models.find(m => m.id === modelId);
+  if (model) {
+    model.status = 'idle';
+    addLog(`Model ${model.name} purged from VRAM cache.`, 'ACTION');
+    broadcast({ type: 'registry_update', registry: REGISTRY });
+    res.json({ success: true, message: `${model.name} is now idle` });
+  } else {
+    res.status(404).json({ success: false, message: "Model not found" });
+  }
+});
+
 app.post("/api/models/load/sdxl", (req, res) => {
   console.log("[MODELS] Loading SDXL weights...");
   res.json({ success: true, message: "SDXL loaded" });

@@ -79,9 +79,9 @@ export interface HealthResponse {
 export interface Agent {
   id: string;
   name: string;
-  role: 'Runtime' | 'Trend' | 'Campaign' | 'Director' | 'Styling';
-  status: 'idle' | 'active' | 'thinking';
-  permission: 'Observer' | 'Operator' | 'Director' | 'Admin' | 'Autonomous';
+  role: 'Runtime' | 'Trend' | 'Campaign' | 'Director' | 'Styling' | 'Memory' | 'Sourcing' | 'Dataset';
+  status: 'idle' | 'busy' | 'offline' | 'restarting';
+  permission: 'Observer' | 'Operator' | 'Director' | 'Admin' | 'Autonomous' | 'Superuser' | 'Read/Write' | 'Execution' | 'System' | 'Cluster';
 }
 
 export interface SystemLog {
