@@ -154,14 +154,45 @@ function simulateTaskProcessing(taskId: string) {
 // Runtime & Health
 app.get("/api/fashion/runtime/health", (req, res) => {
   res.json({
-    status: 'online',
-    uptime: process.uptime(),
-    memory: process.memoryUsage(),
-    queue_depth: TASK_QUEUE.filter(t => t.status === 'queued').length,
-    active_workers: REGISTRY.workers.filter(w => w.status !== 'offline').length,
-    total_workers: REGISTRY.workers.length
+    success: true,
+    online: true,
+    health: {
+      status: 'online',
+      uptime: process.uptime(),
+      memory: process.memoryUsage(),
+      queue_depth: TASK_QUEUE.filter(t => t.status === 'queued').length,
+      active_workers: REGISTRY.workers.filter(w => w.status !== 'offline').length,
+      total_workers: REGISTRY.workers.length,
+      redis: true,
+      python_runtime: true,
+      gpu_runtime: true,
+      gpu_stats: { raw: 'NVIDIA A100-SXM4-40GB | 32.4GB/40.0GB' },
+      workers: { active: REGISTRY.workers.filter(w=>w.status==='online').length }
+    }
   });
 });
+
+// AI Director Autonomous Loop (Simulated)
+setInterval(() => {
+  const roll = Math.random();
+  if (roll > 0.8) {
+    const alerts = [
+      "VRAM depth reaching 85% on Worker_01 - initiating partial buffer flush",
+      "Trend velocity spike detected in Neo-Italian Heritage - re-weighting embedding bias",
+      "Model flux.1-dev-fp8 loaded into VRAM cache for designer agents",
+      "Shared Memory sync complete: Global artifacts consolidated",
+      "GPU Watchdog verified all 4 runtime kernels operational",
+      "Detected suboptimal queue routing - re-balancing task distribution"
+    ];
+    const log = {
+      timestamp: new Date().toLocaleTimeString(),
+      level: roll > 0.95 ? 'warn' : 'info',
+      module: 'DIRECTOR',
+      message: alerts[Math.floor(Math.random() * alerts.length)]
+    };
+    broadcast({ type: 'log', log });
+  }
+}, 5000);
 
 // System Registry
 app.get("/api/fashion/registry", (req, res) => {

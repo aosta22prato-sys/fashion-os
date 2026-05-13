@@ -5,8 +5,8 @@
   "type": "module",
   "scripts": {
     "dev": "tsx server.ts",
-    "build": "vite build",
-    "preview": "vite preview",
+    "build": "vite build && esbuild server.ts --bundle --platform=node --format=cjs --packages=external --sourcemap --outfile=dist/server.cjs",
+    "start": "node dist/server.cjs",
     "lint": "tsc --noEmit"
   },
   "dependencies": {
@@ -16,6 +16,7 @@
     "autoprefixer": "^10.5.0",
     "cors": "^2.8.6",
     "dotenv": "^17.4.2",
+    "esbuild": "^0.28.0",
     "express": "^5.2.1",
     "gifenc": "1.0.3",
     "lucide-react": "^0.557.0",

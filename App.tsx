@@ -846,6 +846,7 @@ export default function App() {
         ]);
         
         if (healthData) {
+          // The new response is { success: true, online: true, health: { ... } }
           setHealth(healthData.health);
           setHealthStatus(healthData.online ? 'online' : 'offline');
         }
