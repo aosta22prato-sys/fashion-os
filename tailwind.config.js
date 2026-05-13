@@ -18,5 +18,10 @@ export default {
       },
     },
   },
-  plugins: [],
+  plugins: [
+    function({ addVariant }) {
+      addVariant('en', '&:lang(en)');
+      addVariant('zh', '&:lang(zh)');
+    }
+  ],
 }

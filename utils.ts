@@ -455,6 +455,14 @@ export const MOCK_FASHION_GALLERY: FashionItem[] = [
   }
 ];
 
+export const TRENDING_MOODBOARD = [
+  { id: 'm1', url: 'https://picsum.photos/seed/trend-pink/1024/1024', title: 'Powder Pink' },
+  { id: 'm2', url: 'https://picsum.photos/seed/trend-tulle/1024/1024', title: 'Wrapped in Tulle' },
+  { id: 'm3', url: 'https://picsum.photos/seed/trend-plaid/1024/1024', title: "'90s Plaid" },
+  { id: 'm4', url: 'https://picsum.photos/seed/trend-tank/1024/1024', title: 'The Little White Tank' },
+  { id: 'm5', url: 'https://picsum.photos/seed/trend-fringe/1024/1024', title: 'Fantastic Fringe' }
+];
+
 export const cleanBase64 = (data: string): string => {
   return data.replace(/^data:.*,/, '');
 };

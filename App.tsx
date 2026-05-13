@@ -12,11 +12,14 @@ import {
   Download, Check, Send, Twitter, Facebook, Link, LayoutGrid, Palette, Settings,
   User, Globe, Library, Activity, Server, ChevronLeft, MapPin, Cpu, TrendingDown,
   Shirt, CheckCircle2, Trash2, ZoomIn, History, Timer, Box, Layers, RefreshCw,
-  Radio, Database, Network, ChevronDown, List, Code, HardDrive, Terminal
+  Radio, Database, Network, ChevronDown, List, Code, HardDrive, Terminal, Plus,
+  Shield, Lock, Copy, MoreHorizontal, Monitor, Layout, Rocket, ShieldCheck, FileText
 } from 'lucide-react';
 
-import { AppState, FashionItem, ChatMessage, Theme } from './types';
-import { MOCK_FASHION_GALLERY, FASHION_CATEGORIES, fileToBase64, optimizeImage } from './utils';
+import { AIOperationsCenter } from './AIOperationsCenter';
+import { AppState, FashionItem, ChatMessage, Theme, Language, UserRole } from './types';
+import { MOCK_FASHION_GALLERY, FASHION_CATEGORIES, TRENDING_MOODBOARD, fileToBase64, optimizeImage } from './utils';
+import { appBus } from './services/appBus';
 import { 
   getFashionAssistantResponse, 
   generateTextImage, 
@@ -24,7 +27,84 @@ import {
   getSystemRegistry,
   getGenerationHistory
 } from './services/geminiService';
-import { translations, getBrowserLanguage, Language } from './services/translationService';
+import { ModaTranslator, translations, getBrowserLanguage } from './services/translationService';
+
+const FashionItemCard: React.FC<{ 
+  item: FashionItem; 
+  idx: number; 
+  lang: Language; 
+  onClick: () => void;
+}> = ({ item, idx, lang, onClick }) => {
+  const [displayTitle, setDisplayTitle] = useState(item.style);
+
+  useEffect(() => {
+    let active = true;
+    const translate = async () => {
+      const translated = await ModaTranslator.fetchAITranslation(item.style, lang);
+      if (active) setDisplayTitle(translated);
+    };
+    translate();
+    return () => { active = false; };
+  }, [item.style, lang]);
+
+  return (
+    <motion.div 
+      initial={{ opacity: 0, y: 30 }}
+      animate={{ opacity: 1, y: 0 }}
+      transition={{ delay: idx * 0.05 }}
+      className="group relative cursor-pointer"
+      onClick={onClick}
+    >
+       <div className="aspect-[3/4] relative overflow-hidden rounded-[3rem] border border-zinc-100 dark:border-white/5 bg-zinc-50 dark:bg-zinc-900 group-hover:shadow-[0_40px_80px_rgba(0,0,0,0.2)] transition-all">
+          <SafeImage src={item.imageUrl} alt={item.style} className="w-full h-full object-cover transition-transform duration-1000 group-hover:scale-110 dark-suppress" />
+          <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/20 to-transparent opacity-0 group-hover:opacity-100 transition-all duration-500" />
+          
+          <div className="absolute top-8 left-8 right-8 flex justify-between items-start opacity-0 group-hover:opacity-100 transition-all duration-500 translate-y-[-20px] group-hover:translate-y-0">
+             <div className="px-4 py-2 bg-white/10 backdrop-blur-md rounded-2xl border border-white/20 text-[10px] font-black uppercase text-white tracking-widest neon-purple">
+                #{item.category}
+             </div>
+             <div className="p-4 bg-emerald-500 rounded-full text-black shadow-[0_0_20px_rgba(16,185,129,0.5)] hover:scale-110 transition-all dark:bg-emerald-400">
+                <Zap size={20} className="fill-current" />
+             </div>
+          </div>
+
+          <div className="absolute bottom-10 left-10 right-10 opacity-0 group-hover:opacity-100 transition-all translate-y-20 group-hover:translate-y-0 duration-700">
+                             <h3 className="text-3xl font-serif italic text-white mb-6 leading-tight zh:text-3xl zh:font-bold en:text-2xl en:font-normal en:tracking-tight en:break-words line-clamp-2 elastic-text">
+                                {displayTitle}
+                             </h3>
+                             <div className="grid grid-cols-2 gap-3 en:grid-cols-1">
+                                <button className="px-3 py-4 bg-emerald-500 text-black rounded-2xl text-[10px] font-black uppercase tracking-widest hover:scale-105 active:scale-95 transition-all shadow-[0_0_20px_rgba(16,185,129,0.3)]">
+                                   Remix Concept
+                                </button>
+                                <button className="p-4 bg-white/10 backdrop-blur-md border border-white/20 rounded-2xl text-white hover:bg-emerald-500 hover:text-black hover:border-emerald-500 transition-all flex items-center justify-center">
+                                   <Download size={18} />
+                                </button>
+                             </div>
+          </div>
+       </div>
+       <div className="p-8">
+          <div className="flex items-center gap-3 mb-2">
+             <span className="text-[10px] font-black uppercase tracking-widest neon-green">Neural_Match_88%</span>
+             <div className="h-[1px] flex-1 bg-zinc-100 dark:bg-white/10" />
+          </div>
+          <div className="flex justify-between items-end">
+             <div className="flex-1 min-w-0 pr-4">
+                <h4 className="text-sm font-serif italic text-zinc-400 uppercase tracking-tighter mb-1">Global Artifact</h4>
+                <p className="font-bold dark:text-white leading-none zh:text-2xl en:text-xl en:tracking-tight en:break-words truncate elastic-text">
+                   {displayTitle}
+                </p>
+             </div>
+             <div className="text-right flex-shrink-0">
+                <h4 className="text-[9px] font-black text-zinc-400 uppercase tracking-widest mb-1">Liquidity</h4>
+                <p className="text-xl font-mono font-bold text-emerald-500 leading-none neon-green">
+                   {ModaTranslator.formatCurrency(item.price || 299, lang)}
+                </p>
+             </div>
+          </div>
+       </div>
+    </motion.div>
+  );
+};
 
 // --- Types & Constants ---
 
@@ -209,7 +289,13 @@ const TaskNotification: React.FC<{ task: FashionTask }> = ({ task }) => (
   </motion.div>
 );
 
-const FashionOSConsole: React.FC<{ health: any; status: string; t: any; registry?: any }> = ({ health, status, t, registry }) => {
+const FashionOSConsole: React.FC<{ 
+  health: any; 
+  status: string; 
+  t: any; 
+  registry?: any;
+  globalQueue?: { id: string, progress: number, status: string } | null;
+}> = ({ health, status, t, registry, globalQueue }) => {
   const [isOpen, setIsOpen] = useState(false);
 
   return (
@@ -231,6 +317,17 @@ const FashionOSConsole: React.FC<{ health: any; status: string; t: any; registry
           <div className="h-4 w-[1px] bg-white/10" />
           <div className="hidden md:flex items-center gap-6">
             <span className="text-[9px] font-black uppercase tracking-widest text-white/40">GPU: {health?.gpu_runtime ? 'ARMED' : 'OFFLINE'}</span>
+            
+            {globalQueue && (
+              <div className="flex items-center gap-3 px-3 py-1 bg-emerald-500/10 rounded-full border border-emerald-500/20">
+                <Rocket size={10} className="text-emerald-500 animate-pulse" />
+                <span className="text-[8px] font-black text-emerald-500 uppercase tracking-widest">{globalQueue.status}</span>
+                <div className="w-12 h-1 bg-white/10 rounded-full overflow-hidden">
+                   <div className="h-full bg-emerald-500 transition-all duration-300" style={{ width: `${globalQueue.progress}%` }} />
+                </div>
+              </div>
+            )}
+
             <span className="flex items-center gap-1.5 text-[9px] font-mono text-emerald-400/80">
               <Cpu size={10} /> {health?.gpu_stats?.raw || 'IDLE'}
             </span>
@@ -396,240 +493,274 @@ const SafeImage: React.FC<{
   );
 };
 
-const LaboratorySection: React.FC<{ createTask: (type: string, payload: any) => Promise<string | null>; addLocalTask: (id: string, type: string) => void; t: any }> = ({ createTask, addLocalTask, t }) => {
-  const [personImage, setPersonImage] = useState<string | null>(null);
-  const [garmentImage, setGarmentImage] = useState<string | null>(null);
-  const [isProcessing, setIsProcessing] = useState(false);
+const NeuralViewport: React.FC<{
+  item: FashionItem;
+  is3D: boolean;
+  onToggle3D: () => void;
+}> = ({ item, is3D, onToggle3D }) => {
+  const [isReconstructing, setIsReconstructing] = useState(false);
 
-  const onDropPerson = useCallback(async (acceptedFiles: File[]) => {
-    const file = acceptedFiles[0];
-    if (file) {
-      const base64 = await fileToBase64(file);
-      setPersonImage(base64);
+  useEffect(() => {
+    if (is3D && !isReconstructing) {
+      setIsReconstructing(true);
+      const timer = setTimeout(() => setIsReconstructing(false), 2000);
+      return () => clearTimeout(timer);
     }
-  }, []);
-
-  const onDropGarment = useCallback(async (acceptedFiles: File[]) => {
-    const file = acceptedFiles[0];
-    if (file) {
-      const base64 = await fileToBase64(file);
-      setGarmentImage(base64);
-    }
-  }, []);
-
-  const { getRootProps: getPersonProps, getInputProps: getPersonInput, isDragActive: isPersonDrag } = useDropzone({ onDrop: onDropPerson, accept: { 'image/*': [] }, multiple: false });
-  const { getRootProps: getGarmentProps, getInputProps: getGarmentInput, isDragActive: isGarmentDrag } = useDropzone({ onDrop: onDropGarment, accept: { 'image/*': [] }, multiple: false });
-
-  const handleTryOn = async () => {
-    if (!personImage || !garmentImage) return;
-    setIsProcessing(true);
-    const taskId = await createTask('TRY_ON', { person_image: personImage, garment_image: garmentImage });
-    if (taskId) {
-      addLocalTask(taskId, 'TRY_ON');
-    }
-    setIsProcessing(false);
-  };
+  }, [is3D]);
 
   return (
-    <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="max-w-7xl mx-auto py-32 px-6">
-      <div className="mb-20">
-         <span className="text-[10px] font-black uppercase tracking-[0.4em] text-blue-500 mb-2 block">Experimental Protocol</span>
-         <h2 className="font-serif text-7xl uppercase tracking-tighter dark:text-white leading-none">Virtual<br/><span className="italic">Try-On Lab</span></h2>
-      </div>
-
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-12">
-         {/* Drop Zones */}
-         <div className="space-y-12">
-            <div className="space-y-4">
-               <span className="text-[10px] font-black uppercase tracking-widest text-zinc-400">01_Source_Human</span>
-               <div 
-                 {...getPersonProps()}
-                 className={`aspect-video rounded-[3rem] border-2 border-dashed flex flex-col items-center justify-center transition-all cursor-pointer overflow-hidden relative ${isPersonDrag ? 'border-blue-500 bg-blue-500/5' : 'border-zinc-200 dark:border-white/5 hover:border-zinc-400 dark:hover:border-white/20'}`}
-               >
-                  <input {...getPersonInput()} />
-                  {personImage ? (
-                    <>
-                      <img src={personImage} className="w-full h-full object-cover" alt="Source Human" />
-                      <div className="absolute inset-0 bg-black/40 flex items-center justify-center opacity-0 hover:opacity-100 transition-opacity">
-                        <RefreshCw className="text-white" />
-                      </div>
-                    </>
-                  ) : (
-                    <>
-                      <User size={32} className="text-zinc-300 mb-4" />
-                      <p className="text-[10px] font-black uppercase tracking-widest text-zinc-500">Drop person reference</p>
-                    </>
-                  )}
-               </div>
-            </div>
-
-            <div className="space-y-4">
-               <span className="text-[10px] font-black uppercase tracking-widest text-zinc-400">02_Garment_DNA</span>
-               <div 
-                 {...getGarmentProps()}
-                 className={`aspect-video rounded-[3rem] border-2 border-dashed flex flex-col items-center justify-center transition-all cursor-pointer overflow-hidden relative ${isGarmentDrag ? 'border-purple-500 bg-purple-500/5' : 'border-zinc-200 dark:border-white/5 hover:border-zinc-400 dark:hover:border-white/20'}`}
-               >
-                  <input {...getGarmentInput()} />
-                  {garmentImage ? (
-                    <>
-                      <img src={garmentImage} className="w-full h-full object-cover" alt="Garment DNA" />
-                      <div className="absolute inset-0 bg-black/40 flex items-center justify-center opacity-0 hover:opacity-100 transition-opacity">
-                        <RefreshCw className="text-white" />
-                      </div>
-                    </>
-                  ) : (
-                    <>
-                      <Shirt size={32} className="text-zinc-300 mb-4" />
-                      <p className="text-[10px] font-black uppercase tracking-widest text-zinc-500">Drop garment image</p>
-                    </>
-                  )}
-               </div>
-            </div>
-         </div>
-
-         {/* Control & Preview Area */}
-         <div className="flex flex-col">
-            <div className="flex-1 bg-zinc-50 dark:bg-zinc-900/50 rounded-[4rem] border border-zinc-100 dark:border-white/5 p-12 flex flex-col items-center justify-center relative overflow-hidden group">
-               <div className="absolute inset-0 bg-gradient-to-br from-blue-500/5 to-purple-500/5 opacity-0 group-hover:opacity-100 transition-opacity duration-1000" />
-               
-               <div className="z-10 text-center">
-                  <div className="mb-10 flex justify-center gap-10">
-                     <div className={`p-6 rounded-full border border-zinc-200 dark:border-white/10 ${personImage ? 'bg-emerald-500/10 border-emerald-500/20' : ''}`}>
-                        <User className={personImage ? 'text-emerald-500' : 'text-zinc-300'} />
-                     </div>
-                     <ArrowRight className="text-zinc-300 mt-6" />
-                     <div className={`p-6 rounded-full border border-zinc-200 dark:border-white/10 ${garmentImage ? 'bg-emerald-500/10 border-emerald-500/20' : ''}`}>
-                        <Shirt className={garmentImage ? 'text-emerald-500' : 'text-zinc-300'} />
-                     </div>
-                  </div>
-
-                  <h3 className="text-3xl font-serif dark:text-white italic mb-4">Neural Fitting Sequence</h3>
-                  <p className="text-sm text-zinc-500 max-w-xs mx-auto mb-10 leading-relaxed">
-                     Our AI runtime will decompose the garment texture and remap it onto the human frame using latent-space pose estimation.
-                  </p>
-
-                  <button 
-                    disabled={!personImage || !garmentImage || isProcessing}
-                    onClick={handleTryOn}
-                    className="w-full py-8 bg-black dark:bg-white text-white dark:text-black rounded-[2.5rem] text-[11px] font-black uppercase tracking-[0.5em] hover:scale-[1.02] active:scale-95 transition-all disabled:opacity-30 disabled:cursor-not-allowed shadow-2xl"
-                  >
-                     {isProcessing ? 'Initializing Kernel...' : 'Execute Try-On Sequence'}
-                  </button>
-               </div>
-            </div>
+    <div className="w-full h-full relative bg-zinc-100 dark:bg-black group overflow-hidden">
+      <AnimatePresence mode="wait">
+        {!is3D ? (
+          <motion.div
+            key="2d"
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            className="w-full h-full"
+          >
+            <SafeImage 
+              src={item.imageUrl} 
+              alt={item.style} 
+              className="w-full h-full object-cover" 
+            />
+          </motion.div>
+        ) : (
+          <motion.div
+            key="3d"
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            className="w-full h-full"
+          >
+            {isReconstructing ? (
+              <div className="absolute inset-0 flex flex-col items-center justify-center space-y-6 z-20 bg-black">
+                <div className="w-16 h-16 border-t-2 border-emerald-500 rounded-full animate-spin" />
+                <div className="text-center">
+                  <p className="text-[10px] font-black uppercase tracking-[0.4em] text-emerald-500 mb-2">Neural_Reconstruction_Active</p>
+                  <p className="text-xs font-mono text-zinc-500">Processing volumetric point cloud...</p>
+                </div>
+              </div>
+            ) : (
+              <model-viewer
+                src={item.modelUrl || "https://modelviewer.dev/shared-assets/models/Astronaut.glb"}
+                alt="3D Neural Reconstruction"
+                auto-rotate
+                camera-controls
+                shadow-intensity="1"
+                environment-image="neutral"
+                exposure="1"
+                class="w-full h-full bg-zinc-950"
+                style={{ width: '100%', height: '100%' }}
+              ></model-viewer>
+            )}
             
-            <div className="mt-12 p-8 bg-black rounded-[2.5rem] border border-white/5 flex items-center justify-between">
-               <div className="flex items-center gap-4">
-                  <Cpu className="text-blue-500" />
-                  <div>
-                     <p className="text-[10px] font-black text-white uppercase tracking-widest">Inference_Engine</p>
-                     <p className="text-[9px] text-zinc-500 font-mono">ESTIMATED_TIME: ~12s</p>
+            <div className="absolute top-1/2 left-10 -translate-y-1/2 space-y-2">
+               {['VOX_ALIGNED', 'QUAD_REFLOW', 'TEX_SYNTH'].map(status => (
+                  <div key={status} className="flex items-center gap-2">
+                     <div className="w-1 h-1 bg-emerald-500 rounded-full" />
+                     <span className="text-[8px] font-mono text-emerald-500/50 uppercase">{status}</span>
                   </div>
-               </div>
-               <div className="flex gap-2">
-                  <span className="text-[8px] font-black uppercase tracking-widest px-3 py-1 bg-white/5 text-zinc-500 rounded-full border border-white/10">POSE_SYNC_V4</span>
-                  <span className="text-[8px] font-black uppercase tracking-widest px-3 py-1 bg-white/5 text-zinc-500 rounded-full border border-white/10">TEX_MAP_HD</span>
-               </div>
+               ))}
             </div>
+          </motion.div>
+        )}
+      </AnimatePresence>
+
+      <div className="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent pointer-events-none" />
+      
+      <div className="absolute bottom-12 left-12 right-12 flex justify-between items-end pointer-events-none">
+         <div className="max-w-[70%]">
+            <span className="text-[10px] font-black uppercase tracking-[0.4em] text-emerald-500 mb-4 block">FOS_ARCHIVE_MATCH</span>
+            <h2 className="text-5xl font-serif italic text-white leading-tight uppercase tracking-tighter truncate">{item.style}</h2>
          </div>
+         <button 
+           onClick={(e) => {
+             e.stopPropagation();
+             onToggle3D();
+           }}
+           className="pointer-events-auto w-16 h-16 glass border-white/20 rounded-full flex items-center justify-center text-white hover:scale-110 transition-all active:scale-95 group/btn shadow-2xl"
+         >
+           {is3D ? <Maximize2 size={24} /> : <Box size={24} className="group-hover/btn:text-emerald-500 transition-colors" />}
+         </button>
       </div>
-    </motion.div>
+    </div>
   );
 };
 
-const GenerationsSection: React.FC<{ tasks: FashionTask[]; t: any }> = ({ tasks, t }) => {
+const SuperShareHub: React.FC<{ 
+  data: any; 
+  onClose: () => void; 
+  onPush: (target: string, data: any) => void;
+}> = ({ data, onClose, onPush }) => {
+  const [permission, setPermission] = useState<'public' | 'private' | 'team'>('team');
+  const [isProcessing, setIsProcessing] = useState(false);
+
+  const handleShare = async (target: string) => {
+    setIsProcessing(true);
+    // Simulate background worker compression/upload
+    setTimeout(() => {
+      onPush(target, data);
+      setIsProcessing(false);
+      onClose();
+    }, 1500);
+  };
+
   return (
     <motion.div
       initial={{ opacity: 0 }}
       animate={{ opacity: 1 }}
-      className="max-w-7xl mx-auto py-32 px-6"
+      exit={{ opacity: 0 }}
+      className="fixed inset-0 z-[1200] bg-black/90 backdrop-blur-3xl flex items-center justify-center p-6"
+      onClick={onClose}
     >
-      <div className="flex justify-between items-end mb-16">
-        <div>
-          <span className="text-[10px] font-black uppercase tracking-[0.4em] text-purple-500 mb-2 block">Neural Storage</span>
-          <h2 className="font-serif text-6xl uppercase tracking-tighter dark:text-white leading-none">Generation<br/><span className="italic">History</span></h2>
+      <motion.div
+        initial={{ scale: 0.9, y: 30, opacity: 0 }}
+        animate={{ scale: 1, y: 0, opacity: 1 }}
+        exit={{ scale: 0.9, y: 30, opacity: 0 }}
+        className="bg-zinc-50 dark:bg-zinc-950 w-full max-w-4xl rounded-[4rem] overflow-hidden flex flex-col md:flex-row shadow-[0_0_120px_rgba(0,0,0,0.8)] border border-white/5"
+        onClick={e => e.stopPropagation()}
+      >
+        {/* Left: Preview */}
+        <div className="md:w-2/5 relative bg-zinc-100 dark:bg-black group overflow-hidden border-r border-white/5">
+           <img 
+             src={data.url || data.imageUrl || (data.moodboard && data.moodboard[0]?.url)} 
+             className="w-full h-full object-cover opacity-50 grayscale group-hover:grayscale-0 transition-all duration-1000" 
+             alt="Hub Preview" 
+           />
+           <div className="absolute inset-0 bg-gradient-to-t from-black via-black/20 to-transparent" />
+           <div className="absolute bottom-12 left-12">
+              <span className="text-[10px] font-black uppercase tracking-[0.4em] text-emerald-500 mb-4 block underline">OS_HUB_READY</span>
+              <h2 className="text-4xl font-serif italic text-white leading-tight uppercase tracking-tighter">
+                Quantum<br/>Distribution Hub
+              </h2>
+              <div className="mt-8 flex gap-3">
+                 <div className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse shadow-[0_0_8px_#10b981]" />
+                 <span className="text-[8px] font-black text-emerald-400 uppercase tracking-widest leading-none">Team Sync Active</span>
+              </div>
+           </div>
         </div>
-        <div className="text-right">
-          <p className="text-[9px] font-mono text-zinc-400 uppercase tracking-widest bg-zinc-100 dark:bg-white/5 px-4 py-2 rounded-full border border-zinc-200 dark:border-white/10">
-            LOADED_ASSETS: {tasks.length}
-          </p>
-        </div>
-      </div>
 
-      {tasks.length === 0 ? (
-        <div className="h-[50vh] flex flex-col items-center justify-center border-2 border-dashed border-zinc-200 dark:border-white/5 rounded-[3rem] bg-zinc-50/50 dark:bg-black/20">
-          <HardDrive size={48} className="text-zinc-200 dark:text-zinc-800 mb-6" />
-          <p className="font-serif italic text-xl text-zinc-400">Memory matrix is currently sparse</p>
-        </div>
-      ) : (
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-10">
-           {tasks.map((task) => (
-             <motion.div 
-               key={task.id}
-               className="bg-white dark:bg-zinc-900 rounded-[2.5rem] border border-zinc-100 dark:border-white/5 overflow-hidden shadow-sm hover:shadow-2xl transition-all group"
-             >
-                <div className="aspect-square relative overflow-hidden bg-zinc-100 dark:bg-black">
-                   {task.status === TaskStatus.COMPLETED && task.result_url ? (
-                     <img src={task.result_url} className="w-full h-full object-cover transition-transform duration-1000 group-hover:scale-110" alt="" />
-                   ) : (
-                     <div className="w-full h-full flex flex-col items-center justify-center gap-6 p-10 text-center">
-                        <div className="w-16 h-16 border-2 border-t-purple-500 border-white/5 rounded-full animate-spin" />
-                        <p className="text-[10px] font-black uppercase tracking-widest text-zinc-500 animate-pulse">{task.status}...</p>
-                     </div>
-                   )}
-                   <div className="absolute top-6 left-6 flex gap-2">
-                      <span className="text-[8px] font-black uppercase tracking-widest px-3 py-1 bg-black/60 backdrop-blur-md text-white rounded-full border border-white/20">
-                         {task.type}
-                      </span>
-                   </div>
-                </div>
-                <div className="p-8">
-                   <div className="flex justify-between items-center mb-4">
-                      <span className="text-[10px] font-mono text-zinc-400 uppercase">{new Date(task.created_at).toLocaleString()}</span>
-                      {task.metadata?.aesthetic_score && (
-                         <span className="text-[10px] font-black text-emerald-500 bg-emerald-500/10 px-3 py-1 rounded-full uppercase">
-                            Score: {task.metadata.aesthetic_score}
-                         </span>
-                      )}
-                   </div>
-                   <h4 className="font-serif text-xl italic dark:text-white truncate mb-2">
-                      {task.metadata?.prompt || "Neural manifest"}
-                   </h4>
-                   <div className="flex flex-wrap gap-2 mt-4 pt-4 border-t border-zinc-100 dark:border-white/5">
-                      <span className="text-[8px] font-black uppercase text-zinc-400">Model: {task.metadata?.model || 'SDXL'}</span>
-                      <span className="text-[8px] font-black uppercase text-zinc-400">Style: {task.metadata?.style || 'Editorial'}</span>
-                      {task.metadata?.generation_time && <span className="text-[8px] font-black uppercase text-zinc-400">Time: {task.metadata.generation_time}s</span>}
-                   </div>
+        {/* Right: Actions */}
+        <div className="flex-1 p-12 space-y-10 overflow-y-auto no-scrollbar">
+           <div className="flex justify-between items-start">
+              <div>
+                 <p className="text-[10px] font-black uppercase tracking-widest text-zinc-400 mb-2">Cross-Module Operations</p>
+                 <h3 className="text-2xl dark:text-white font-serif italic">Manifest neural inspiration across all sectors.</h3>
+              </div>
+              <button 
+                onClick={onClose}
+                className="w-12 h-12 glass border-white/10 rounded-full flex items-center justify-center text-zinc-400 hover:text-white transition-all"
+              >
+                 <X size={20} />
+              </button>
+           </div>
 
-                   <div className="h-[10px]" />
-                   <div className="flex justify-between items-center pt-4 border-t border-zinc-100 dark:border-white/5 mt-4">
-                      <div className="flex gap-2">
-                        {task.metadata?.model && <span className="text-[8px] font-black text-zinc-400 uppercase tracking-widest">{task.metadata.model}</span>}
-                      </div>
-                      <div className="flex gap-2">
-                         <button className="p-2 hover:bg-zinc-100 dark:hover:bg-white/10 rounded-lg transition-all dark:text-white">
-                           <Download size={14} />
-                         </button>
-                         <button className="p-2 hover:bg-zinc-100 dark:hover:bg-white/10 rounded-lg transition-all dark:text-white">
-                           <Share2 size={14} />
-                         </button>
-                      </div>
-                   </div>
-                </div>
-             </motion.div>
-           ))}
+           {/* Permission Matrix */}
+           <div className="grid grid-cols-3 gap-3 p-2 bg-zinc-100 dark:bg-white/5 rounded-full border border-black/5 dark:border-white/10">
+              {[
+                { id: 'public', label: 'Global', icon: Globe },
+                { id: 'team', label: 'Team', icon: Shield },
+                { id: 'private', label: 'Encrypted', icon: Lock }
+              ].map(opt => (
+                <button
+                  key={opt.id}
+                  onClick={() => setPermission(opt.id as any)}
+                  className={`flex items-center gap-2 px-6 py-3 rounded-full text-[9px] font-black uppercase tracking-widest transition-all ${permission === opt.id ? 'bg-black dark:bg-white text-white dark:text-black shadow-xl' : 'text-zinc-500 dark:text-zinc-400 hover:text-zinc-900 dark:hover:text-white'}`}
+                >
+                  <opt.icon size={12} />
+                  {opt.label}
+                </button>
+              ))}
+           </div>
+
+           {/* Distribution Grid */}
+           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <button 
+                disabled={isProcessing}
+                onClick={() => handleShare('archival')}
+                className="p-8 bg-zinc-100 dark:bg-white/5 rounded-[2.5rem] border border-black/5 dark:border-white/10 flex flex-col items-start gap-4 hover:border-emerald-500/30 hover:bg-emerald-500/5 group transition-all text-left"
+              >
+                 <Library size={24} className="text-emerald-500" />
+                 <div>
+                    <h5 className="text-[11px] font-black dark:text-white uppercase tracking-widest mb-1">Push to Archival</h5>
+                    <p className="text-[9px] text-zinc-500 uppercase font-mono">Sync style metadata into registry</p>
+                 </div>
+              </button>
+
+              <button 
+                disabled={isProcessing}
+                onClick={() => handleShare('synthesis')}
+                className="p-8 bg-zinc-100 dark:bg-white/5 rounded-[2.5rem] border border-black/5 dark:border-white/10 flex flex-col items-start gap-4 hover:border-purple-500/30 hover:bg-purple-500/5 group transition-all text-left"
+              >
+                 <Zap size={24} className="text-purple-500" />
+                 <div>
+                    <h5 className="text-[11px] font-black dark:text-white uppercase tracking-widest mb-1">Inject Synthesis</h5>
+                    <p className="text-[9px] text-zinc-500 uppercase font-mono">Map prompt variables to engine</p>
+                 </div>
+              </button>
+
+              <button 
+                disabled={isProcessing}
+                onClick={() => handleShare('laboratory')}
+                className="p-8 bg-zinc-100 dark:bg-white/5 rounded-[2.5rem] border border-black/5 dark:border-white/10 flex flex-col items-start gap-4 hover:border-blue-500/30 hover:bg-blue-500/5 group transition-all text-left"
+              >
+                 <Box size={24} className="text-blue-500" />
+                 <div>
+                    <h5 className="text-[11px] font-black dark:text-white uppercase tracking-widest mb-1">Load to VTO_Lab</h5>
+                    <p className="text-[9px] text-zinc-500 uppercase font-mono">Pre-cache garment in fitting room</p>
+                 </div>
+              </button>
+
+              <button 
+                disabled={isProcessing}
+                onClick={() => {
+                  const items = data.moodboard || [data];
+                  const ids = items.map((i: any) => i.id).join(',');
+                  const url = `${window.location.origin}${window.location.pathname}?mb=${btoa(ids)}&tk=${Math.random().toString(36).substr(2, 9)}`;
+                  navigator.clipboard.writeText(url);
+                  handleShare('link');
+                }}
+                className="p-8 bg-zinc-100 dark:bg-white/5 rounded-[2.5rem] border border-black/5 dark:border-white/10 flex flex-col items-start gap-4 hover:border-yellow-500/30 hover:bg-yellow-500/5 group transition-all text-left"
+              >
+                 <Share2 size={24} className="text-yellow-500" />
+                 <div>
+                    <h5 className="text-[11px] font-black dark:text-white uppercase tracking-widest mb-1">Neural Collaborative</h5>
+                    <p className="text-[9px] text-zinc-500 uppercase font-mono">Generate dynamic session link</p>
+                 </div>
+              </button>
+           </div>
+
+           {isProcessing && (
+              <div className="pt-4 space-y-3">
+                 <div className="flex justify-between items-center text-[9px] font-black uppercase tracking-widest text-emerald-500">
+                    <span>Compressing Neural Weights...</span>
+                    <span>72%</span>
+                 </div>
+                 <div className="h-1 bg-zinc-200 dark:bg-white/5 rounded-full overflow-hidden">
+                    <motion.div 
+                      className="h-full bg-emerald-500" 
+                      initial={{ width: 0 }}
+                      animate={{ width: '72%' }}
+                    />
+                 </div>
+              </div>
+           )}
         </div>
-      )}
+      </motion.div>
     </motion.div>
   );
 };
 
+
+
+
 // --- Main App ---
 
 export default function App() {
-  const [lang] = useState<Language>(getBrowserLanguage());
+  const [lang, setLang] = useState<Language>(getBrowserLanguage());
   const t = translations[lang];
-  const [activeTab, setActiveTab] = useState<"gallery" | "generations" | "laboratory" | "settings">("gallery");
+  const [activeTab, setActiveTab] = useState<"gallery" | "moodboard" | "settings" | "operations">("gallery");
   const [health, setHealth] = useState<any>(null);
   const [healthStatus, setHealthStatus] = useState<'online' | 'offline' | 'reconnecting'>('reconnecting');
   const [registry, setRegistry] = useState<any>(null);
@@ -650,7 +781,9 @@ export default function App() {
   const [isAssistantOpen, setIsAssistantOpen] = useState(false);
   const [assistantMessages, setAssistantMessages] = useState<ChatMessage[]>([{
     role: 'assistant',
-    content: "Fashion OS initialized. Neural pathways standing by. How shall we manifest today's aesthetic?"
+    content: "Fashion OS initialized. Neural pathways standing by. Based on the latest high-fashion reports for Summer 2025, I've curated a trend moodboard for you.",
+    moodboard: TRENDING_MOODBOARD,
+    suggestions: ["Analyze trends", "Generate synthesis", "Start search"]
   }]);
   const [isTyping, setIsTyping] = useState(false);
   const [theme, setTheme] = useState<Theme>(() => {
@@ -661,14 +794,46 @@ export default function App() {
     return Theme.LIGHT;
   });
 
+  const [sharedMoodboard, setSharedMoodboard] = useState<any[] | null>(null);
+  const [notification, setNotification] = useState<string | null>(null);
+
+  // Deep Linking System
+  useEffect(() => {
+    const params = new URLSearchParams(window.location.search);
+    const mbParam = params.get('mb');
+    if (mbParam) {
+      try {
+        const decoded = atob(mbParam);
+        const ids = decoded.split(',');
+        // Filter from trending or mock gallery
+        const items = TRENDING_MOODBOARD.filter(item => ids.includes(item.id));
+        if (items.length > 0) {
+          setSharedMoodboard(items);
+          setActiveTab('moodboard');
+          setNotification("Neural moodboard synchronized from shared link.");
+        }
+      } catch (e) {
+        console.error("Link corruption detected", e);
+      }
+    }
+  }, []);
+
+  useEffect(() => {
+    if (notification) {
+      const timer = setTimeout(() => setNotification(null), 5000);
+      return () => clearTimeout(timer);
+    }
+  }, [notification]);
+
   useEffect(() => {
     if (theme === Theme.DARK) {
       document.documentElement.classList.add('dark');
     } else {
       document.documentElement.classList.remove('dark');
     }
+    document.documentElement.setAttribute('lang', lang);
     localStorage.setItem('moda-theme', theme);
-  }, [theme]);
+  }, [theme, lang]);
 
   // Poll Health, Registry & History
   useEffect(() => {
@@ -722,10 +887,10 @@ export default function App() {
     setIsTyping(true);
 
     try {
-      const response = await getFashionAssistantResponse([
-        ...assistantMessages,
-        { role: 'user', content: input }
-      ]);
+      const response = await getFashionAssistantResponse(
+        [...assistantMessages, { role: 'user', content: input }],
+        { role: userRole, lang }
+      );
       
       setAssistantMessages(prev => [...prev, { 
         role: 'assistant', 
@@ -734,6 +899,13 @@ export default function App() {
         moodboard: response.moodboard,
         generation_actions: response.generation_actions
       }]);
+
+      // Process Director Actions
+      if (response.action) {
+         if (response.action.type === 'GENERATE') {
+            setActiveTab('gallery'); // or a dedicated view
+         }
+      }
 
       // Process automatic generation tasks if included in the neural response
       if (response.generation_actions && response.generation_actions.length > 0) {
@@ -753,6 +925,79 @@ export default function App() {
     }
   };
 
+  const [selectedItem, setSelectedItem] = useState<FashionItem | null>(null);
+  const [is3DActive, setIs3DActive] = useState(false);
+  const [itemVariants, setItemVariants] = useState<string[]>([]);
+  const [isGeneratingVariant, setIsGeneratingVariant] = useState(false);
+  const [hubData, setHubData] = useState<any | null>(null);
+  const [globalQueue, setGlobalQueue] = useState<{ id: string, progress: number, status: string } | null>(null);
+  const [preloadedGarment, setPreloadedGarment] = useState<string | null>(null);
+  const [preloadedPrompt, setPreloadedPrompt] = useState<string | null>(null);
+  const [curatedItems, setCuratedItems] = useState<FashionItem[]>([]);
+  const [userRole, setUserRole] = useState<UserRole>('CEO');
+  const [lockedItems, setLockedItems] = useState<Set<string>>(new Set());
+
+  const handleSelectItem = (item: FashionItem | null) => {
+    setSelectedItem(item);
+    setIs3DActive(false);
+    setItemVariants([]);
+    setIsGeneratingVariant(false);
+  };
+
+  useEffect(() => {
+    const unsub = appBus.on('UPDATE_QUEUE', (data) => {
+      setGlobalQueue(data);
+      if (data.progress >= 100) {
+        setTimeout(() => setGlobalQueue(null), 3000);
+      }
+    });
+    return unsub;
+  }, []);
+
+  const handleHubPush = (target: string, data: any) => {
+    setNotification(`Synchronizing inspiration with ${target.toUpperCase()}...`);
+    
+    // Virtual Worker simulation
+    let progress = 0;
+    const interval = setInterval(() => {
+      progress += 10;
+      appBus.emit({ type: 'UPDATE_QUEUE', data: { id: 'SYNC_' + target, progress, status: 'Distributing Assets' } });
+      if (progress >= 100) {
+        clearInterval(interval);
+        
+        // Final Action Execution
+        if (target === 'archival') {
+          const newItem: FashionItem = {
+            id: 'curated_' + Date.now(),
+            title: data.title || "Neural Concept " + Math.floor(Math.random()*1000),
+            style: data.title || "Neural Concept",
+            description: "Curated in-system concept",
+            tags: ['AI-Selected', 'Curated'],
+            imageUrl: data.url || data.imageUrl || (data.moodboard && data.moodboard[0]?.url),
+            price: Math.floor(Math.random() * 500) + 100,
+            category: 'Avant-Garde',
+            sustainability: 85,
+            velocity: 0.9,
+            vogue: 0.95
+          };
+          setCuratedItems(prev => [newItem, ...prev]);
+          setActiveTab('gallery');
+          setNotification("Concept registered in Archival Matrix.");
+        } else if (target === 'synthesis') {
+          setPreloadedPrompt(data.content || data.title || "Experimental Style Synthesis");
+          setActiveTab('operations');
+          setNotification("Parametric variables injected into Synthesis core.");
+        } else if (target === 'laboratory') {
+          setPreloadedGarment(data.url || data.imageUrl || (data.moodboard && data.moodboard[0]?.url));
+          setActiveTab('operations');
+          setNotification("Garment pre-cached in Lab-VRAM.");
+        } else if (target === 'link') {
+          setNotification("Collaborative Neural Link active in clipboard.");
+        }
+      }
+    }, 200);
+  };
+
   return (
     <div className="min-h-screen">
       {/* Navigation */}
@@ -766,8 +1011,8 @@ export default function App() {
            <div className="flex items-center gap-6">
               {[
                 { id: 'gallery', label: 'Archival', icon: Library },
-                { id: 'generations', label: 'Synthesis', icon: Zap },
-                { id: 'laboratory', label: 'Laboratory', icon: Box },
+                { id: 'moodboard', label: 'Inspiration', icon: LayoutGrid },
+                { id: 'operations', label: 'AI Operations Center', icon: Activity },
                 { id: 'settings', label: 'Kernel', icon: Cpu }
               ].map(item => (
                 <button
@@ -808,9 +1053,57 @@ export default function App() {
              initial={{ opacity: 0, scale: 1.02 }}
              animate={{ opacity: 1, scale: 1 }}
              exit={{ opacity: 0, scale: 0.98 }}
-             className="pt-32 pb-48 px-10"
+             className="pt-16 pb-48 px-10"
            >
               <div className="max-w-7xl mx-auto">
+                 {/* Hero Video Section */}
+                 <div className="relative h-[80vh] w-full rounded-[4rem] overflow-hidden mb-24 group shadow-[0_50px_100px_rgba(0,0,0,0.4)]">
+                    <video 
+                      autoPlay 
+                      loop 
+                      muted 
+                      playsInline
+                      className="w-full h-full object-cover scale-105 group-hover:scale-100 transition-transform duration-[2s]"
+                    >
+                       <source src="https://player.vimeo.com/external/494252666.sd.mp4?s=347ef9d984cfb7eb257f89b6dc671c5ec843cda8&profile_id=165&oauth2_token_id=57447761" type="video/mp4" />
+                    </video>
+                    <div className="absolute inset-0 bg-gradient-to-b from-black/20 via-transparent to-black/80" />
+                    <div className="absolute inset-0 flex flex-col items-center justify-center text-center p-10">
+                       <motion.div
+                         initial={{ opacity: 0, y: 20 }}
+                         animate={{ opacity: 1, y: 0 }}
+                         transition={{ delay: 0.5 }}
+                       >
+                          <span className="text-[10px] font-black uppercase tracking-[1em] text-emerald-500 mb-6 block">Future_Manifest</span>
+                          <h2 className="text-7xl md:text-9xl font-serif text-white uppercase tracking-tighter leading-none mb-8">
+                             Neural<br/><span className="italic">Aesthetics</span>
+                          </h2>
+                          <div className="flex justify-center gap-6">
+                             <div className="flex items-center gap-2 px-6 py-3 glass rounded-full border border-white/20">
+                                <Activity size={14} className="text-emerald-500" />
+                                <span className="text-[10px] font-black text-white uppercase tracking-widest">Real-time Analysis</span>
+                             </div>
+                             <div className="flex items-center gap-2 px-6 py-3 glass rounded-full border border-white/20">
+                                <Sparkles size={14} className="text-purple-400" />
+                                <span className="text-[10px] font-black text-white uppercase tracking-widest">Generative Core</span>
+                             </div>
+                          </div>
+                       </motion.div>
+                    </div>
+                    <div className="absolute bottom-12 left-12 flex items-center gap-4">
+                       <div className="w-12 h-12 rounded-full border border-white/20 flex items-center justify-center text-white backdrop-blur-md">
+                          <VolumeX size={18} />
+                       </div>
+                       <div className="h-0.5 w-32 bg-white/10 rounded-full overflow-hidden">
+                          <motion.div 
+                            className="h-full bg-emerald-500"
+                            animate={{ width: ['0%', '100%'] }}
+                            transition={{ duration: 10, repeat: Infinity, ease: "linear" }}
+                          />
+                       </div>
+                    </div>
+                 </div>
+
                  <div className="flex flex-col md:flex-row justify-between items-end mb-20 gap-8">
                     <div>
                       <span className="text-[11px] font-black uppercase tracking-[0.5em] text-emerald-500 mb-4 block">Fashion Global Pulse</span>
@@ -830,71 +1123,80 @@ export default function App() {
 
                  {/* Simulated Content Grid */}
                  <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-12">
-                    {MOCK_FASHION_GALLERY.map((item, idx) => (
-                      <motion.div 
+                    {[...curatedItems, ...MOCK_FASHION_GALLERY].map((item, idx) => (
+                      <FashionItemCard 
                         key={item.id}
-                        initial={{ opacity: 0, y: 30 }}
-                        animate={{ opacity: 1, y: 0 }}
-                        transition={{ delay: idx * 0.05 }}
-                        className="group relative cursor-pointer"
-                        onClick={() => {
-                          // In a full app, this would open details
-                          console.log("View item", item.id);
-                        }}
-                      >
-                         <div className="aspect-[3/4] relative overflow-hidden rounded-[3rem] border border-zinc-100 dark:border-white/5 bg-zinc-50 dark:bg-zinc-900 group-hover:shadow-[0_40px_80px_rgba(0,0,0,0.2)] transition-all">
-                            <SafeImage src={item.imageUrl} alt={item.style} className="w-full h-full object-cover transition-transform duration-1000 group-hover:scale-110" />
-                            <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/20 to-transparent opacity-0 group-hover:opacity-100 transition-all duration-500" />
-                            
-                            <div className="absolute top-8 left-8 right-8 flex justify-between items-start opacity-0 group-hover:opacity-100 transition-all duration-500 translate-y-[-20px] group-hover:translate-y-0">
-                               <div className="px-4 py-2 bg-white/10 backdrop-blur-md rounded-2xl border border-white/20 text-[10px] font-black uppercase text-white tracking-widest">
-                                  #{item.category}
-                               </div>
-                               <div className="p-4 bg-emerald-500 rounded-full text-black shadow-xl">
-                                  <Zap size={20} />
-                               </div>
-                            </div>
-
-                            <div className="absolute bottom-10 left-10 right-10 opacity-0 group-hover:opacity-100 transition-all translate-y-20 group-hover:translate-y-0 duration-700">
-                               <h3 className="text-3xl font-serif italic text-white mb-6 leading-tight">{item.style}</h3>
-                               <div className="flex gap-3">
-                                  <button className="flex-1 py-4 bg-white text-black rounded-2xl text-[10px] font-black uppercase tracking-widest hover:scale-105 active:scale-95 transition-all">
-                                     Remix Concept
-                                  </button>
-                                  <button className="p-4 bg-white/10 backdrop-blur-md border border-white/20 rounded-2xl text-white hover:bg-white hover:text-black transition-all">
-                                     <Download size={18} />
-                                  </button>
-                               </div>
-                            </div>
-                         </div>
-                         <div className="p-8">
-                            <div className="flex items-center gap-3 mb-2">
-                               <div className="w-10 h-[1px] bg-zinc-300 dark:bg-white/10" />
-                               <span className="text-[10px] font-black uppercase tracking-widest text-zinc-400">Vogue Intelligence Index</span>
-                            </div>
-                            <div className="flex justify-between items-baseline">
-                               <p className="text-3xl font-serif italic dark:text-white uppercase tracking-tighter leading-none">{item.style.split(' ')[0]}</p>
-                               <span className="text-2xl font-black italic text-emerald-500">{item.analysis?.vogueIndex}%</span>
-                            </div>
-                         </div>
-                      </motion.div>
+                        item={item}
+                        idx={idx}
+                        lang={lang}
+                        onClick={() => handleSelectItem(item)}
+                      />
                     ))}
                  </div>
               </div>
            </motion.div>
         )}
 
-        {activeTab === 'generations' && (
-           <GenerationsSection key="generations" tasks={allGenerations} t={t} />
+        {activeTab === 'moodboard' && (
+           <motion.div
+             key="moodboard"
+             initial={{ opacity: 0, y: 20 }}
+             animate={{ opacity: 1, y: 0 }}
+             exit={{ opacity: 0, y: -20 }}
+             className="pt-32 pb-48 px-10 max-w-7xl mx-auto"
+           >
+              <div className="flex justify-between items-end mb-16">
+                 <div>
+                    <span className="text-[10px] font-black uppercase tracking-[0.4em] text-emerald-500 mb-2 block">Curation Matrix</span>
+                    <h2 className="font-serif text-7xl uppercase tracking-tighter dark:text-white leading-none">Aesthetic<br/><span className="italic">Moodboard</span></h2>
+                 </div>
+                 <div className="flex gap-4">
+                    <button 
+                      onClick={() => {
+                        const items = sharedMoodboard || TRENDING_MOODBOARD;
+                        const ids = items.map(i => i.id).join(',');
+                        const url = `${window.location.origin}${window.location.pathname}?mb=${btoa(ids)}`;
+                        navigator.clipboard.writeText(url);
+                        setNotification("Shareable link copied to clipboard.");
+                      }}
+                      className="px-8 py-4 glass border border-zinc-200 dark:border-white/10 rounded-full flex items-center gap-3 hover:bg-black dark:hover:bg-white hover:text-white dark:hover:text-black transition-all group"
+                    >
+                       <Share2 size={16} className="text-emerald-500 group-hover:text-current" />
+                       <span className="text-[10px] font-black uppercase tracking-widest">Share moodboard</span>
+                    </button>
+                 </div>
+              </div>
+
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+                 {(sharedMoodboard || TRENDING_MOODBOARD).map((item, idx) => (
+                   <motion.div
+                     key={item.id}
+                     initial={{ opacity: 0, scale: 0.9 }}
+                     animate={{ opacity: 1, scale: 1 }}
+                     transition={{ delay: idx * 0.1 }}
+                     className="aspect-square relative rounded-[3rem] overflow-hidden group border border-zinc-100 dark:border-white/5"
+                   >
+                     <SafeImage src={item.url} alt={item.title} className="w-full h-full object-cover transition-transform duration-[2s] group-hover:scale-110" />
+                     <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-all p-10 flex flex-col justify-end">
+                        <span className="text-[10px] font-black uppercase tracking-widest text-emerald-500 mb-2">Trend_Reference</span>
+                        <h4 className="text-3xl font-serif italic text-white uppercase tracking-tighter">{item.title}</h4>
+                     </div>
+                   </motion.div>
+                 ))}
+                 
+                 {/* Empty slot for generation */}
+                 <div className="aspect-square rounded-[3rem] border-2 border-dashed border-zinc-200 dark:border-white/5 flex flex-col items-center justify-center p-12 text-center group cursor-pointer hover:bg-zinc-50 dark:hover:bg-white/[0.02] transition-all">
+                    <div className="p-6 bg-zinc-100 dark:bg-white/5 rounded-full mb-6 group-hover:scale-110 transition-transform">
+                       <Plus size={24} className="text-zinc-400" />
+                    </div>
+                    <p className="text-sm font-serif italic text-zinc-500">Append new aesthetic concept</p>
+                 </div>
+              </div>
+           </motion.div>
         )}
 
-        {activeTab === 'laboratory' && (
-           <LaboratorySection 
-             key="laboratory" 
-             createTask={createTask} 
-             addLocalTask={addLocalTask} 
-             t={t} 
-           />
+        {activeTab === 'operations' && (
+           <AIOperationsCenter lang={lang} />
         )}
 
         {activeTab === 'settings' && (
@@ -971,6 +1273,42 @@ export default function App() {
                 {/* Operations Section */}
                 <div className="space-y-8">
                    <div className="p-10 bg-white dark:bg-zinc-900 rounded-[3rem] border border-zinc-100 dark:border-white/5 shadow-sm">
+                      <div className="flex items-center gap-3 mb-8">
+                         <Shield size={20} className="text-emerald-500" />
+                         <h4 className="text-2xl font-serif italic dark:text-white uppercase tracking-tighter">Authority Level</h4>
+                      </div>
+                         <div className="grid grid-cols-2 gap-4 p-2 bg-zinc-100 dark:bg-black/40 rounded-[2rem] border border-zinc-200 dark:border-white/10">
+                            {['en', 'zh', 'it', 'fr'].map(l => (
+                               <button 
+                                 key={l}
+                                 onClick={() => setLang(l as any)}
+                                 className={`py-3 px-2 rounded-2xl text-[9px] font-black uppercase tracking-widest transition-all ${lang === l ? 'bg-emerald-500 text-black shadow-xl' : 'text-zinc-500 hover:text-zinc-900 dark:hover:text-white'}`}
+                               >
+                                  {l === 'en' ? 'EN_NEURAL' : l === 'zh' ? 'ZH_SYNC' : l === 'it' ? 'IT_CRAFT' : 'FR_ATELIER'}
+                               </button>
+                            ))}
+                         </div>
+                      </div>
+
+                      <div className="p-10 bg-white dark:bg-zinc-900 rounded-[3rem] border border-zinc-100 dark:border-white/5 shadow-sm">
+                         <div className="flex items-center gap-3 mb-8">
+                            <Shield size={20} className="text-emerald-500" />
+                            <h4 className="text-2xl font-serif italic dark:text-white uppercase tracking-tighter">Authority Level</h4>
+                         </div>
+                         <div className="grid grid-cols-2 gap-4 p-2 bg-zinc-100 dark:bg-black/40 rounded-[2rem] border border-zinc-200 dark:border-white/10">
+                            {['SOURCING', 'DESIGNER', 'MARKETER', 'CEO'].map(role => (
+                               <button 
+                                 key={role}
+                                 onClick={() => setUserRole(role as any)}
+                                 className={`py-6 px-4 rounded-3xl text-[9px] font-black uppercase tracking-widest transition-all ${userRole === role ? 'bg-emerald-500 text-black shadow-xl shadow-emerald-500/20Scale-105' : 'text-zinc-500 hover:text-zinc-900 dark:hover:text-white'}`}
+                               >
+                                  {role.replace('_', ' ')}
+                               </button>
+                            ))}
+                         </div>
+                      </div>
+
+                   <div className="p-10 bg-white dark:bg-zinc-900 rounded-[3rem] border border-zinc-100 dark:border-white/5 shadow-sm">
                       <div className="flex items-center justify-between mb-10">
                          <div className="flex items-center gap-3">
                             <Server size={20} className="text-purple-500" />
@@ -987,7 +1325,7 @@ export default function App() {
                                     <p className="text-[9px] text-zinc-400 uppercase font-mono">{w.gpu || 'RTX Cluster'}</p>
                                  </div>
                               </div>
-                              <span className="text-[8px] font-black uppercase tracking-[0.3em] text-zinc-400 bg-white/5 px-3 py-1 rounded-full border border-white/10">{status}</span>
+                              <span className="text-[8px] font-black uppercase tracking-[0.3em] text-zinc-400 bg-white/5 px-3 py-1 rounded-full border border-white/10">ONLINE</span>
                            </div>
                          ))}
                       </div>
@@ -1020,8 +1358,29 @@ export default function App() {
         )}
       </AnimatePresence>
 
+      {/* Global Notifications */}
+      <AnimatePresence>
+        {notification && (
+          <motion.div
+            initial={{ opacity: 0, y: 50, x: '-50%' }}
+            animate={{ opacity: 1, y: 0, x: '-50%' }}
+            exit={{ opacity: 0, y: 50, x: '-50%' }}
+            className="fixed bottom-12 left-1/2 z-[2000] bg-black text-white dark:bg-white dark:text-black px-8 py-4 rounded-full border border-white/20 shadow-2xl flex items-center gap-4"
+          >
+            <div className="w-2 h-2 bg-emerald-500 rounded-full animate-pulse" />
+            <span className="text-[10px] font-black uppercase tracking-widest leading-none">{notification}</span>
+          </motion.div>
+        )}
+      </AnimatePresence>
+
       {/* OS Dashboard Layers */}
-      <FashionOSConsole health={health} status={healthStatus} t={t} registry={registry} />
+      <FashionOSConsole 
+        health={health} 
+        status={healthStatus} 
+        t={t} 
+        registry={registry} 
+        globalQueue={globalQueue}
+      />
 
       {/* Task Stack */}
       <div className="fixed bottom-24 right-10 z-[600]">
@@ -1032,7 +1391,313 @@ export default function App() {
          </AnimatePresence>
       </div>
 
-      {/* Assistant Modal */}
+      {/* AI Analysis Detail Modal */}
+      <AnimatePresence>
+        {selectedItem && (
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            className="fixed inset-0 z-[1100] bg-black/95 backdrop-blur-3xl flex items-center justify-center p-6"
+            onClick={() => handleSelectItem(null)}
+          >
+            <motion.div
+              initial={{ scale: 0.9, y: 50, opacity: 0 }}
+              animate={{ scale: 1, y: 0, opacity: 1 }}
+              exit={{ scale: 0.9, y: 50, opacity: 0 }}
+              className="bg-zinc-50 dark:bg-zinc-950 w-full max-w-6xl h-[90vh] rounded-[4rem] overflow-hidden flex flex-col lg:flex-row shadow-2xl border border-black/5 dark:border-white/5 relative"
+              onClick={e => e.stopPropagation()}
+            >
+              {/* Media Section */}
+              <div className="lg:w-1/2 relative">
+                <NeuralViewport 
+                  item={selectedItem} 
+                  is3D={is3DActive} 
+                  onToggle3D={() => setIs3DActive(!is3DActive)} 
+                />
+                
+                <button 
+                  onClick={() => handleSelectItem(null)}
+                  className="absolute top-8 left-8 w-12 h-12 bg-white/10 hover:bg-white/20 backdrop-blur-xl border border-white/20 rounded-full flex items-center justify-center text-white transition-all z-[20]"
+                >
+                  <X size={20} />
+                </button>
+              </div>
+
+              {/* Data Section */}
+              <div className="lg:w-1/2 flex flex-col bg-white dark:bg-transparent overflow-y-auto no-scrollbar scroll-smooth">
+                <div className="p-16 space-y-16">
+                  {/* Category & Tags */}
+                  <div className="space-y-6">
+                    <div className="flex items-center gap-4">
+                       <Tag size={16} className="text-zinc-400" />
+                       <div className="flex flex-wrap gap-2">
+                          <span className="px-4 py-1.5 bg-black dark:bg-white text-white dark:text-black rounded-full text-[9px] font-black uppercase tracking-widest">
+                             {selectedItem.category}
+                          </span>
+                          {selectedItem.tags.map(tag => (
+                            <span key={tag} className="px-4 py-1.5 border border-zinc-200 dark:border-white/10 rounded-full text-[9px] font-black uppercase tracking-widest text-zinc-500">
+                               {tag}
+                            </span>
+                          ))}
+                       </div>
+                    </div>
+                    <p className="text-lg font-serif italic text-zinc-500 dark:text-zinc-400 leading-relaxed">
+                       {selectedItem.description}
+                    </p>
+                  </div>
+
+                  {/* AI Style Analysis Section */}
+                  <div className="space-y-10">
+                    <div className="flex items-center gap-4 pb-6 border-b border-zinc-100 dark:border-white/10">
+                      <div className="p-3 bg-emerald-500/10 rounded-2xl border border-emerald-500/20">
+                        <Cpu size={24} className="text-emerald-500" />
+                      </div>
+                      <div>
+                        <h4 className="text-3xl font-serif italic dark:text-white uppercase tracking-tighter">AI Style Analysis</h4>
+                        <p className="text-[10px] font-mono text-zinc-500 uppercase tracking-[0.3em] mt-1">Neural Topology & Market Insight</p>
+                      </div>
+                    </div>
+
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+                      {/* Metric Card: Sustainability */}
+                      <div className="p-10 bg-zinc-50 dark:bg-black/40 rounded-[3rem] border border-zinc-100 dark:border-white/5 space-y-8 group hover:border-emerald-500/30 transition-all">
+                         <div className="flex justify-between items-center">
+                            <div className="w-10 h-10 bg-emerald-500/10 rounded-full flex items-center justify-center border border-emerald-500/20 group-hover:scale-110 transition-transform">
+                              <Globe size={18} className="text-emerald-500" />
+                            </div>
+                            <span className="text-[10px] font-black uppercase tracking-[0.2em] text-zinc-400 group-hover:text-emerald-500 transition-colors">Sustainability</span>
+                         </div>
+                         <div className="space-y-4">
+                            <div className="flex justify-between items-end">
+                               <p className="text-5xl font-serif italic text-zinc-900 dark:text-white">{selectedItem.analysis?.sustainability || 72}%</p>
+                               <span className="text-[9px] font-mono text-emerald-500 mb-2 px-3 py-1 bg-emerald-500/10 rounded-full border border-emerald-500/20">NODE_TRUST</span>
+                            </div>
+                            <div className="h-2 w-full bg-zinc-200 dark:bg-white/5 rounded-full overflow-hidden p-[2px]">
+                               <motion.div 
+                                 initial={{ width: 0 }}
+                                 animate={{ width: `${selectedItem.analysis?.sustainability || 72}%` }}
+                                 className="h-full bg-gradient-to-r from-emerald-500 to-teal-400 rounded-full shadow-[0_0_10px_rgba(16,185,129,0.5)]"
+                               />
+                            </div>
+                         </div>
+                      </div>
+
+                      {/* Metric Card: Trend Velocity */}
+                      <div className="p-10 bg-zinc-50 dark:bg-black/40 rounded-[3rem] border border-zinc-100 dark:border-white/5 space-y-8 group hover:border-blue-500/30 transition-all">
+                         <div className="flex justify-between items-center">
+                            <div className="w-10 h-10 bg-blue-500/10 rounded-full flex items-center justify-center border border-blue-500/20 group-hover:scale-110 transition-transform">
+                              <TrendingUp size={18} className="text-blue-500" />
+                            </div>
+                            <span className="text-[10px] font-black uppercase tracking-[0.2em] text-zinc-400 group-hover:text-blue-500 transition-colors">Trend Velocity</span>
+                         </div>
+                         <div className="space-y-6">
+                            <p className="text-5xl font-serif italic text-zinc-900 dark:text-white">{selectedItem.analysis?.trendVelocity || 'Rising'}</p>
+                            <div className="flex gap-2">
+                               {[1,2,3,4,5].map(i => (
+                                 <motion.div 
+                                   key={i} 
+                                   initial={{ opacity: 0.3 }}
+                                   animate={{ opacity: i <= 4 ? 1 : 0.1 }}
+                                   className={`h-2 flex-1 rounded-full ${i <= 4 ? 'bg-blue-500 shadow-[0_0_10px_rgba(59,130,246,0.5)]' : 'bg-zinc-200 dark:bg-white/5'}`} 
+                                 />
+                               ))}
+                            </div>
+                         </div>
+                      </div>
+
+                      {/* Metric Card: Vogue Index */}
+                      <div className="p-10 bg-zinc-50 dark:bg-black/40 rounded-[3rem] border border-zinc-100 dark:border-white/5 space-y-8 group hover:border-purple-500/30 transition-all">
+                         <div className="flex justify-between items-center">
+                            <div className="w-10 h-10 bg-purple-500/10 rounded-full flex items-center justify-center border border-purple-500/20 group-hover:scale-110 transition-transform">
+                              <Zap size={18} className="text-purple-500" />
+                            </div>
+                            <span className="text-[10px] font-black uppercase tracking-[0.2em] text-zinc-400 group-hover:text-purple-500 transition-colors">Vogue Index</span>
+                         </div>
+                         <div className="space-y-4">
+                            <div className="flex justify-between items-end">
+                               <p className="text-5xl font-serif italic text-zinc-900 dark:text-white">{selectedItem.analysis?.vogueIndex || 85}</p>
+                               <span className="text-[9px] font-mono text-purple-500 mb-2 px-3 py-1 bg-purple-500/10 rounded-full border border-purple-500/20">QUANTUM_SCORE</span>
+                            </div>
+                            <div className="h-2 w-full bg-zinc-200 dark:bg-white/5 rounded-full overflow-hidden p-[2px]">
+                               <motion.div 
+                                 initial={{ width: 0 }}
+                                 animate={{ width: `${selectedItem.analysis?.vogueIndex || 85}%` }}
+                                 className="h-full bg-gradient-to-r from-purple-500 to-fuchsia-400 rounded-full shadow-[0_0_10px_rgba(168,85,247,0.5)]"
+                               />
+                            </div>
+                         </div>
+                      </div>
+
+                      {/* ESG Compliance Indicator */}
+                      <div className="p-10 bg-black rounded-[3rem] border border-emerald-500/20 space-y-6">
+                         <div className="flex justify-between items-center">
+                            <div className="w-10 h-10 bg-emerald-500/10 rounded-full flex items-center justify-center border border-emerald-500/20">
+                              <ShieldCheck size={18} className="text-emerald-500" />
+                            </div>
+                            <span className="text-[10px] font-black uppercase tracking-widest text-emerald-500">{t.gallery.esg}</span>
+                         </div>
+                         <div className="space-y-2">
+                           <p className="text-xs font-mono text-emerald-500/80 uppercase">EU_REGULATION_REACH_COMPLIANT</p>
+                           <p className="text-[9px] font-mono text-zinc-500 uppercase">Verification Hash: 0x88...F2A</p>
+                         </div>
+                         <button className="w-full py-4 border border-emerald-500/20 rounded-2xl text-[10px] font-black text-emerald-500 uppercase tracking-widest hover:bg-emerald-500 hover:text-black transition-all">
+                            View Compliance Certificate
+                         </button>
+                      </div>
+
+                      {/* Tech Pack Generator */}
+                      <div className="p-10 bg-zinc-900 rounded-[3rem] border border-blue-500/20 space-y-6">
+                         <div className="flex justify-between items-center">
+                            <div className="w-10 h-10 bg-blue-500/10 rounded-full flex items-center justify-center border border-blue-500/20">
+                              <FileText size={18} className="text-blue-500" />
+                            </div>
+                            <span className="text-[10px] font-black uppercase tracking-widest text-blue-500">{t.gallery.techPack}</span>
+                         </div>
+                         <div className="space-y-1">
+                           <p className="text-lg font-serif italic text-white uppercase tracking-tighter">Digital Blueprint v2.0</p>
+                           <p className="text-[9px] font-mono text-zinc-500 uppercase">Includes 3D Mesh & Laser Cut Paths</p>
+                         </div>
+                         <button className="w-full py-4 bg-blue-500 text-white rounded-2xl text-[10px] font-black uppercase tracking-widest hover:shadow-[0_0_20px_rgba(59,130,246,0.4)] transition-all">
+                            Export to Factory (PLT/DXF)
+                         </button>
+                      </div>
+
+                      {/* Metric Card: Fabric Composition */}
+                      <div className="p-10 bg-zinc-50 dark:bg-black/40 rounded-[3rem] border border-zinc-100 dark:border-white/5 space-y-8 group hover:border-orange-500/30 transition-all">
+                         <div className="flex justify-between items-center">
+                            <div className="w-10 h-10 bg-orange-500/10 rounded-full flex items-center justify-center border border-orange-500/20 group-hover:scale-110 transition-transform">
+                              <Layers size={18} className="text-orange-500" />
+                            </div>
+                            <span className="text-[10px] font-black uppercase tracking-[0.2em] text-zinc-400 group-hover:text-orange-500 transition-colors">Composition</span>
+                         </div>
+                         <div className="space-y-3">
+                            <p className="text-2xl font-serif italic text-zinc-900 dark:text-white leading-tight">
+                               {selectedItem.analysis?.fabricComposition || "Recycled Polyester Blend"}
+                            </p>
+                            <p className="text-[9px] font-mono text-zinc-500 uppercase tracking-[0.4em] flex items-center gap-2">
+                               <CheckCircle2 size={10} className="text-emerald-500" /> Molecularly Verified
+                            </p>
+                         </div>
+                      </div>
+                    </div>
+
+                    {/* Color Palette Sub-section */}
+                    <div className="p-12 bg-black rounded-[3rem] border border-white/5 relative overflow-hidden group">
+                       <div className="absolute top-0 right-0 w-64 h-64 bg-emerald-500/5 blur-[80px] rounded-full -translate-y-1/2 translate-x-1/2 group-hover:bg-emerald-500/10 transition-all duration-1000" />
+                       <div className="relative z-10 space-y-10">
+                          <div className="flex items-center justify-between">
+                             <div className="flex items-center gap-4">
+                                <div className="p-3 bg-white/5 rounded-2xl border border-white/10">
+                                   <Palette size={20} className="text-zinc-400" />
+                                </div>
+                                <div>
+                                   <h4 className="text-xl font-serif italic text-white uppercase tracking-tighter">Chromatic Spectrum</h4>
+                                   <p className="text-[9px] font-mono text-zinc-500 uppercase tracking-widest mt-1">AI Extracted Color Profiles</p>
+                                </div>
+                             </div>
+                          </div>
+                          <div className="flex gap-4">
+                             {(selectedItem.analysis?.colors || ['#1A1A1A', '#F5F2ED', '#8B4513', '#D2B48C']).map((color, i) => (
+                               <div key={i} className="group/swatch relative flex-1">
+                                  <div 
+                                    className="h-32 w-full rounded-[2rem] border border-white/10 shadow-2xl group-hover/swatch:scale-[1.05] group-hover/swatch:-translate-y-2 transition-all duration-500" 
+                                    style={{ backgroundColor: color }}
+                                  >
+                                     <div className="absolute inset-0 bg-gradient-to-t from-black/40 to-transparent opacity-0 group-hover/swatch:opacity-100 transition-opacity rounded-[2rem]" />
+                                  </div>
+                                  <div className="absolute -bottom-10 left-0 right-0 text-center opacity-0 group-hover/swatch:opacity-100 transition-all translate-y-2 group-hover/swatch:translate-y-0">
+                                     <span className="px-3 py-1 bg-white/5 border border-white/10 rounded-full text-[9px] font-mono text-zinc-400 uppercase tracking-widest">
+                                       {color}
+                                     </span>
+                                  </div>
+                               </div>
+                             ))}
+                          </div>
+                       </div>
+                    </div>
+                  </div>
+
+                  {/* Neural Pattern Variations */}
+                  <div className="space-y-8">
+                     <div className="flex items-center justify-between">
+                        <div className="flex items-center gap-3">
+                           <RefreshCw size={18} className={`text-emerald-500 ${isGeneratingVariant ? 'animate-spin' : ''}`} />
+                           <h4 className="text-xl font-serif italic dark:text-white uppercase tracking-tighter">Neural Variants</h4>
+                        </div>
+                        <button 
+                          disabled={isGeneratingVariant}
+                          onClick={async () => {
+                            setIsGeneratingVariant(true);
+                            // Simulate variant generation
+                            setTimeout(() => {
+                              setItemVariants([...itemVariants, `https://picsum.photos/seed/${Math.random()}/1024/1024`]);
+                              setIsGeneratingVariant(false);
+                            }, 3000);
+                          }}
+                          className="px-6 py-2 bg-emerald-500 text-black text-[9px] font-black uppercase tracking-widest rounded-full hover:scale-105 transition-all disabled:opacity-50"
+                        >
+                           {isGeneratingVariant ? 'Processing...' : 'Generate New Variation'}
+                        </button>
+                     </div>
+
+                     {itemVariants.length > 0 ? (
+                       <div className="grid grid-cols-4 gap-4">
+                         {itemVariants.map((v, i) => (
+                           <div key={i} className="aspect-square rounded-2xl overflow-hidden border border-zinc-100 dark:border-white/10 group cursor-pointer">
+                             <img src={v} className="w-full h-full object-cover group-hover:scale-110 transition-transform" alt="Variant" />
+                           </div>
+                         ))}
+                       </div>
+                     ) : (
+                       <div className="p-10 border-2 border-dashed border-zinc-100 dark:border-white/5 rounded-3xl flex items-center justify-center">
+                          <p className="text-[10px] font-black uppercase tracking-widest text-zinc-400">No variants generated yet</p>
+                       </div>
+                     )}
+                  </div>
+
+                  {/* Action Bar */}
+                  <div className="pt-12 border-t border-zinc-100 dark:border-white/5 space-y-6">
+                     <div className="flex gap-4">
+                        <button 
+                          onClick={() => {
+                            setHubData({
+                              title: selectedItem.style,
+                              items: [selectedItem],
+                              context: "Direct Item Dispatch"
+                            });
+                          }}
+                          className="flex-1 py-8 bg-black dark:bg-white text-white dark:text-black rounded-[2.5rem] text-[11px] font-black uppercase tracking-[0.5em] shadow-2xl hover:scale-105 active:scale-95 transition-all flex items-center justify-center gap-4 group"
+                        >
+                           <Zap size={20} className="fill-current neon-green group-hover:animate-pulse" />
+                           Dispatch to All Sectors
+                        </button>
+                        <button className="p-8 glass border border-zinc-200 dark:border-white/10 rounded-[2.5rem] text-zinc-900 dark:text-white hover:bg-black dark:hover:bg-white hover:text-white dark:hover:text-black transition-all">
+                           <Download size={24} />
+                        </button>
+                     </div>
+                     <p className="text-[9px] font-mono text-center text-zinc-400 uppercase tracking-[0.3em]">
+                        Neural Hash: <span className="text-emerald-500">{selectedItem.id}</span> | State: <span className="text-blue-500">Volatile</span>
+                     </p>
+                  </div>
+                </div>
+              </div>
+            </motion.div>
+          </motion.div>
+        )}
+      </AnimatePresence>
+
+      {/* Super Share Hub Modal */}
+      <AnimatePresence>
+        {hubData && (
+          <SuperShareHub 
+            data={hubData} 
+            onClose={() => setHubData(null)} 
+            onPush={handleHubPush}
+            userRole={userRole}
+          />
+        )}
+      </AnimatePresence>
       <AnimatePresence>
         {isAssistantOpen && (
           <motion.div 
@@ -1086,7 +1751,7 @@ export default function App() {
                           animate={{ opacity: 1, y: 0 }}
                           className={`flex flex-col ${m.role === 'user' ? 'items-end' : 'items-start'}`}
                         >
-                           <div className={`max-w-[80%] p-6 rounded-[2.5rem] text-sm leading-relaxed ${m.role === 'user' ? 'bg-black text-white rounded-br-none' : 'bg-zinc-100 dark:bg-white/5 dark:text-white rounded-bl-none italic'}`}>
+                           <div className={`max-w-[80%] p-6 rounded-[2.5rem] text-sm leading-relaxed ${m.role === 'user' ? 'bg-black text-white rounded-br-none' : 'bg-zinc-100 dark:bg-white/5 dark:text-white rounded-bl-none italic'} elastic-text`}>
                               {m.content}
                            </div>
 
@@ -1107,12 +1772,25 @@ export default function App() {
 
                            {/* Structured Data: Moodboard */}
                            {m.role === 'assistant' && (m as any).moodboard?.length > 0 && (
-                              <div className="grid grid-cols-2 md:grid-cols-3 gap-3 mt-6 w-full max-w-sm">
-                                 {(m as any).moodboard.map((item: any, idx: number) => (
-                                    <div key={idx} className="aspect-square bg-zinc-100 dark:bg-white/10 rounded-2xl overflow-hidden border border-white/5 group">
-                                       <img src={item.url} alt="Reference" className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-500" />
-                                    </div>
-                                 ))}
+                              <div className="space-y-4 mt-6">
+                                <div className="grid grid-cols-2 md:grid-cols-3 gap-3 w-full max-w-sm">
+                                   {(m as any).moodboard.map((item: any, idx: number) => (
+                                      <div key={idx} className="aspect-square bg-zinc-100 dark:bg-white/10 rounded-2xl overflow-hidden border border-white/5 group">
+                                         <img src={item.url} alt="Reference" className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-500" />
+                                      </div>
+                                   ))}
+                                </div>
+                                 <button 
+                                  onClick={() => setHubData({
+                                    ...m,
+                                    title: "Neural Inspiration Board",
+                                    context: "Assistant Intelligence"
+                                  })}
+                                  className="flex items-center gap-2 px-4 py-2 bg-zinc-100 dark:bg-white/5 hover:bg-emerald-400 dark:hover:bg-emerald-400 hover:text-black rounded-full transition-all text-zinc-500 dark:text-zinc-400 group"
+                                >
+                                   <Share2 size={12} className="group-hover:rotate-12 transition-transform" />
+                                   <span className="text-[9px] font-black uppercase tracking-widest">Quantum Hub Dispatch</span>
+                                </button>
                               </div>
                            )}
                         </motion.div>

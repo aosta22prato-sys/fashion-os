@@ -52,6 +52,42 @@ body {
   border: 1px solid rgba(255, 255, 255, 0.1);
 }
 
+/* 🕷️ Product Image Glaring Suppression */
+.dark .dark-suppress {
+  filter: brightness(0.85) contrast(1.1) saturate(0.9);
+  transition: filter 0.5s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.dark .dark-suppress:hover {
+  filter: brightness(1) contrast(1) saturate(1);
+}
+
+/* 🎨 Neon Aesthetic Anchors */
+.neon-green {
+  @apply text-emerald-400 drop-shadow-[0_0_8px_rgba(52,211,153,0.6)];
+}
+
+.neon-cyan {
+  @apply text-cyan-400 drop-shadow-[0_0_8px_rgba(34,211,238,0.6)];
+}
+
+.neon-purple {
+  @apply text-purple-400 drop-shadow-[0_0_8px_rgba(192,132,252,0.6)];
+}
+
+.dark .glow-border-emerald {
+  @apply border-emerald-500/30 shadow-[0_0_20px_rgba(16,185,129,0.1)];
+}
+
+/* 📑 Internationalization Elasticity */
+:lang(en) .elastic-text {
+  @apply tracking-tight leading-snug break-words;
+}
+
+:lang(zh) .elastic-text {
+  @apply leading-relaxed tracking-wide;
+}
+
 /* Custom Scrollbar */
 ::-webkit-scrollbar {
   width: 4px;

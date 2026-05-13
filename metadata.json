@@ -1,5 +1,5 @@
 {
-  "name": "ModaUI 时尚智能爆款库",
-  "description": "基于 AI 驱动的全球时装趋势采集与智能化图库管理平台，集成视觉分析、趋势预测与生成式设计工具。",
+  "name": "ModaUI Fashion AI Operating System",
+  "description": "A high-stability, real-time platform for global trend ingestion, neural synthesis, and cross-border manufacturing operations. Featuring worker health monitoring, automated technical packaging, and localized intelligence hubs.",
   "requestFramePermissions": ["camera"]
 }

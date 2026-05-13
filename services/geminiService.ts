@@ -5,28 +5,29 @@
 
 const API = import.meta.env.VITE_API_BASE || '';
 
-export async function getFashionAssistantResponse(messages: any[], sessionId: string = 'abc123') {
+export async function getFashionAssistantResponse(messages: any[], context: any = {}) {
   const lastMessage = messages[messages.length - 1]?.content;
-  const response = await fetch(`${API}/api/fashion/chat`, {
+  const response = await fetch(`${API}/api/agents/chat`, {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify({ 
       message: lastMessage, 
-      session_id: sessionId
+      context
     })
   });
   
-  if (!response.ok) throw new Error('Assistant core offline');
+  if (!response.ok) throw new Error('Agent Director offline');
   const data = await response.json();
   
-  if (!data.success) throw new Error(data.error || 'Chat failed');
+  if (!data.success) throw new Error(data.error || 'Agent reasoning failed');
 
   return {
     success: true,
     reply: data.reply,
     suggestions: data.suggestions || [],
     moodboard: data.moodboard || [],
-    generation_actions: data.generation_actions || []
+    generation_actions: data.generation_actions || [],
+    action: data.action // New tool-calling field
   };
 }
 

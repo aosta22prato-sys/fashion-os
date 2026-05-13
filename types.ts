@@ -16,6 +16,9 @@ export enum AppState {
   ERROR = 'ERROR'
 }
 
+export type Language = 'en' | 'it' | 'fr' | 'zh';
+export type UserRole = 'CEO' | 'Designer' | 'Curation' | 'Operations';
+
 export interface FashionItem {
   id: string;
   imageUrl: string;
@@ -25,6 +28,12 @@ export interface FashionItem {
   style: string;
   description: string;
   isSearchResult?: boolean;
+  modelUrl?: string;
+  title?: string;
+  price?: number;
+  sustainability?: number;
+  velocity?: number;
+  vogue?: number;
   analysis?: {
     sustainability: number;
     heritageScore: number;
@@ -67,12 +76,46 @@ export interface HealthResponse {
   }
 }
 
-export interface HistoryResponse {
-  success: boolean;
-  data: Array<{
-    id: string | number;
-    prompt: string;
+export interface Agent {
+  id: string;
+  name: string;
+  role: 'Runtime' | 'Trend' | 'Campaign' | 'Director' | 'Styling';
+  status: 'idle' | 'active' | 'thinking';
+  permission: 'Observer' | 'Operator' | 'Director' | 'Admin' | 'Autonomous';
+}
+
+export interface SystemLog {
+  timestamp: string;
+  level: 'INFO' | 'WARN' | 'ACTION' | 'AI';
+  message: string;
+}
+
+export interface Registry {
+  models: Array<{
+    id: string;
+    name: string;
     status: string;
-    image_url: string;
+    type: string;
   }>;
+  workers: Array<{
+    id: string;
+    name: string;
+    type: string;
+    status: string;
+    gpu_memory: number;
+    load: number;
+  }>;
+  agents: Agent[];
+}
+
+export interface OpsDashboard {
+  revenue_metrics: {
+    daily: number;
+    monthly: number;
+    trend: string;
+  };
+  system_latency: string;
+  active_operations: number;
+  team_sync_status: string;
+  worker_load?: Array<{ id: string; load: number }>;
 }
