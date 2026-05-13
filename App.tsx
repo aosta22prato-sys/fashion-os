@@ -28,6 +28,9 @@ import {
   getGenerationHistory
 } from './services/geminiService';
 import { ModaTranslator, translations, getBrowserLanguage } from './services/translationService';
+import { auth } from './services/firebase';
+import { onAuthStateChanged, signInAnonymously, User as FirebaseUser } from 'firebase/auth';
+import { fashionItemService } from './services/fashionItemService';
 
 const FashionItemCard: React.FC<{ 
   item: FashionItem; 
@@ -943,6 +946,30 @@ export default function App() {
   const [curatedItems, setCuratedItems] = useState<FashionItem[]>([]);
   const [userRole, setUserRole] = useState<UserRole>('CEO');
   const [lockedItems, setLockedItems] = useState<Set<string>>(new Set());
+  const [currentUser, setCurrentUser] = useState<FirebaseUser | null>(null);
+
+  // Firebase Auth Lifecycle
+  useEffect(() => {
+    const unsubscribe = onAuthStateChanged(auth, (user) => {
+      if (user) {
+        setCurrentUser(user);
+      } else {
+        signInAnonymously(auth).catch(err => console.error("Anonymous auth failed", err));
+      }
+    });
+    return unsubscribe;
+  }, []);
+
+  // Firestore Real-time Sync
+  useEffect(() => {
+    if (!currentUser) return;
+
+    const unsubscribe = fashionItemService.subscribeToItems((items) => {
+      setCuratedItems(items);
+    });
+
+    return unsubscribe;
+  }, [currentUser]);
 
   const handleSelectItem = (item: FashionItem | null) => {
     setSelectedItem(item);
@@ -974,8 +1001,7 @@ export default function App() {
         
         // Final Action Execution
         if (target === 'archival') {
-          const newItem: FashionItem = {
-            id: 'curated_' + Date.now(),
+          const newItemPayload: Partial<FashionItem> = {
             title: data.title || "Neural Concept " + Math.floor(Math.random()*1000),
             style: data.title || "Neural Concept",
             description: "Curated in-system concept",
@@ -983,13 +1009,20 @@ export default function App() {
             imageUrl: data.url || data.imageUrl || (data.moodboard && data.moodboard[0]?.url),
             price: Math.floor(Math.random() * 500) + 100,
             category: 'Avant-Garde',
-            sustainability: 85,
-            velocity: 0.9,
-            vogue: 0.95
+            userId: currentUser?.uid || 'guest',
+            analysis: {
+              sustainability: 85,
+              heritageScore: 70,
+              trendVelocity: 'Rising',
+              fabricComposition: 'Recycled Polymer',
+              vogueIndex: 95
+            }
           };
-          setCuratedItems(prev => [newItem, ...prev]);
-          setActiveTab('gallery');
-          setNotification(translations[lang].system.archivalPushed);
+          
+          fashionItemService.createItem(newItemPayload).then(() => {
+            setActiveTab('gallery');
+            setNotification(translations[lang].system.archivalPushed);
+          });
         } else if (target === 'synthesis') {
           setPreloadedPrompt(data.content || data.title || "Experimental Style Synthesis");
           setActiveTab('operations');

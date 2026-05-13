@@ -408,6 +408,13 @@ export const translations: Record<Language, Translations> = {
       curationMatrix: "Curation Matrix",
       appendedConcept: "Append new aesthetic concept"
     },
+    styleGen: {
+      button: "Style Remix",
+      prompt: "Describe the remix",
+      generating: "Neural Rendering...",
+      result: "Result",
+      close: "Close"
+    },
     settings: {
       theme: "Theme Mode",
       light: "Light",
@@ -646,6 +653,13 @@ export const translations: Record<Language, Translations> = {
       share: "分享灵感板",
       curationMatrix: "策展矩阵",
       appendedConcept: "追加新审美概念"
+    },
+    styleGen: {
+      button: "重塑风格",
+      prompt: "描述重塑要求",
+      generating: "神经渲染中...",
+      result: "结果",
+      close: "关闭"
     },
     settings: {
       theme: "主题模式",
@@ -1132,6 +1146,13 @@ export const translations: Record<Language, Translations> = {
       curationMatrix: "Matrice de Curation",
       appendedConcept: "Ajouter concept esthétique"
     },
+    styleGen: {
+      button: "Remix Style",
+      prompt: "Décrire le remix",
+      generating: "Rendu Neural...",
+      result: "Résultat",
+      close: "Fermer"
+    },
     settings: {
       theme: "Mode Thème",
       light: "Clair",
@@ -1210,13 +1231,6 @@ export const translations: Record<Language, Translations> = {
       sysUuid: "SYS_UUID",
       heartbeatSync: "HEARTBEAT_SYNC",
       archiveIntegrityFailure: "Échec Intégrité Archive"
-    },
-    styleGen: {
-      button: "Remix Style",
-      prompt: "Décrire le remix",
-      generating: "Rendu Neural...",
-      result: "Résultat",
-      close: "Fermer"
     }
   }
 };
