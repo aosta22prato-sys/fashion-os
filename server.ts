@@ -167,7 +167,7 @@ app.get("/api/fashion/runtime/health", (req, res) => {
       python_runtime: true,
       gpu_runtime: true,
       gpu_stats: { raw: 'NVIDIA A100-SXM4-40GB | 32.4GB/40.0GB' },
-      workers: { active: REGISTRY.workers.filter(w=>w.status==='online').length }
+      workers: { active: REGISTRY.workers.filter(w => w.status !== 'offline').length }
     }
   });
 });
@@ -196,6 +196,10 @@ setInterval(() => {
 
 // System Registry
 app.get("/api/fashion/registry", (req, res) => {
+  res.json(REGISTRY);
+});
+
+app.post("/api/fashion/registry", (req, res) => {
   res.json(REGISTRY);
 });
 
@@ -271,7 +275,7 @@ app.post("/api/agents/chat", async (req, res) => {
 
 // Task History
 app.get("/api/fashion/history", (req, res) => {
-  res.json({ success: true, history: TASK_QUEUE });
+  res.json({ success: true, history: TASK_QUEUE, data: TASK_QUEUE });
 });
 
 // Task Submission
@@ -290,6 +294,16 @@ app.post("/api/fashion/generate", (req, res) => {
   
   broadcast({ type: 'task_update', task: newTask });
   simulateTaskProcessing(taskId);
+});
+
+// Task Polling
+app.get("/api/fashion/tasks/:id", (req, res) => {
+  const task = TASK_QUEUE.find(t => t.id === req.params.id);
+  if (task) {
+    res.json(task);
+  } else {
+    res.status(404).json({ success: false, error: "Task not found" });
+  }
 });
 
 // Try On
