@@ -156,6 +156,8 @@ export interface Translations {
     directorHub: string;
     tryon: string;
     tryonDesc: string;
+    studio: string;
+    studioDesc: string;
     state: string;
     security: string;
     manageNode: string;
@@ -381,6 +383,8 @@ export const translations: Record<Language, Translations> = {
       directorHub: "Director Hub",
       tryon: "Neural Try-on",
       tryonDesc: "High-fidelity virtual fitting with neural mapping.",
+      studio: "Digital Human Studio",
+      studioDesc: "Professional asset layering and editorial rendering.",
       state: "State",
       security: "Security",
       manageNode: "Manage Node",
@@ -632,6 +636,8 @@ export const translations: Record<Language, Translations> = {
       directorHub: "总监枢纽 (Director Hub)",
       tryon: "神经试衣",
       tryonDesc: "带有人物映射的高保真虚拟试衣模块。",
+      studio: "数字人工作室",
+      studioDesc: "专业资产整合与时尚大片渲染。",
       state: "状态",
       security: "安全性",
       manageNode: "管理节点",
@@ -883,6 +889,8 @@ export const translations: Record<Language, Translations> = {
       directorHub: "Director Hub",
       tryon: "Prova Neurale",
       tryonDesc: "Fitting virtuale ad alta fedeltà con mappatura neurale.",
+      studio: "Studio Umano Digitale",
+      studioDesc: "Layering di asset professionali e rendering editoriale.",
       state: "Stato",
       security: "Sicurezza",
       manageNode: "Gestisci Nodo",
@@ -1134,6 +1142,8 @@ export const translations: Record<Language, Translations> = {
       directorHub: "Director Hub",
       tryon: "Essai Neural",
       tryonDesc: "Essai virtuel haute fidélité avec cartographie neurale.",
+      studio: "Studio Humain Numérique",
+      studioDesc: "Superposition d'actifs professionnels et rendu éditorial.",
       state: "État",
       security: "Sécurité",
       manageNode: "Gérer Noeud",

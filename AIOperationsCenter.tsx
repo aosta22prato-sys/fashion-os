@@ -29,6 +29,7 @@ import { FashionGrid } from './resources/js/fashion-os/components/FashionGrid';
 import { AgentCard } from './resources/js/fashion-os/components/AgentCard';
 import { TrendGraph } from './resources/js/fashion-os/components/TrendGraph';
 import { NeuralTryOn } from './src/components/NeuralTryOn';
+import { DigitalHumanStudio } from './src/components/DigitalHumanStudio';
 
 import { translations } from './services/translationService';
 
@@ -48,7 +49,7 @@ export const AIOperationsCenter: React.FC<AIOperationsCenterProps> = ({
   const [memory, setMemory] = useState<any>(null);
   const [stats, setStats] = useState<any>(null);
   const [logs, setLogs] = useState<any[]>([]);
-  const [activeTab, setActiveTab] = useState<'matrix' | 'tryon' | 'agents' | 'memory' | 'logs'>('matrix');
+  const [activeTab, setActiveTab] = useState<'matrix' | 'tryon' | 'studio' | 'agents' | 'memory' | 'logs'>('matrix');
   const [isExecuting, setIsExecuting] = useState<string | null>(null);
 
   useEffect(() => {
@@ -170,7 +171,7 @@ export const AIOperationsCenter: React.FC<AIOperationsCenterProps> = ({
             </h2>
           </div>
           <div className="flex gap-4">
-             {['matrix', 'tryon', 'agents', 'memory', 'logs'].map((tab) => (
+             {['matrix', 'tryon', 'studio', 'agents', 'memory', 'logs'].map((tab) => (
                <QuantumButton
                  key={tab}
                  variant={activeTab === tab ? 'primary' : 'secondary'}
@@ -476,6 +477,17 @@ export const AIOperationsCenter: React.FC<AIOperationsCenterProps> = ({
               exit={{ opacity: 0, scale: 0.98 }}
             >
               <NeuralTryOn preloadedDesign={preloadedDesign} />
+            </motion.div>
+          )}
+
+          {activeTab === 'studio' && (
+            <motion.div 
+              key="studio"
+              initial={{ opacity: 0, scale: 0.98 }}
+              animate={{ opacity: 1, scale: 1 }}
+              exit={{ opacity: 0, scale: 0.98 }}
+            >
+              <DigitalHumanStudio />
             </motion.div>
           )}
 
