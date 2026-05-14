@@ -154,6 +154,8 @@ export interface Translations {
     vramPurgeDesc: string;
     vramPurgeAction: string;
     directorHub: string;
+    tryon: string;
+    tryonDesc: string;
     state: string;
     security: string;
     manageNode: string;
@@ -377,6 +379,8 @@ export const translations: Record<Language, Translations> = {
       vramPurgeDesc: "Flush the VRAM buffers across the distributed cluster. Recommended after heavy Synthesis sessions.",
       vramPurgeAction: "Purge Global VRAM",
       directorHub: "Director Hub",
+      tryon: "Neural Try-on",
+      tryonDesc: "High-fidelity virtual fitting with neural mapping.",
       state: "State",
       security: "Security",
       manageNode: "Manage Node",
@@ -626,6 +630,8 @@ export const translations: Record<Language, Translations> = {
       vramPurgeDesc: "清理分布式集群中的 VRAM 缓存。建议在重度生成会话后执行。",
       vramPurgeAction: "净化全局显存 (VRAM)",
       directorHub: "总监枢纽 (Director Hub)",
+      tryon: "神经试衣",
+      tryonDesc: "带有人物映射的高保真虚拟试衣模块。",
       state: "状态",
       security: "安全性",
       manageNode: "管理节点",
@@ -875,6 +881,8 @@ export const translations: Record<Language, Translations> = {
       vramPurgeDesc: "Svuota i buffer VRAM del cluster.",
       vramPurgeAction: "Purga VRAM Globale",
       directorHub: "Director Hub",
+      tryon: "Prova Neurale",
+      tryonDesc: "Fitting virtuale ad alta fedeltà con mappatura neurale.",
       state: "Stato",
       security: "Sicurezza",
       manageNode: "Gestisci Nodo",
@@ -1124,6 +1132,8 @@ export const translations: Record<Language, Translations> = {
       vramPurgeDesc: "Vider les buffers VRAM du cluster.",
       vramPurgeAction: "Purge VRAM Globale",
       directorHub: "Director Hub",
+      tryon: "Essai Neural",
+      tryonDesc: "Essai virtuel haute fidélité avec cartographie neurale.",
       state: "État",
       security: "Sécurité",
       manageNode: "Gérer Noeud",

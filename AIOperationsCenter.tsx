@@ -6,7 +6,8 @@ import {
   CheckCircle2, AlertCircle, Terminal, Camera, Download,
   Maximize2, MessageSquare, ShieldAlert, Database,
   User, Power, RotateCw, Square, Play, HardDrive, 
-  RefreshCw, Bot, XCircle, LineChart, ShieldCheck, Trash2
+  RefreshCw, Bot, XCircle, LineChart, ShieldCheck, Trash2,
+  ChevronRight
 } from 'lucide-react';
 import { 
   ResponsiveContainer, 
@@ -27,16 +28,62 @@ import { AIConsole } from './resources/js/fashion-os/components/AIConsole';
 import { FashionGrid } from './resources/js/fashion-os/components/FashionGrid';
 import { AgentCard } from './resources/js/fashion-os/components/AgentCard';
 import { TrendGraph } from './resources/js/fashion-os/components/TrendGraph';
+import { NeuralTryOn } from './src/components/NeuralTryOn';
 
 import { translations } from './services/translationService';
 
-export const AIOperationsCenter: React.FC<{ lang: Language }> = ({ lang }) => {
+interface AIOperationsCenterProps {
+  lang: Language;
+  preloadedDesign?: string | null;
+  onDesignUsed?: () => void;
+}
+
+export const AIOperationsCenter: React.FC<AIOperationsCenterProps> = ({ 
+  lang, 
+  preloadedDesign,
+  onDesignUsed 
+}) => {
   const [registry, setRegistry] = useState<Registry | null>(null);
+  const [brain, setBrain] = useState<any>(null);
   const [memory, setMemory] = useState<any>(null);
   const [stats, setStats] = useState<any>(null);
   const [logs, setLogs] = useState<any[]>([]);
-  const [activeTab, setActiveTab] = useState<'matrix' | 'agents' | 'memory' | 'logs'>('matrix');
+  const [activeTab, setActiveTab] = useState<'matrix' | 'tryon' | 'agents' | 'memory' | 'logs'>('matrix');
   const [isExecuting, setIsExecuting] = useState<string | null>(null);
+
+  useEffect(() => {
+    if (preloadedDesign) {
+      setActiveTab('tryon');
+    }
+  }, [preloadedDesign]);
+
+  const fetchBrain = useCallback(async () => {
+    try {
+      const res = await fetch('/api/system/brain');
+      const data = await res.json();
+      setBrain(data);
+    } catch (e) {
+      console.error("Brain sync failed", e);
+    }
+  }, []);
+
+  const runCommand = async (command: string, args: any = {}) => {
+    setIsExecuting(command);
+    try {
+      const res = await fetch('/api/system/command', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ command, args })
+      });
+      const data = await res.json();
+      if (data.success) {
+        fetchStats();
+        fetchBrain();
+      }
+    } finally {
+      setTimeout(() => setIsExecuting(null), 1000);
+    }
+  };
 
   const t = translations[lang].ops;
 
@@ -62,7 +109,11 @@ export const AIOperationsCenter: React.FC<{ lang: Language }> = ({ lang }) => {
 
   useEffect(() => {
     fetchStats();
-    const interval = setInterval(fetchStats, 5000);
+    fetchBrain();
+    const interval = setInterval(() => {
+      fetchStats();
+      fetchBrain();
+    }, 5000);
 
     const eventSource = new EventSource('/api/fashion/runtime/stream');
     eventSource.onmessage = (event) => {
@@ -119,17 +170,17 @@ export const AIOperationsCenter: React.FC<{ lang: Language }> = ({ lang }) => {
             </h2>
           </div>
           <div className="flex gap-4">
-            {['matrix', 'agents', 'memory', 'logs'].map((tab) => (
-              <QuantumButton
-                key={tab}
-                variant={activeTab === tab ? 'primary' : 'secondary'}
-                onClick={() => setActiveTab(tab as any)}
-                className="!rounded-full px-8"
-              >
-                {(translations[lang].ops as any)[tab] || tab}
-              </QuantumButton>
-            ))}
-          </div>
+             {['matrix', 'tryon', 'agents', 'memory', 'logs'].map((tab) => (
+               <QuantumButton
+                 key={tab}
+                 variant={activeTab === tab ? 'primary' : 'secondary'}
+                 onClick={() => setActiveTab(tab as any)}
+                 className="!rounded-full px-8"
+               >
+                 {(translations[lang].ops as any)[tab] || tab}
+               </QuantumButton>
+             ))}
+           </div>
         </div>
 
         <AnimatePresence mode="wait">
@@ -142,6 +193,30 @@ export const AIOperationsCenter: React.FC<{ lang: Language }> = ({ lang }) => {
               className="grid grid-cols-1 lg:grid-cols-4 gap-8"
             >
               <div className="lg:col-span-3 grid grid-cols-1 md:grid-cols-2 gap-8">
+                {/* Try-on Quick Access */}
+                <NeuralCard 
+                  title={translations[lang].ops.tryon} 
+                  subtitle={translations[lang].ops.tryonDesc} 
+                  icon={<Camera className="text-primary" />}
+                  className="!p-12 md:col-span-2 bg-gradient-to-br from-primary/5 to-transparent border-primary/20"
+                >
+                  <div className="flex items-center justify-between gap-10">
+                    <div className="space-y-4 max-w-md">
+                      <p className="text-sm text-zinc-400 leading-relaxed italic">
+                        Access the neural fitting room to map designs onto character silhouettes using Gemini 3.1 high-fidelity vision models.
+                      </p>
+                      <QuantumButton variant="primary" onClick={() => setActiveTab('tryon')}>
+                        Enter Fitting Room
+                      </QuantumButton>
+                    </div>
+                    <div className="hidden md:flex gap-2">
+                       <div className="w-16 h-24 bg-zinc-800 rounded-xl animate-pulse" />
+                       <div className="w-16 h-24 bg-primary/20 rounded-xl animate-pulse border border-primary/30" />
+                       <div className="w-16 h-24 bg-zinc-800 rounded-xl animate-pulse" />
+                    </div>
+                  </div>
+                </NeuralCard>
+
                 {/* Workers Fabric */}
                 <NeuralCard 
                   title={t.gpuFabric} 
@@ -250,6 +325,31 @@ export const AIOperationsCenter: React.FC<{ lang: Language }> = ({ lang }) => {
                   className="!p-12 md:col-span-2"
                 >
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-8 mt-10">
+                    <RuntimePanel title="Command Bus" status={isExecuting ? 'busy' : 'online'}>
+                       <div className="grid grid-cols-1 gap-2">
+                          {[
+                            { id: 'runtime.restart_worker', label: 'Restart Worker', icon: RotateCw },
+                            { id: 'runtime.clear_vram', label: 'Clear VRAM', icon: Trash2 },
+                            { id: 'runtime.switch_model', label: 'Switch Model', icon: RefreshCw },
+                            { id: 'system.health_check', label: 'Health Check', icon: Activity },
+                            { id: 'system.brain_cycle_trigger', label: 'Brain Cycle', icon: Brain }
+                          ].map(cmd => (
+                            <button
+                              key={cmd.id}
+                              onClick={() => runCommand(cmd.id)}
+                              disabled={!!isExecuting}
+                              className="flex items-center justify-between p-4 bg-white/5 rounded-2xl hover:bg-white/10 transition-all group"
+                            >
+                              <div className="flex items-center gap-3">
+                                <cmd.icon size={14} className="text-zinc-500 group-hover:text-primary" />
+                                <span className="text-[10px] font-black uppercase tracking-widest text-zinc-400 group-hover:text-white">{cmd.label}</span>
+                              </div>
+                              <ChevronRight size={14} className="text-zinc-700 group-hover:text-primary" />
+                            </button>
+                          ))}
+                       </div>
+                    </RuntimePanel>
+
                     <RuntimePanel title={t.gpuWatchdog} status={stats?.gpu_runtime ? 'online' : 'offline'}>
                       <p className="text-[11px] text-muted leading-relaxed italic mb-8">
                         {t.gpuMonitorDesc}
@@ -368,6 +468,17 @@ export const AIOperationsCenter: React.FC<{ lang: Language }> = ({ lang }) => {
             </motion.div>
           )}
 
+          {activeTab === 'tryon' && (
+            <motion.div 
+              key="tryon"
+              initial={{ opacity: 0, scale: 0.98 }}
+              animate={{ opacity: 1, scale: 1 }}
+              exit={{ opacity: 0, scale: 0.98 }}
+            >
+              <NeuralTryOn preloadedDesign={preloadedDesign} />
+            </motion.div>
+          )}
+
           {activeTab === 'memory' && (
             <motion.div 
               key="memory"
@@ -376,7 +487,34 @@ export const AIOperationsCenter: React.FC<{ lang: Language }> = ({ lang }) => {
               exit={{ opacity: 0, y: -20 }}
               className="space-y-12"
             >
-              <FashionGrid columns={3}>
+              <FashionGrid columns={4}>
+                <div className="col-span-1 lg:col-span-1 space-y-6">
+                  <NeuralCard title="Brain Hub" subtitle="Core Cognitive State" glowColor="amber">
+                    <div className="space-y-6">
+                       <div className="flex flex-col gap-1">
+                          <span className="text-[8px] font-black text-zinc-500 uppercase">Trend Memory</span>
+                          <span className="text-2xl font-black text-white">{brain?.trend_memory?.toLocaleString() || '0'} Nodes</span>
+                       </div>
+                       <div className="flex flex-col gap-1">
+                          <span className="text-[8px] font-black text-zinc-500 uppercase">Style Graph</span>
+                          <span className="text-2xl font-black text-white">{brain?.style_graph_nodes?.toLocaleString() || '0'} Points</span>
+                       </div>
+                       <div className="w-full h-px bg-white/5" />
+                       <div className="flex flex-col gap-2">
+                          <span className="text-[8px] font-black text-zinc-500 uppercase">Top Trends</span>
+                          <div className="flex flex-wrap gap-1">
+                             {brain?.top_trends?.map((t: string) => (
+                               <span key={t} className="px-2 py-0.5 rounded bg-primary/10 text-primary text-[8px] font-bold">#{t}</span>
+                             ))}
+                          </div>
+                       </div>
+                       <QuantumButton variant="glow" onClick={() => runCommand('system.brain_cycle_trigger')} className="w-full">
+                          Force Brain Cycle
+                       </QuantumButton>
+                    </div>
+                  </NeuralCard>
+                </div>
+
                 <TrendGraph 
                   title={t.trendVelocity}
                   data={memory?.trends.map((t: any) => ({ label: t.topic, value: t.velocity })) || []}

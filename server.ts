@@ -3,9 +3,20 @@ import cors from "cors";
 import path from "path";
 import { createServer as createViteServer } from "vite";
 import fs from "fs";
+import { GoogleGenAI } from "@google/genai";
 
 const app = express();
 const PORT = 3000;
+
+// Gemini Initialization
+const ai = new GoogleGenAI({
+  apiKey: process.env.GEMINI_API_KEY,
+  httpOptions: {
+    headers: {
+      'User-Agent': 'aistudio-build',
+    }
+  }
+});
 
 app.use(cors());
 app.use(express.json({ limit: '50mb' }));
@@ -94,7 +105,7 @@ let systemLogs: string[] = [];
 
 // --- SSE Broadcast Functions ---
 
-function addLog(msg: string, level: 'INFO' | 'WARN' | 'ACTION' | 'AI' = 'INFO') {
+function addLog(msg: string, level: 'INFO' | 'WARN' | 'ACTION' | 'AI' | 'SYSTEM' | 'RUNTIME' | 'BRAIN' = 'INFO') {
   const log = `[${new Date().toISOString().split('T')[1].split('.')[0]}] [${level}] ${msg}`;
   systemLogs.unshift(log);
   if (systemLogs.length > 100) systemLogs.pop();
@@ -355,6 +366,130 @@ app.get("/api/fashion/tasks/:id", (req, res) => {
   } else {
     res.status(404).json({ success: false, error: "Task not found" });
   }
+});
+
+// AI Neural Try-on
+app.post("/api/ai/try-on", async (req, res) => {
+  const { personImage, garmentImage, prompt, quality = '1K' } = req.body;
+  
+  if (!personImage) {
+    return res.status(400).json({ error: "Person image is required" });
+  }
+
+  const taskId = `ai_vto_${Date.now()}`;
+  addLog(`INITIALIZING NEURAL TRY-ON FOR TASK ${taskId}`, "AI");
+
+  try {
+    // Note: In a real scenario, we'd use the provided images. 
+    // Here we use Gemini to "simulate" the high-fidelity generation if we were to call a real diffusion model or Gemini Flash Image.
+    // Since Gemini Flash Image can generate images from prompts + images:
+    
+    const contents = {
+       parts: [
+         { text: `High-fidelity virtual try-on: Place the clothing item from the second image (or as described: ${prompt}) onto the person in the first image. Maintain lighting, wrinkles, and physical hanging. Professional fashion photography style, high resolution, realistic textures.` },
+         { inlineData: { data: personImage.split(',')[1] || personImage, mimeType: 'image/png' } }
+       ]
+    };
+
+    if (garmentImage) {
+      contents.parts.push({ inlineData: { data: garmentImage.split(',')[1] || garmentImage, mimeType: 'image/png' } });
+    }
+
+    const response = await ai.models.generateContent({
+      model: "gemini-3.1-flash-image-preview",
+      contents,
+      config: {
+        imageConfig: {
+          aspectRatio: "3:4",
+          imageSize: quality as any
+        }
+      }
+    });
+
+    let resultImage = "";
+    for (const part of response.candidates?.[0]?.content.parts || []) {
+      if (part.inlineData) {
+        resultImage = `data:image/png;base64,${part.inlineData.data}`;
+        break;
+      }
+    }
+
+    if (!resultImage) {
+      throw new Error("No image generated");
+    }
+
+    const task: Task = {
+      id: taskId,
+      type: 'AI_TRY_ON',
+      status: 'completed',
+      progress: 100,
+      result_url: resultImage,
+      created_at: Date.now()
+    };
+    
+    TASK_QUEUE.unshift(task);
+    res.json({ success: true, task });
+    addLog(`NEURAL TRY-ON COMPLETE: High-fidelity image generated for ${taskId}`, "AI");
+
+  } catch (error: any) {
+    console.error("AI Try-on Error:", error);
+    addLog(`AI TRY-ON FAILED: ${error.message}`, "WARN");
+    res.status(500).json({ error: error.message });
+  }
+});
+
+// Fashion Brain Local Memory State
+let FASHION_BRAIN = {
+  trend_memory: 4280,
+  style_graph_nodes: 12504,
+  last_cycle: Date.now(),
+  learning_rate: 0.0042,
+  top_trends: ['Cyber-Drape', 'Bio-Mesh', 'Liquid-Chrome']
+};
+
+// Command Bus Router
+app.post("/api/system/command", async (req, res) => {
+  const { command, args = {} } = req.body;
+  const taskId = `cmd_${Date.now()}`;
+  
+  addLog(`[COMMAND_BUS] RECEIVED: ${command}`, "SYSTEM");
+
+  try {
+    switch (command) {
+      case 'runtime.restart_worker':
+        addLog(`Restarting worker ${args.id || 'all'}...`, "RUNTIME");
+        break;
+      case 'runtime.clear_vram':
+        addLog(`Executing GLOBAL VRAM PURGE across H100 cluster`, "RUNTIME");
+        break;
+      case 'runtime.switch_model':
+        addLog(`Switching core generator to ${args.model || 'SDXL_Pro'}`, "AI");
+        break;
+      case 'system.health_check':
+        addLog(`Running global heartbeat on all Neural Nodes`, "SYSTEM");
+        break;
+      case 'system.brain_cycle_trigger':
+        FASHION_BRAIN.last_cycle = Date.now();
+        addLog(`Autonomous Fashion Brain cycle triggered: Recalculating Style Graph`, "BRAIN");
+        break;
+      default:
+        addLog(`Routing ${command} to RuntimeActionRouter`, "SYSTEM");
+    }
+
+    res.json({ 
+      success: true, 
+      taskId,
+      status: 'executed',
+      timestamp: Date.now()
+    });
+
+  } catch (error: any) {
+    res.status(500).json({ error: error.message });
+  }
+});
+
+app.get("/api/system/brain", (req, res) => {
+  res.json(FASHION_BRAIN);
 });
 
 // Try On

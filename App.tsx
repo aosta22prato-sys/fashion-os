@@ -849,6 +849,7 @@ export default function App() {
   const [hubData, setHubData] = useState<any | null>(null);
   const [globalQueue, setGlobalQueue] = useState<{ id: string, progress: number, status: string } | null>(null);
   const [preloadedGarment, setPreloadedGarment] = useState<string | null>(null);
+  const [projectedDesign, setProjectedDesign] = useState<string | null>(null);
   const [preloadedPrompt, setPreloadedPrompt] = useState<string | null>(null);
   const [curatedItems, setCuratedItems] = useState<FashionItem[]>([]);
   const [userRole, setUserRole] = useState<UserRole>('CEO');
@@ -1162,7 +1163,11 @@ export default function App() {
         )}
 
         {activeTab === 'operations' && (
-           <AIOperationsCenter lang={lang} />
+           <AIOperationsCenter 
+             lang={lang} 
+             preloadedDesign={projectedDesign}
+             onDesignUsed={() => setProjectedDesign(null)}
+           />
         )}
 
         {activeTab === 'settings' && (
@@ -1878,7 +1883,13 @@ export default function App() {
                                       >
                                           {moodboard3DItem === item.id ? (
                                              <div className="relative w-full h-full">
-                                                <NeuralModelViewer url={item.modelUrl} />
+                                                <NeuralModelViewer 
+                                                  url={item.modelUrl} 
+                                                  onExportDesign={(img) => {
+                                                     setProjectedDesign(img);
+                                                     setActiveTab('operations');
+                                                  }}
+                                                />
                                                 <button 
                                                    onClick={(e) => {
                                                       e.stopPropagation();
