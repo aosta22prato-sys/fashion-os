@@ -456,7 +456,7 @@ export const MOCK_FASHION_GALLERY: FashionItem[] = [
 ];
 
 export const TRENDING_MOODBOARD = [
-  { id: 'm1', url: 'https://picsum.photos/seed/trend-pink/1024/1024', title: 'Powder Pink' },
+  { id: 'm1', url: 'https://images.unsplash.com/photo-1515886657613-9f3515b0c78f?auto=format&fit=crop&q=80&w=1200', title: 'Neural Drape Concept', modelUrl: 'https://modelviewer.dev/shared-assets/models/Astronaut.glb' },
   { id: 'm2', url: 'https://picsum.photos/seed/trend-tulle/1024/1024', title: 'Wrapped in Tulle' },
   { id: 'm3', url: 'https://picsum.photos/seed/trend-plaid/1024/1024', title: "'90s Plaid" },
   { id: 'm4', url: 'https://picsum.photos/seed/trend-tank/1024/1024', title: 'The Little White Tank' },

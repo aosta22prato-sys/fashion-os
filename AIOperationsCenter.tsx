@@ -8,6 +8,15 @@ import {
   User, Power, RotateCw, Square, Play, HardDrive, 
   RefreshCw, Bot, XCircle, LineChart, ShieldCheck, Trash2
 } from 'lucide-react';
+import { 
+  ResponsiveContainer, 
+  BarChart, 
+  Bar, 
+  XAxis, 
+  YAxis, 
+  Tooltip, 
+  Cell 
+} from 'recharts';
 import { Registry, OpsDashboard, Language, Agent } from './types';
 
 // ModaUI System Imports
@@ -141,6 +150,42 @@ export const AIOperationsCenter: React.FC<{ lang: Language }> = ({ lang }) => {
                   className="!p-12 md:col-span-1"
                 >
                   <div className="space-y-8">
+                    {/* GPU Utilization Visualizer */}
+                    <div className="h-40 w-full bg-white/5 rounded-3xl p-6 border border-white/5">
+                      <ResponsiveContainer width="100%" height="100%">
+                        <BarChart data={registry?.workers || []}>
+                          <XAxis 
+                            dataKey="id" 
+                            hide 
+                          />
+                          <YAxis hide domain={[0, 100]} />
+                          <Tooltip 
+                            cursor={{ fill: 'transparent' }}
+                            content={({ active, payload }) => {
+                              if (active && payload && payload.length) {
+                                return (
+                                  <div className="bg-black/80 backdrop-blur-md border border-primary/20 p-3 rounded-xl shadow-2xl">
+                                    <p className="text-[10px] font-black uppercase tracking-widest text-primary mb-1">{payload[0].payload.id}</p>
+                                    <p className="text-xl font-black text-white">{payload[0].value}% <span className="text-[10px] text-muted uppercase font-mono">Load</span></p>
+                                  </div>
+                                );
+                              }
+                              return null;
+                            }}
+                          />
+                          <Bar dataKey="load" radius={[4, 4, 0, 0]}>
+                            {(registry?.workers || []).map((entry, index) => (
+                              <Cell 
+                                key={`cell-${index}`} 
+                                fill={entry.status === 'busy' ? '#f59e0b' : '#00b8d9'} 
+                                className="transition-all duration-500"
+                              />
+                            ))}
+                          </Bar>
+                        </BarChart>
+                      </ResponsiveContainer>
+                    </div>
+
                     {registry?.workers.map(w => (
                       <div key={w.id} className="space-y-3">
                         <div className="flex justify-between text-[11px] font-black text-text uppercase tracking-widest">

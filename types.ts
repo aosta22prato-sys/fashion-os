@@ -129,6 +129,7 @@ export interface Registry {
     name: string;
     type: string;
     status: string;
+    gpu?: string;
     gpu_memory: number;
     load: number;
   }>;

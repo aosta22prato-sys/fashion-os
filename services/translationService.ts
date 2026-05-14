@@ -158,6 +158,9 @@ export interface Translations {
     security: string;
     manageNode: string;
     orchestrator: string;
+    authorityLevel: string;
+    modelStack: string;
+    neuralPipeline: string;
   };
   hub: {
     title: string;
@@ -377,7 +380,10 @@ export const translations: Record<Language, Translations> = {
       state: "State",
       security: "Security",
       manageNode: "Manage Node",
-      orchestrator: "Orchestrator"
+      orchestrator: "Orchestrator",
+      authorityLevel: "Authority Level",
+      modelStack: "Model Stack",
+      neuralPipeline: "Neural Pipeline"
     },
     hub: {
       title: "Quantum Distribution Hub",
@@ -623,7 +629,10 @@ export const translations: Record<Language, Translations> = {
       state: "状态",
       security: "安全性",
       manageNode: "管理节点",
-      orchestrator: "编排器"
+      orchestrator: "编排器",
+      authorityLevel: "授权等级",
+      modelStack: "模型堆栈",
+      neuralPipeline: "神经管道"
     },
     hub: {
       title: "量子分发枢纽",
@@ -869,7 +878,10 @@ export const translations: Record<Language, Translations> = {
       state: "Stato",
       security: "Sicurezza",
       manageNode: "Gestisci Nodo",
-      orchestrator: "Orchestratore"
+      orchestrator: "Orchestratore",
+      authorityLevel: "Livello Autorità",
+      modelStack: "Stack Modelli",
+      neuralPipeline: "Pipeline Neurale"
     },
     hub: {
       title: "Quantum Distribution Hub",
@@ -1115,7 +1127,10 @@ export const translations: Record<Language, Translations> = {
       state: "État",
       security: "Sécurité",
       manageNode: "Gérer Noeud",
-      orchestrator: "Orchestrateur"
+      orchestrator: "Orchestrateur",
+      authorityLevel: "Niveau Autorité",
+      modelStack: "Stack Modèles",
+      neuralPipeline: "Pipeline Neurale"
     },
     hub: {
       title: "Quantum Distribution Hub",

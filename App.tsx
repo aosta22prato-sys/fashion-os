@@ -13,10 +13,12 @@ import {
   User, Globe, Library, Activity, Server, ChevronLeft, MapPin, Cpu, TrendingDown,
   Shirt, CheckCircle2, Trash2, ZoomIn, History, Timer, Box, Layers, RefreshCw,
   Radio, Database, Network, ChevronDown, List, Code, HardDrive, Terminal, Plus,
-  Shield, Lock, Copy, MoreHorizontal, Monitor, Layout, Rocket, ShieldCheck, FileText
+  Shield, Lock, Copy, MoreHorizontal, Monitor, Layout, Rocket, ShieldCheck, FileText,
+  Bot, Power
 } from 'lucide-react';
 
 import { AIOperationsCenter } from './AIOperationsCenter';
+import { NeuralModelViewer } from './src/components/NeuralModelViewer';
 import { AppState, FashionItem, ChatMessage, Theme, Language, UserRole } from './types';
 import { MOCK_FASHION_GALLERY, FASHION_CATEGORIES, TRENDING_MOODBOARD, fileToBase64, optimizeImage } from './utils';
 import { appBus } from './services/appBus';
@@ -499,102 +501,7 @@ const SafeImage: React.FC<{
   );
 };
 
-const NeuralViewport: React.FC<{
-  item: FashionItem;
-  is3D: boolean;
-  onToggle3D: () => void;
-  lang: Language;
-}> = ({ item, is3D, onToggle3D, lang }) => {
-  const [isReconstructing, setIsReconstructing] = useState(false);
 
-  useEffect(() => {
-    if (is3D && !isReconstructing) {
-      setIsReconstructing(true);
-      const timer = setTimeout(() => setIsReconstructing(false), 2000);
-      return () => clearTimeout(timer);
-    }
-  }, [is3D]);
-
-  return (
-    <div className="w-full h-full relative bg-zinc-100 dark:bg-black group overflow-hidden">
-      <AnimatePresence mode="wait">
-        {!is3D ? (
-          <motion.div
-            key="2d"
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            exit={{ opacity: 0 }}
-            className="w-full h-full"
-          >
-            <SafeImage 
-              src={item.imageUrl} 
-              alt={item.style} 
-              lang={lang}
-              className="w-full h-full object-cover" 
-            />
-          </motion.div>
-        ) : (
-          <motion.div
-            key="3d"
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            exit={{ opacity: 0 }}
-            className="w-full h-full"
-          >
-            {isReconstructing ? (
-              <div className="absolute inset-0 flex flex-col items-center justify-center space-y-6 z-20 bg-black">
-                <div className="w-16 h-16 border-t-2 border-primary rounded-full animate-spin" />
-                <div className="text-center">
-                  <p className="text-[10px] font-black uppercase tracking-[0.4em] text-primary mb-2">{translations[lang].system.reconstructionActive}</p>
-                  <p className="text-xs font-mono text-zinc-500">{translations[lang].system.processingCloud}</p>
-                </div>
-              </div>
-            ) : (
-              <model-viewer
-                src={item.modelUrl || "https://modelviewer.dev/shared-assets/models/Astronaut.glb"}
-                alt="3D Neural Reconstruction"
-                auto-rotate
-                camera-controls
-                shadow-intensity="1"
-                environment-image="neutral"
-                exposure="1"
-                class="w-full h-full bg-zinc-950"
-                style={{ width: '100%', height: '100%' }}
-              ></model-viewer>
-            )}
-            
-            <div className="absolute top-1/2 left-10 -translate-y-1/2 space-y-2">
-               {[translations[lang].system.voxAligned, translations[lang].system.quadReflow, translations[lang].system.texSynth].map(status => (
-                  <div key={status} className="flex items-center gap-2">
-                     <div className="w-1 h-1 bg-primary rounded-full" />
-                     <span className="text-[8px] font-mono text-primary/50 uppercase">{status}</span>
-                  </div>
-               ))}
-            </div>
-          </motion.div>
-        )}
-      </AnimatePresence>
-
-      <div className="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent pointer-events-none" />
-      
-      <div className="absolute bottom-12 left-12 right-12 flex justify-between items-end pointer-events-none">
-         <div className="max-w-[70%]">
-            <span className="text-[10px] font-black uppercase tracking-[0.4em] text-primary mb-4 block">{translations[lang].system.archiveMatch}</span>
-            <h2 className="text-5xl font-serif italic text-white leading-tight uppercase tracking-tighter truncate">{item.style}</h2>
-         </div>
-         <button 
-           onClick={(e) => {
-             e.stopPropagation();
-             onToggle3D();
-           }}
-           className="pointer-events-auto w-16 h-16 glass border-white/20 rounded-full flex items-center justify-center text-white hover:scale-110 transition-all active:scale-95 group/btn shadow-2xl"
-         >
-           {is3D ? <Maximize2 size={24} /> : <Box size={24} className="group-hover/btn:text-primary transition-colors" />}
-         </button>
-      </div>
-    </div>
-  );
-};
 
 const SuperShareHub: React.FC<{ 
   data: any; 
@@ -936,7 +843,7 @@ export default function App() {
   };
 
   const [selectedItem, setSelectedItem] = useState<FashionItem | null>(null);
-  const [is3DActive, setIs3DActive] = useState(false);
+  const [moodboard3DItem, setMoodboard3DItem] = useState<string | null>(null);
   const [itemVariants, setItemVariants] = useState<string[]>([]);
   const [isGeneratingVariant, setIsGeneratingVariant] = useState(false);
   const [hubData, setHubData] = useState<any | null>(null);
@@ -947,6 +854,25 @@ export default function App() {
   const [userRole, setUserRole] = useState<UserRole>('CEO');
   const [lockedItems, setLockedItems] = useState<Set<string>>(new Set());
   const [currentUser, setCurrentUser] = useState<FirebaseUser | null>(null);
+  const [assistantInput, setAssistantInput] = useState('');
+  const messagesEndRef = useRef<HTMLDivElement>(null);
+
+  const scrollToBottom = (instant = false) => {
+    if (messagesEndRef.current) {
+      messagesEndRef.current.scrollIntoView({ 
+        behavior: instant ? "auto" : "smooth",
+        block: "end"
+      });
+    }
+  };
+
+  useEffect(() => {
+    if (isAssistantOpen) {
+      // Small delay to ensure render batching
+      const timer = setTimeout(() => scrollToBottom(), 100);
+      return () => clearTimeout(timer);
+    }
+  }, [assistantMessages, isTyping, isAssistantOpen]);
 
   // Firebase Auth Lifecycle
   useEffect(() => {
@@ -973,7 +899,7 @@ export default function App() {
 
   const handleSelectItem = (item: FashionItem | null) => {
     setSelectedItem(item);
-    setIs3DActive(false);
+    setMoodboard3DItem(null);
     setItemVariants([]);
     setIsGeneratingVariant(false);
   };
@@ -1454,12 +1380,22 @@ export default function App() {
             >
               {/* Media Section */}
               <div className="lg:w-1/2 relative">
-                <NeuralViewport 
-                  item={selectedItem} 
-                  is3D={is3DActive} 
-                  onToggle3D={() => setIs3DActive(!is3DActive)} 
-                  lang={lang}
-                />
+                <div className="w-full h-full relative bg-zinc-100 dark:bg-black group overflow-hidden">
+                   <SafeImage 
+                     src={selectedItem.imageUrl} 
+                     alt={selectedItem.style} 
+                     lang={lang}
+                     className="w-full h-full object-cover" 
+                   />
+                   <div className="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent pointer-events-none" />
+                   
+                   <div className="absolute bottom-12 left-12 right-12 flex justify-between items-end pointer-events-none">
+                      <div className="max-w-[70%]">
+                         <span className="text-[10px] font-black uppercase tracking-[0.4em] text-primary mb-4 block">{translations[lang].system.archiveMatch}</span>
+                         <h2 className="text-5xl font-serif italic text-white leading-tight uppercase tracking-tighter truncate">{selectedItem.style}</h2>
+                      </div>
+                   </div>
+                </div>
                 
                 <button 
                   onClick={() => handleSelectItem(null)}
@@ -1767,109 +1703,291 @@ export default function App() {
                    </div>
                    
                    <div className="flex-1 space-y-8">
-                      <div className="p-8 bg-white dark:bg-white/5 rounded-[2.5rem] border border-zinc-100 dark:border-white/10">
-                         <p className="text-[9px] font-black uppercase tracking-widest text-zinc-400 mb-4">Command History</p>
-                         <div className="space-y-4">
-                            {['Gen Dior Campaign', 'Clear Cache', 'Analyze VTO'].map(cmd => (
-                               <div key={cmd} className="flex items-center gap-3 text-xs text-zinc-500 dark:text-zinc-600 font-mono">
-                                  <Terminal size={12} /> {cmd}
-                               </div>
-                            ))}
-                         </div>
+                   <div className="p-8 bg-white/50 dark:bg-white/5 rounded-[2.5rem] border border-zinc-100 dark:border-white/10 backdrop-blur-md relative overflow-hidden group">
+                      <p className="text-[9px] font-black uppercase tracking-widest text-zinc-400 mb-6 flex items-center gap-2">
+                         <span className="w-1.5 h-1.5 rounded-full bg-primary animate-pulse" />
+                         NEURAL_QUERY_LOG
+                      </p>
+                      <div className="space-y-3">
+                         {['Gen Dior Campaign', 'Clear Cache', 'Analyze VTO'].map((cmd, idx) => (
+                            <motion.button 
+                              key={cmd} 
+                              whileHover={{ x: 6, backgroundColor: 'rgba(0,184,217,0.05)' }}
+                              whileTap={{ scale: 0.98 }}
+                              onClick={() => handleAssistantAction(cmd)}
+                              className="w-full flex items-center gap-3 p-4 rounded-2xl bg-black/5 dark:bg-white/5 text-[11px] text-zinc-600 dark:text-zinc-400 font-mono text-left border border-transparent hover:border-primary/20 hover:text-primary transition-all group/btn"
+                            >
+                               <Terminal size={14} className="opacity-40 group-hover/btn:opacity-100 transition-opacity" /> 
+                               <span className="truncate">{cmd}</span>
+                            </motion.button>
+                         ))}
                       </div>
                    </div>
 
-                   <button 
-                     onClick={() => setIsAssistantOpen(false)}
-                     className="w-full py-5 border border-zinc-200 dark:border-white/10 rounded-full text-[10px] font-black uppercase tracking-widest text-zinc-400 hover:text-zinc-900 dark:hover:text-white transition-all"
-                   >
-                      Shutdown Interface
-                   </button>
+                   <div className="p-8 bg-zinc-900/5 dark:bg-primary/5 rounded-[2.5rem] border border-primary/10">
+                      <div className="flex items-center gap-3 mb-4">
+                         <Bot size={16} className="text-primary" />
+                         <span className="text-[10px] font-black uppercase tracking-[0.2em] text-primary">AURA_OS_INTEL</span>
+                      </div>
+                      <div className="h-1 w-full bg-black/10 dark:bg-white/10 rounded-full overflow-hidden">
+                         <motion.div 
+                           animate={{ x: ['-100%', '100%'] }}
+                           transition={{ repeat: Infinity, duration: 2, ease: "linear" }}
+                           className="h-full w-1/3 bg-primary"
+                         />
+                      </div>
+                      <p className="mt-4 text-[9px] font-mono text-zinc-500 uppercase leading-relaxed">
+                         Nodes Synchronized: 128/128<br/>
+                         Neural Latency: 0.04ms<br/>
+                         Style_Registry: ONLINE
+                      </p>
+                   </div>
+                </div>
+
+                <motion.button 
+                  whileHover={{ scale: 1.02 }}
+                  whileTap={{ scale: 0.98 }}
+                  onClick={() => setIsAssistantOpen(false)}
+                  className="w-full py-6 bg-red-500/5 hover:bg-red-500 text-red-500 hover:text-white border border-red-500/20 rounded-[2rem] text-[10px] font-black uppercase tracking-[0.3em] transition-all flex items-center justify-center gap-3"
+                >
+                   <Power size={14} />
+                   Shutdown Interface
+                </motion.button>
                 </div>
                 
-                <div className="flex-1 flex flex-col justify-between bg-white dark:bg-transparent overflow-hidden">
-                   <div className="flex-1 overflow-y-auto p-12 space-y-6 no-scrollbar">
+                <div className="flex-1 flex flex-col justify-between bg-white dark:bg-transparent overflow-hidden relative">
+                   {/* Chat Header */}
+                   <div className="px-12 py-8 border-b border-zinc-100 dark:border-white/5 flex items-center justify-between bg-white/80 dark:bg-zinc-950/80 backdrop-blur-xl z-10">
+                      <div className="flex items-center gap-5">
+                         <div className="relative">
+                            <div className="w-14 h-14 rounded-2xl bg-primary/10 border border-primary/20 flex items-center justify-center relative overflow-hidden group">
+                               <motion.div 
+                                 animate={{ rotate: 360 }}
+                                 transition={{ repeat: Infinity, duration: 10, ease: "linear" }}
+                                 className="absolute inset-0 bg-[conic-gradient(from_0deg,transparent_0deg,var(--color-primary)_180deg,transparent_360deg)] opacity-20"
+                               />
+                               <Bot size={28} className="text-primary relative z-10" />
+                            </div>
+                            <div className="absolute -bottom-1 -right-1 w-4 h-4 rounded-full bg-primary border-4 border-white dark:border-zinc-950" />
+                         </div>
+                         <div>
+                            <h4 className="text-base font-black dark:text-white uppercase tracking-[0.2em] flex items-center gap-2">
+                               Neural Director
+                               <span className="px-2 py-0.5 rounded-full bg-primary/10 text-primary text-[8px] tracking-tighter">AI_CORE</span>
+                            </h4>
+                            <div className="flex items-center gap-3 mt-1">
+                               <p className="text-[10px] font-mono text-zinc-500 uppercase tracking-widest">v4.0.2 Stable Build</p>
+                               <div className="w-1 h-1 rounded-full bg-zinc-300 dark:bg-zinc-700" />
+                               <span className="text-[9px] font-mono text-primary animate-pulse uppercase">Syncing...</span>
+                            </div>
+                         </div>
+                      </div>
+                      <div className="flex items-center gap-4">
+                         <motion.button 
+                           whileHover={{ scale: 1.05, backgroundColor: 'rgba(239, 68, 68, 0.1)' }}
+                           whileTap={{ scale: 0.95 }}
+                           onClick={() => {
+                             if (confirm('Verify: Purge all local neural traces?')) {
+                               setAssistantMessages([{
+                                 role: 'assistant',
+                                 content: translations[lang].interaction.initMsg,
+                                 moodboard: TRENDING_MOODBOARD,
+                                 suggestions: translations[lang].interaction.suggestions
+                               }]);
+                             }
+                           }}
+                           className="p-4 bg-zinc-100 dark:bg-white/5 text-zinc-400 hover:text-red-500 rounded-2xl transition-all hover:shadow-lg border border-transparent hover:border-red-500/20"
+                           title="Purge Logs"
+                         >
+                            <Trash2 size={20} />
+                         </motion.button>
+                      </div>
+                   </div>
+
+                   <div className="flex-1 overflow-y-auto p-12 space-y-12 no-scrollbar scroll-smooth">
+                      <AnimatePresence mode="popLayout">
                       {assistantMessages.map((m, i) => (
                         <motion.div 
                           key={i}
-                          initial={{ opacity: 0, y: 10 }}
-                          animate={{ opacity: 1, y: 0 }}
-                          className={`flex flex-col ${m.role === 'user' ? 'items-end' : 'items-start'}`}
+                          layout
+                          initial={{ opacity: 0, x: m.role === 'user' ? 20 : -20, scale: 0.9 }}
+                          animate={{ opacity: 1, x: 0, scale: 1 }}
+                          exit={{ opacity: 0, scale: 0.5, filter: "blur(10px)" }}
+                          transition={{ 
+                            type: "spring", 
+                            stiffness: 150, 
+                            damping: 20
+                          }}
+                          className={`flex flex-col ${m.role === 'user' ? 'items-end' : 'items-start'} group/msg`}
                         >
-                           <div className={`max-w-[80%] p-6 rounded-[2.5rem] text-sm leading-relaxed ${m.role === 'user' ? 'bg-black text-white rounded-br-none' : 'bg-zinc-100 dark:bg-white/5 dark:text-white rounded-bl-none italic'} elastic-text`}>
-                              {m.content}
+                           <div className={`flex items-center gap-2 mb-3 px-6 ${m.role === 'user' ? 'flex-row-reverse' : ''}`}>
+                              <div className={`w-1.5 h-1.5 rounded-full ${m.role === 'user' ? 'bg-primary' : 'bg-zinc-500'} animate-pulse`} />
+                              <span className={`text-[10px] font-mono font-black uppercase tracking-widest ${m.role === 'user' ? 'text-primary' : 'text-zinc-500'}`}>
+                                 {m.role === 'user' ? 'OPERATOR_LOCAL' : 'AURA_NEURAL_STATION'}
+                              </span>
                            </div>
+                           <motion.div 
+                             whileHover={{ scale: 1.01 }}
+                             className={`max-w-[90%] p-10 rounded-[3.5rem] text-[16px] leading-[1.6] shadow-2xl relative overflow-hidden backdrop-blur-sm ${
+                             m.role === 'user' 
+                               ? 'bg-zinc-900/90 text-white rounded-tr-none border border-white/20' 
+                               : 'bg-white/90 dark:bg-zinc-900/50 dark:text-white rounded-tl-none border border-zinc-200 dark:border-white/10 font-serif italic'
+                           }`}>
+                              {m.role === 'assistant' && (
+                                 <div className="absolute top-0 left-0 w-1.5 h-full bg-primary" />
+                              )}
+                              {m.content}
+                           </motion.div>
 
                            {/* Structured Data: Suggestions */}
                            {m.role === 'assistant' && (m as any).suggestions?.length > 0 && (
-                              <div className="flex flex-wrap gap-2 mt-4 px-2">
+                              <div className="flex flex-wrap gap-2 mt-6 px-2">
                                  {(m as any).suggestions.map((s: string, idx: number) => (
-                                    <button 
+                                    <motion.button 
                                       key={idx}
+                                      whileHover={{ scale: 1.05, y: -2 }}
+                                      whileTap={{ scale: 0.95 }}
                                       onClick={() => handleAssistantAction(s)}
-                                      className="px-4 py-2 bg-primary/10 border border-primary/20 rounded-full text-[10px] font-black uppercase text-primary hover:bg-primary hover:text-black transition-all"
+                                      className="px-5 py-2.5 bg-primary/10 border border-primary/20 rounded-full text-[10px] font-black uppercase text-primary hover:bg-primary hover:text-black transition-all flex items-center gap-2"
                                     >
+                                       <ArrowRight size={10} />
                                        {s}
-                                    </button>
+                                    </motion.button>
                                  ))}
                               </div>
                            )}
 
                            {/* Structured Data: Moodboard */}
                            {m.role === 'assistant' && (m as any).moodboard?.length > 0 && (
-                              <div className="space-y-4 mt-6">
-                                <div className="grid grid-cols-2 md:grid-cols-3 gap-3 w-full max-w-sm">
+                              <div className="space-y-6 mt-8 w-full">
+                                <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
                                    {(m as any).moodboard.map((item: any, idx: number) => (
-                                      <div key={idx} className="aspect-square bg-zinc-100 dark:bg-white/10 rounded-2xl overflow-hidden border border-white/5 group">
-                                         <img src={item.url} alt="Reference" className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-500" />
-                                      </div>
+                                      <motion.div 
+                                        key={idx} 
+                                        whileHover={{ y: -5 }}
+                                        className="aspect-[4/5] bg-zinc-100 dark:bg-white/10 rounded-3xl overflow-hidden border border-white/5 group cursor-pointer shadow-lg"
+                                        onClick={() => handleSelectItem({
+                                           id: item.id || `ref-${idx}`,
+                                           style: item.title,
+                                           imageUrl: item.url,
+                                           category: 'Reference',
+                                           tags: ['Moodboard'],
+                                           description: `Neural reference from AI curation`,
+                                           userId: 'system'
+                                        })}
+                                      >
+                                          {moodboard3DItem === item.id ? (
+                                             <div className="relative w-full h-full">
+                                                <NeuralModelViewer url={item.modelUrl} />
+                                                <button 
+                                                   onClick={(e) => {
+                                                      e.stopPropagation();
+                                                      setMoodboard3DItem(null);
+                                                   }}
+                                                   className="absolute top-4 right-4 z-20 p-2 bg-black/50 text-white rounded-full hover:bg-black/70 transition-all"
+                                                >
+                                                   <Minimize2 size={14} />
+                                                </button>
+                                             </div>
+                                          ) : (
+                                             <>
+                                                <img src={item.url} alt="Reference" className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-700" />
+                                                <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity p-4 flex flex-col justify-end">
+                                                   <p className="text-[10px] text-white font-black uppercase truncate">{item.title}</p>
+                                                   {item.modelUrl && (
+                                                      <button 
+                                                         onClick={(e) => {
+                                                            e.stopPropagation();
+                                                            setMoodboard3DItem(item.id);
+                                                         }}
+                                                         className="mt-2 w-full py-2 bg-primary text-black text-[8px] font-black uppercase rounded-lg hover:scale-105 active:scale-95 transition-all shadow-lg"
+                                                      >
+                                                         View in 3D
+                                                      </button>
+                                                   )}
+                                                </div>
+                                             </>
+                                          )}
+                                      </motion.div>
                                    ))}
                                 </div>
-                                 <button 
+                                <button 
                                   onClick={() => setHubData({
                                     ...m,
                                     title: "Neural Inspiration Board",
                                     context: "Assistant Intelligence"
                                   })}
-                                  className="flex items-center gap-2 px-4 py-2 bg-zinc-100 dark:bg-white/5 hover:bg-primary dark:hover:bg-primary hover:text-black rounded-full transition-all text-zinc-500 dark:text-zinc-400 group"
+                                  className="flex items-center gap-3 px-8 py-4 bg-zinc-100 dark:bg-white/5 hover:bg-primary dark:hover:bg-primary hover:text-black rounded-full transition-all text-zinc-500 dark:text-zinc-400 group border border-zinc-200 dark:border-white/10"
                                 >
-                                   <Share2 size={12} className="group-hover:rotate-12 transition-transform" />
-                                   <span className="text-[9px] font-black uppercase tracking-widest">Quantum Hub Dispatch</span>
+                                   <Share2 size={14} className="group-hover:rotate-12 transition-transform" />
+                                   <span className="text-[10px] font-black uppercase tracking-widest">Share to Hub</span>
                                 </button>
                               </div>
                            )}
                         </motion.div>
                       ))}
+                      </AnimatePresence>
                       {isTyping && (
                          <div className="flex justify-start">
-                            <div className="bg-zinc-100 dark:bg-white/5 p-6 rounded-[2.5rem] rounded-bl-none">
+                            <div className="bg-zinc-100 dark:bg-white/5 p-8 rounded-[2.5rem] rounded-bl-none">
                                <div className="flex gap-2">
-                                  <div className="w-2 h-2 bg-zinc-300 dark:bg-zinc-700 rounded-full animate-bounce" />
-                                  <div className="w-2 h-2 bg-zinc-300 dark:bg-zinc-700 rounded-full animate-bounce [animation-delay:0.2s]" />
-                                  <div className="w-2 h-2 bg-zinc-300 dark:bg-zinc-700 rounded-full animate-bounce [animation-delay:0.4s]" />
+                                  <div className="w-2 h-2 bg-primary rounded-full animate-bounce [animation-duration:0.6s]" />
+                                  <div className="w-2 h-2 bg-primary/60 rounded-full animate-bounce [animation-duration:0.6s] [animation-delay:0.1s]" />
+                                  <div className="w-2 h-2 bg-primary/30 rounded-full animate-bounce [animation-duration:0.6s] [animation-delay:0.2s]" />
                                </div>
                             </div>
                          </div>
                       )}
+                      <div ref={messagesEndRef} />
                    </div>
 
-                   <div className="p-12 border-t border-zinc-100 dark:border-white/5">
+                   <div className="p-12 border-t border-zinc-100 dark:border-white/5 bg-white dark:bg-zinc-950/80 backdrop-blur-xl">
                       <div className="relative group">
-                         <input 
+                         <textarea 
                            id="assistant-input"
-                           placeholder="Type command or query..."
-                           className="w-full shadow-inner dark:bg-neutral-800 dark:text-white dark:border-neutral-700 border border-zinc-200 rounded-full px-10 py-6 text-base italic font-serif focus:outline-none focus:ring-1 focus:ring-primary/50 transition-all"
+                           rows={1}
+                           value={assistantInput}
+                           onChange={(e) => setAssistantInput(e.target.value)}
+                           placeholder="Type a message or issue a command..."
+                           className="w-full min-h-[72px] max-h-[200px] dark:bg-neutral-900/50 dark:text-white dark:border-neutral-800 border border-zinc-200 rounded-[2rem] px-8 py-6 text-[15px] focus:outline-none focus:ring-2 focus:ring-primary/20 transition-all resize-none shadow-inner no-scrollbar"
                            onKeyDown={(e) => {
-                             if (e.key === 'Enter') {
-                               handleAssistantAction((e.target as HTMLInputElement).value);
-                               (e.target as HTMLInputElement).value = '';
+                             if (e.key === 'Enter' && !e.shiftKey) {
+                               e.preventDefault();
+                               if (assistantInput.trim() && !isTyping) {
+                                 handleAssistantAction(assistantInput);
+                                 setAssistantInput('');
+                                 e.currentTarget.style.height = '72px';
+                               }
                              }
                            }}
+                           onInput={(e) => {
+                              const target = e.currentTarget;
+                              target.style.height = '72px';
+                              target.style.height = `${target.scrollHeight}px`;
+                           }}
                          />
-                         <button className="absolute right-4 top-1/2 -translate-y-1/2 p-4 bg-primary text-black rounded-full shadow-xl hover:scale-110 active:scale-95 transition-all">
-                            <Send size={20} />
-                         </button>
+                         <motion.button 
+                           whileHover={{ scale: 1.1, rotate: 5, boxShadow: "0 25px 50px -12px rgba(0, 184, 217, 0.5)" }}
+                           whileTap={{ scale: 0.9, rotate: -5 }}
+                           disabled={isTyping || !assistantInput.trim()}
+                           onClick={() => {
+                              const input = document.getElementById('assistant-input') as HTMLTextAreaElement;
+                              if (input?.value.trim()) {
+                                handleAssistantAction(input.value);
+                                input.value = '';
+                                input.style.height = '72px';
+                              }
+                           }}
+                           className={`absolute right-4 bottom-4 p-5 rounded-3xl transition-all z-10 ${
+                             isTyping || !assistantInput.trim() ? 'bg-zinc-800 text-zinc-500 cursor-not-allowed opacity-50' : 'bg-primary text-black shadow-[0_20px_40px_rgba(0,184,217,0.4)]'
+                           }`}
+                         >
+                            {isTyping ? <RefreshCw size={24} className="animate-spin" /> : <Send size={24} />}
+                         </motion.button>
                       </div>
+                      <p className="mt-4 text-[9px] font-mono text-zinc-500 uppercase tracking-widest text-center opacity-50">
+                         Neural Link Stable | Latency: 12ms | Cluster: EU-Alpha
+                      </p>
                    </div>
                 </div>
              </motion.div>
