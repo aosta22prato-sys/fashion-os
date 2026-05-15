@@ -4,7 +4,8 @@ import {
   User, Shirt, Zap, Layers, Palette, 
   Camera, Sparkles, Download, RefreshCw,
   Box, MousePointer2, Wand2, Maximize2,
-  Settings, Save, History, LayoutGrid
+  Settings, Save, History, LayoutGrid, Database,
+  XCircle, Info
 } from 'lucide-react';
 
 interface Asset {
@@ -13,6 +14,9 @@ interface Asset {
   name: string;
   image: string;
   style: string;
+  sku: string;
+  material: string;
+  weight: string;
 }
 
 interface HumanModel {
@@ -29,21 +33,29 @@ const HUMAN_MODELS: HumanModel[] = [
 ];
 
 const ASSETS: Asset[] = [
-  { id: 'a1', type: 'TOP', name: 'Neural Mesh Tee', image: 'https://picsum.photos/seed/a1/400/400', style: 'Cyber' },
-  { id: 'a2', type: 'TOP', name: 'Liquid Silk Blouse', image: 'https://picsum.photos/seed/a2/400/400', style: 'Luxury' },
-  { id: 'a3', type: 'BOTTOM', name: 'Graphene Joggers', image: 'https://picsum.photos/seed/a3/400/400', style: 'Tech' },
-  { id: 'a4', type: 'OUTER', name: 'Bio-Shell Parka', image: 'https://picsum.photos/seed/a4/400/400', style: 'Utility' },
-  { id: 'a5', type: 'ACCESSORY', name: 'LED Visor', image: 'https://picsum.photos/seed/a5/400/400', style: 'Neon' },
-  { id: 'a6', type: 'BOTTOM', name: 'Pleated Carbon Skirt', image: 'https://picsum.photos/seed/a6/400/400', style: 'Avant-garde' },
+  { id: 'a1', type: 'TOP', name: 'Neural Mesh Tee', image: 'https://picsum.photos/seed/a1/400/400', style: 'Cyber', sku: 'SKU-NMT-01', material: 'Neural Graphene', weight: '120g' },
+  { id: 'a2', type: 'TOP', name: 'Liquid Silk Blouse', image: 'https://picsum.photos/seed/a2/400/400', style: 'Luxury', sku: 'SKU-LSB-05', material: 'Bio-Silk', weight: '95g' },
+  { id: 'a3', type: 'BOTTOM', name: 'Graphene Joggers', image: 'https://picsum.photos/seed/a3/400/400', style: 'Tech', sku: 'SKU-GRJ-12', material: 'Nano-Stretch', weight: '340g' },
+  { id: 'a4', type: 'OUTER', name: 'Bio-Shell Parka', image: 'https://picsum.photos/seed/a4/400/400', style: 'Utility', sku: 'SKU-BSP-09', material: 'Recycled Polymer', weight: '880g' },
+  { id: 'a5', type: 'ACCESSORY', name: 'LED Visor', image: 'https://picsum.photos/seed/a5/400/400', style: 'Neon', sku: 'SKU-LEV-02', material: 'Polycarbonate', weight: '45g' },
+  { id: 'a6', type: 'BOTTOM', name: 'Pleated Carbon Skirt', image: 'https://picsum.photos/seed/a6/400/400', style: 'Avant-garde', sku: 'SKU-PCS-14', material: 'Carbon Bio-Fibre', weight: '210g' },
+  { id: 'a7', type: 'BOTTOM', name: 'Void Trousers', image: 'https://picsum.photos/seed/a7/400/400', style: 'Minimal', sku: 'SKU-VTR-22', material: 'Dark Matter Weave', weight: '290g' },
+  { id: 'a8', type: 'OUTER', name: 'Reflective Trench', image: 'https://picsum.photos/seed/a8/400/400', style: 'Visibility', sku: 'SKU-RTR-03', material: 'Lidar-Reactive Fabric', weight: '920g' },
 ];
 
 export const DigitalHumanStudio: React.FC = () => {
   const [selectedHuman, setSelectedHuman] = useState<HumanModel>(HUMAN_MODELS[0]);
   const [outfit, setOutfit] = useState<Record<string, Asset>>({});
   const [isGenerating, setIsGenerating] = useState(false);
+  const [isBakingWalk, setIsBakingWalk] = useState(false);
+  const [isSubmitting, setIsSubmitting] = useState(false);
   const [result, setResult] = useState<string | null>(null);
   const [stylePreset, setStylePreset] = useState('Editorial Studio');
+  const [visualTheme, setVisualTheme] = useState<'WHITE' | 'BLACK'>('BLACK');
   const [lighting, setLighting] = useState('Cinematic Rim');
+  const [progress, setProgress] = useState(0);
+  const [rotation, setRotation] = useState(0);
+  const [selectedGarment, setSelectedGarment] = useState<Asset | null>(null);
 
   const toggleAsset = (asset: Asset) => {
     setOutfit(prev => {
@@ -80,85 +92,139 @@ export const DigitalHumanStudio: React.FC = () => {
     }
   };
 
+  const handleWalkCycle = () => {
+    setIsBakingWalk(true);
+    setProgress(0);
+    const interval = setInterval(() => {
+      setProgress(p => {
+        if (p >= 100) {
+          clearInterval(interval);
+          setTimeout(() => setIsBakingWalk(false), 500);
+          return 100;
+        }
+        return p + 2;
+      });
+    }, 50);
+  };
+
+  const handleSubmitToERP = async () => {
+    setIsSubmitting(true);
+    await new Promise(r => setTimeout(r, 2000));
+    setIsSubmitting(false);
+    alert("SKU Configuration & Fabric Usage Synced to PLM/ERP System.");
+  };
+
+  const themeClasses = visualTheme === 'BLACK' 
+    ? 'bg-[#0a0a0a] text-white' 
+    : 'bg-[#f4f4f4] text-black';
+
   return (
-    <div className="flex flex-col lg:flex-row gap-6 h-[850px]">
+    <div className={`flex flex-col lg:flex-row gap-6 h-[850px] p-6 transition-colors duration-700 ${themeClasses} rounded-[40px] overflow-hidden border border-white/5`}>
       {/* Asset Closet - Left */}
       <div className="lg:w-1/4 flex flex-col gap-4 overflow-hidden">
-        <div className="glass-dark p-6 rounded-3xl border border-white/5 flex-1 flex flex-col gap-6 overflow-hidden">
-          <div>
-            <div className="flex items-center justify-between mb-4">
-              <div className="flex items-center gap-2 text-primary">
-                <LayoutGrid size={16} />
-                <h3 className="text-xs font-black uppercase tracking-widest italic outline-text">Neural Library</h3>
-              </div>
+        <div className={`p-6 rounded-3xl border flex-1 flex flex-col gap-6 overflow-hidden ${visualTheme === 'BLACK' ? 'bg-white/5 border-white/5' : 'bg-black/5 border-black/5'}`}>
+          <div className="flex items-center justify-between">
+            <div className="flex items-center gap-2 text-primary">
+              <LayoutGrid size={16} />
+              <h3 className="text-xs font-black uppercase tracking-widest italic">Neural Library</h3>
             </div>
-            
-            <div className="space-y-6 overflow-y-auto max-h-[600px] pr-2 custom-scrollbar">
-              {(['TOP', 'BOTTOM', 'OUTER', 'ACCESSORY'] as const).map(type => (
-                <div key={type} className="space-y-3">
-                  <p className="text-[8px] font-black text-zinc-500 uppercase tracking-[0.2em]">{type}S</p>
-                  <div className="grid grid-cols-2 gap-2">
-                    {ASSETS.filter(a => a.type === type).map(asset => (
+            <div className="flex gap-1 bg-black/20 p-1 rounded-lg">
+              <button 
+                onClick={() => setVisualTheme('WHITE')} 
+                className={`w-4 h-4 rounded-full border border-white/10 ${visualTheme === 'WHITE' ? 'bg-white' : 'bg-white/20'}`}
+              />
+              <button 
+                onClick={() => setVisualTheme('BLACK')} 
+                className={`w-4 h-4 rounded-full border border-white/10 ${visualTheme === 'BLACK' ? 'bg-white' : 'bg-white/20 opacity-30'}`}
+              />
+            </div>
+          </div>
+
+          <div className="space-y-6 overflow-y-auto pr-2 custom-scrollbar">
+            {(['TOP', 'BOTTOM', 'OUTER', 'ACCESSORY'] as const).map(type => (
+              <div key={type} className="space-y-3">
+                <p className="text-[8px] font-black text-zinc-500 uppercase tracking-[0.2em]">{type}S</p>
+                <div className="grid grid-cols-2 gap-2">
+                  {ASSETS.filter(a => a.type === type).map(asset => (
+                    <div key={asset.id} className="relative group">
                       <button
-                        key={asset.id}
                         onClick={() => toggleAsset(asset)}
-                        className={`group relative aspect-square rounded-2xl overflow-hidden border-2 transition-all ${
-                          outfit[type]?.id === asset.id ? 'border-primary shadow-lg shadow-primary/20' : 'border-white/5 hover:border-white/20'
+                        className={`w-full relative aspect-square rounded-2xl overflow-hidden border-2 transition-all ${
+                          outfit[type]?.id === asset.id ? 'border-primary' : 'border-white/5 hover:border-white/10'
                         }`}
                       >
                         <img src={asset.image} className="w-full h-full object-cover grayscale group-hover:grayscale-0 transition-all" alt={asset.name} />
-                        <div className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center">
-                          <p className="text-[8px] font-bold text-white uppercase">{asset.name}</p>
+                        <div className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity flex flex-col items-center justify-center gap-1">
+                          <p className="text-[8px] font-black text-white uppercase tracking-tighter">{asset.name}</p>
                         </div>
                         {outfit[type]?.id === asset.id && (
-                          <div className="absolute top-2 right-2 w-2 h-2 rounded-full bg-primary animate-pulse shadow-glow" />
+                          <div className="absolute top-2 right-2 w-2 h-2 rounded-full bg-primary shadow-glow" />
                         )}
                       </button>
-                    ))}
-                  </div>
+                      <button 
+                        onClick={(e) => { e.stopPropagation(); setSelectedGarment(asset); }}
+                        className="absolute -bottom-1 -right-1 bg-zinc-900 border border-white/20 p-1.5 rounded-lg opacity-0 group-hover:opacity-100 transition-all hover:bg-primary hover:text-black text-white z-10"
+                      >
+                        <Info size={10} />
+                      </button>
+                    </div>
+                  ))}
                 </div>
-              ))}
-            </div>
+              </div>
+            ))}
           </div>
         </div>
       </div>
 
       {/* Main Studio Viewport */}
       <div className="flex-1 flex flex-col gap-4">
-         <div className="flex-1 relative glass-dark rounded-[40px] border border-white/10 overflow-hidden group">
-            <div className="absolute inset-0 bg-grid-white/[0.02] opacity-50 pointer-events-none" />
+         <div className={`flex-1 relative rounded-[40px] border overflow-hidden group ${visualTheme === 'BLACK' ? 'bg-[#111] border-white/10' : 'bg-white border-black/5'}`}>
+            <div className={`absolute inset-0 opacity-5 pointer-events-none ${visualTheme === 'BLACK' ? 'bg-grid-white/[1]' : 'bg-grid-black/[1]'}`} />
             
             {/* Viewport HUD */}
             <div className="absolute top-6 left-6 right-6 z-20 flex justify-between">
                <div className="space-y-1">
-                  <div className="flex items-center gap-2 bg-black/60 backdrop-blur-md px-3 py-1.5 rounded-full border border-white/10">
+                  <div className={`flex items-center gap-2 backdrop-blur-md px-3 py-1.5 rounded-full border ${visualTheme === 'BLACK' ? 'bg-black/60 border-white/10' : 'bg-white/60 border-black/10'}`}>
                      <Box size={14} className="text-primary animate-spin-slow" />
-                     <p className="text-[10px] font-black text-white italic">STUDIO_ENVIRONMENT // 01</p>
+                     <p className={`text-[10px] font-black italic ${visualTheme === 'BLACK' ? 'text-white' : 'text-black'}`}>STUDIO_ENVIRONMENT // 01</p>
                   </div>
                   <p className="text-[8px] text-zinc-500 font-mono pl-3">{selectedHuman.name}_{stylePreset.toUpperCase()}_SYNC</p>
                </div>
                <div className="flex gap-2">
-                  <button className="p-2.5 rounded-full bg-black/60 border border-white/10 text-white hover:bg-primary hover:text-black transition-all">
-                    <Maximize2 size={16} />
-                  </button>
-                  <button className="p-2.5 rounded-full bg-black/60 border border-white/10 text-white hover:bg-primary hover:text-black transition-all">
-                    <Camera size={16} />
-                  </button>
+                  <div className={`flex items-center gap-2 px-3 py-1.5 rounded-full border text-[8px] font-black uppercase ${visualTheme === 'BLACK' ? 'bg-black/60 border-white/10 text-zinc-400' : 'bg-white/60 border-black/10 text-zinc-600'}`}>
+                    <Database size={10} className="text-primary" />
+                    ERP: Connected
+                  </div>
                </div>
             </div>
 
             {/* Avatar Display */}
             <div className="absolute inset-0 flex items-center justify-center">
                <AnimatePresence mode="wait">
-                 {isGenerating ? (
+                 {isBakingWalk ? (
+                   <motion.div key="walk" className="flex flex-col items-center gap-8">
+                      <div className="w-80 h-96 relative border-2 border-primary/20 rounded-[3rem] overflow-hidden bg-black/40">
+                         <div className="absolute inset-0 flex items-center justify-center">
+                            <RefreshCw className="text-primary/20 animate-spin" size={120} />
+                         </div>
+                         <div className="absolute inset-0 flex items-center justify-center text-[10px] font-black text-primary animate-pulse">SYNTHESIZING GAIT...</div>
+                      </div>
+                      <div className="w-64 space-y-2">
+                        <div className="flex justify-between text-[8px] font-black text-primary">
+                          <span>BONE_MESH_CALCULATION</span>
+                          <span>{progress}%</span>
+                        </div>
+                        <div className="h-1 bg-white/5 rounded-full overflow-hidden">
+                          <div className="h-full bg-primary transition-all duration-300" style={{ width: `${progress}%` }} />
+                        </div>
+                      </div>
+                   </motion.div>
+                 ) : isGenerating ? (
                    <motion.div 
                      key="generating"
-                     initial={{ opacity: 0 }}
-                     animate={{ opacity: 1 }}
-                     exit={{ opacity: 0 }}
                      className="flex flex-col items-center gap-6"
                    >
-                     <div className="w-64 h-96 relative rounded-[3rem] border border-white/10 overflow-hidden bg-zinc-900/50">
+                     <div className="w-64 h-96 relative rounded-[3rem] border border-white/10 overflow-hidden bg-zinc-900/50 shadow-2xl">
                         <motion.div 
                           className="absolute inset-x-0 h-[2px] bg-primary z-20 shadow-[0_0_15px_#00ff41]"
                           animate={{ top: ['0%', '100%', '0%'] }}
@@ -166,68 +232,74 @@ export const DigitalHumanStudio: React.FC = () => {
                         />
                         <img src={selectedHuman.image} className="w-full h-full object-cover opacity-50 grayscale" alt="Baking" />
                      </div>
-                     <div className="text-center space-y-2">
-                        <p className="text-[10px] font-black text-primary animate-pulse">BAKING NEURAL MESHES...</p>
-                        <div className="flex gap-1 justify-center">
-                           {[1,2,3].map(i => <div key={i} className="w-1 h-1 rounded-full bg-primary/40 animate-bounce" style={{ animationDelay: `${i*0.2}s` }} />)}
-                        </div>
-                     </div>
+                     <p className="text-[10px] font-black text-primary animate-pulse tracking-[0.3em]">NEURAL_MAP_IN_PROGRESS</p>
                    </motion.div>
                  ) : result ? (
-                   <motion.div 
-                     key="result"
-                     initial={{ opacity: 0, scale: 0.95 }}
-                     animate={{ opacity: 1, scale: 1 }}
-                     className="w-full h-full p-12"
-                   >
-                     <img src={result} className="w-full h-full object-contain rounded-3xl shadow-2xl" alt="Render" />
+                   <motion.div key="result" className="w-full h-full p-12">
+                     <img 
+                       src={result} 
+                       className="w-full h-full object-contain rounded-3xl" 
+                       style={{ transform: `rotateY(${rotation}deg)` }}
+                       alt="Render" 
+                     />
                    </motion.div>
                  ) : (
-                   <motion.div 
-                     key="base"
-                     className="relative w-full h-full flex items-center justify-center p-12"
-                   >
+                   <motion.div key="base" className="relative w-full h-full flex items-center justify-center p-12">
                      <img 
                        src={selectedHuman.image} 
-                       className="h-full object-contain opacity-40 grayscale blur-[1px]" 
-                       alt="Base Human" 
+                       className={`h-full object-contain transition-transform duration-500 ${visualTheme === 'BLACK' ? 'opacity-40 grayscale blur-[1px]' : 'opacity-80 grayscale-0'}`} 
+                       style={{ transform: `rotateY(${rotation}deg)` }}
+                       alt="Base" 
                      />
-                     
-                     {/* Overlay Slots */}
-                     <div className="absolute inset-0 flex flex-col items-center justify-center">
-                        <div className="grid grid-cols-1 gap-4">
-                           {Object.entries(outfit).map(([slot, asset]) => (
-                             <motion.div 
-                               initial={{ opacity: 0, x: -20 }}
-                               animate={{ opacity: 1, x: 0 }}
-                               key={slot}
-                               className="glass-dark px-4 py-2 rounded-xl border border-primary/30 flex items-center gap-3"
-                             >
-                               <div className="w-8 h-8 rounded-lg overflow-hidden border border-white/10">
-                                 <img src={asset.image} className="w-full h-full object-cover" alt="" />
-                               </div>
-                               <div>
-                                 <p className="text-[8px] font-bold text-zinc-500 uppercase">{slot}</p>
-                                 <p className="text-[10px] font-black text-white">{asset.name}</p>
-                               </div>
-                             </motion.div>
-                           ))}
-                        </div>
+                     <div className="absolute inset-x-0 bottom-20 flex justify-center gap-4">
+                        {Object.entries(outfit).map(([slot, asset]) => (
+                          <div key={slot} className={`px-4 py-2 rounded-xl border flex items-center gap-3 backdrop-blur-xl ${visualTheme === 'BLACK' ? 'bg-black/60 border-primary/30' : 'bg-white/80 border-primary/60'}`}>
+                             <div className="w-8 h-8 rounded-lg overflow-hidden border border-white/10">
+                               <img src={asset.image} className="w-full h-full object-cover" alt="" />
+                             </div>
+                             <div>
+                               <p className="text-[8px] font-bold text-zinc-500 uppercase">{slot}</p>
+                               <p className={`text-[10px] font-black ${visualTheme === 'BLACK' ? 'text-white' : 'text-black'}`}>{asset.name}</p>
+                             </div>
+                          </div>
+                        ))}
                      </div>
                    </motion.div>
                  )}
                </AnimatePresence>
             </div>
 
-            {/* Bottom Controls */}
-            <div className="absolute bottom-10 left-1/2 -translate-x-1/2 z-20 flex flex-col items-center gap-6">
-               <div className="flex gap-2 glass-dark p-2 rounded-2xl border border-white/10">
+            {/* Viewport Rotation Control */}
+            <div className="absolute bottom-32 left-10 w-48 space-y-2 z-30">
+               <div className="flex justify-between items-center">
+                  <p className="text-[8px] font-black text-zinc-500 uppercase">Rotation Axis</p>
+                  <button 
+                    onClick={() => setRotation(0)}
+                    className="text-[8px] font-black text-primary uppercase hover:underline"
+                  >
+                    Reset
+                  </button>
+               </div>
+               <input 
+                 type="range" 
+                 min="-180" 
+                 max="180" 
+                 value={rotation} 
+                 onChange={(e) => setRotation(parseInt(e.target.value))}
+                 className="w-full h-1 bg-white/10 rounded-full appearance-none cursor-pointer accent-primary"
+               />
+               <p className="text-[8px] font-mono text-zinc-600 text-right">{rotation}°</p>
+            </div>
+
+            {/* Bottom Actions Cluster */}
+            <div className="absolute bottom-10 left-1/2 -translate-x-1/2 z-20 flex flex-col items-center gap-4">
+               <div className={`p-2 rounded-2xl border flex gap-2 backdrop-blur-2xl ${visualTheme === 'BLACK' ? 'bg-black/60 border-white/5' : 'bg-white/80 border-black/5'}`}>
                   {HUMAN_MODELS.map(h => (
                     <button
                       key={h.id}
                       onClick={() => { setSelectedHuman(h); setResult(null); }}
                       className={`w-12 h-12 rounded-xl border-2 overflow-hidden transition-all ${
-                        selectedHuman.id === h.id ? 'border-primary ring-4 ring-primary/20' : 'border-white/5 opacity-50 hover:opacity-100'
+                        selectedHuman.id === h.id ? 'border-primary ring-4 ring-primary/20' : 'border-white/5 opacity-50'
                       }`}
                     >
                       <img src={h.image} className="w-full h-full object-cover" alt={h.name} />
@@ -236,15 +308,15 @@ export const DigitalHumanStudio: React.FC = () => {
                   <div className="w-px h-10 bg-white/10 mx-2 self-center" />
                   <button 
                     onClick={handleGenerate}
-                    disabled={Object.keys(outfit).length === 0 || isGenerating}
-                    className={`px-8 rounded-xl font-black text-[10px] uppercase tracking-widest flex items-center gap-2 transition-all ${
-                      Object.keys(outfit).length === 0 || isGenerating
-                        ? 'bg-zinc-800 text-zinc-500 cursor-not-allowed'
-                        : 'bg-primary text-black hover:scale-105 shadow-lg shadow-primary/30'
-                    }`}
+                    className="px-8 bg-primary text-black rounded-xl font-black text-[10px] uppercase tracking-widest hover:scale-105 transition-all shadow-lg shadow-primary/20"
                   >
-                    <Wand2 size={14} />
-                    {isGenerating ? 'Rendering...' : 'Bake Final Image'}
+                    Generate High-Distortion Wrap
+                  </button>
+                  <button 
+                    onClick={handleWalkCycle}
+                    className={`px-8 rounded-xl font-black text-[10px] uppercase tracking-widest border transition-all ${visualTheme === 'BLACK' ? 'border-white/10 text-white hover:bg-white/5' : 'border-black/10 text-black hover:bg-black/5'}`}
+                  >
+                    Preview Walk Cycle
                   </button>
                </div>
             </div>
@@ -253,88 +325,126 @@ export const DigitalHumanStudio: React.FC = () => {
 
       {/* Control Panel - Right */}
       <div className="lg:w-64 space-y-4">
-         <div className="glass-dark p-6 rounded-3xl border border-white/5 space-y-8">
+         <div className={`p-6 rounded-3xl border space-y-8 flex-1 ${visualTheme === 'BLACK' ? 'bg-white/5 border-white/5' : 'bg-black/5 border-black/5'}`}>
             <div className="space-y-4">
                <div className="flex items-center gap-2 text-primary">
                   <Palette size={16} />
-                  <p className="text-[10px] font-black uppercase tracking-widest">Environment</p>
+                  <p className="text-[10px] font-black uppercase tracking-widest italic">Atmosphere</p>
                </div>
-               <div className="space-y-4">
-                  <div>
-                    <label className="text-[8px] font-black text-zinc-500 uppercase mb-2 block">Atmosphere</label>
-                    <div className="flex flex-wrap gap-2">
-                       {['Cyberpunk', 'Minimalist', 'Editorial Studio', 'Neon Tokyo'].map(s => (
-                         <button
-                           key={s}
-                           onClick={() => setStylePreset(s)}
-                           className={`px-3 py-1.5 rounded-lg text-[9px] font-bold border transition-all ${
-                             stylePreset === s ? 'border-primary bg-primary/10 text-primary' : 'border-white/5 text-zinc-500 hover:text-white'
-                           }`}
-                         >
-                           {s}
-                         </button>
-                       ))}
-                    </div>
-                  </div>
-                  <div>
-                    <label className="text-[8px] font-black text-zinc-500 uppercase mb-2 block">Lighting Rig</label>
-                    <select 
-                      value={lighting}
-                      onChange={(e) => setLighting(e.target.value)}
-                      className="w-full bg-white/5 border border-white/10 rounded-xl px-3 py-2 text-[10px] text-white focus:outline-none focus:border-primary"
-                    >
-                      <option>Cinematic Rim</option>
-                      <option>Soft Day</option>
-                      <option>High Contrast</option>
-                      <option>Technicolor</option>
-                    </select>
-                  </div>
+               <div className="grid grid-cols-2 gap-2">
+                 {['Tokyo_Neon', 'Milan_Soft', 'Brutalist_Grey', 'Minimal_Zen'].map(s => (
+                   <button
+                     key={s}
+                     onClick={() => setStylePreset(s)}
+                     className={`px-3 py-2 rounded-xl text-[8px] font-black uppercase border transition-all ${
+                       stylePreset === s ? 'border-primary bg-primary/10 text-primary' : 'border-white/5 text-zinc-500'
+                     }`}
+                   >
+                     {s}
+                   </button>
+                 ))}
                </div>
             </div>
 
-            <div className="pt-6 border-t border-white/5 space-y-4">
-               <div className="flex items-center gap-2 text-primary">
-                  <Settings size={16} />
-                  <p className="text-[10px] font-black uppercase tracking-widest">Post Processing</p>
-               </div>
-               <div className="space-y-4">
-                  {[
-                    { label: 'Neural Resolution', val: '4K Native' },
-                    { label: 'Texture Upscale', val: '2.0x' },
-                    { label: 'Ambient Depth', val: 'Enabled' }
-                  ].map(s => (
-                    <div key={s.label} className="flex justify-between items-center bg-white/5 p-2 rounded-xl border border-white/5">
-                      <span className="text-[8px] font-bold text-zinc-500">{s.label}</span>
-                      <span className="text-[10px] font-black text-white">{s.val}</span>
-                    </div>
-                  ))}
-               </div>
-            </div>
-
-            <div className="flex gap-2">
-               <button className="flex-1 py-3 rounded-xl border border-white/10 text-white hover:bg-white/5 transition-all flex items-center justify-center gap-2">
-                  <Save size={14} />
-                  <span className="text-[10px] font-bold uppercase">Save Look</span>
-               </button>
-               <button className="p-3 rounded-xl border border-white/10 text-white hover:bg-white/5 transition-all">
-                  <Download size={14} />
-               </button>
-            </div>
-         </div>
-
-         {/* History Card */}
-         <div className="glass-dark p-4 rounded-3xl border border-white/5">
-            <div className="flex items-center gap-2 mb-3 text-zinc-500">
-               <History size={12} />
-               <p className="text-[10px] font-black uppercase tracking-widest">Recent Renders</p>
-            </div>
-            <div className="grid grid-cols-4 gap-1">
-               {[1,2,3,4].map(i => (
-                 <div key={i} className="aspect-square bg-white/5 rounded-lg border border-white/5 animate-pulse" />
-               ))}
+            <div className="space-y-4 pt-6 border-t border-white/5">
+                <div className="flex items-center gap-2 text-zinc-500">
+                  <Settings size={14} />
+                  <p className="text-[8px] font-black uppercase tracking-widest">PLM Config</p>
+                </div>
+                <div className="space-y-2">
+                   <div className="flex justify-between text-[10px] font-bold">
+                      <span className="text-zinc-500">Fabric Estimation</span>
+                      <span>1.42m²</span>
+                   </div>
+                   <div className="flex justify-between text-[10px] font-bold">
+                      <span className="text-zinc-500">Node Latency</span>
+                      <span className="text-primary">12ms</span>
+                   </div>
+                </div>
+                <button 
+                  onClick={handleSubmitToERP}
+                  disabled={isSubmitting}
+                  className={`w-full py-4 rounded-2xl font-black text-[10px] uppercase tracking-[0.2em] transition-all flex items-center justify-center gap-2 ${visualTheme === 'BLACK' ? 'bg-white text-black' : 'bg-black text-white'}`}
+                >
+                  {isSubmitting ? <RefreshCw className="animate-spin" size={12} /> : <Zap size={12} />}
+                  Submit to Production
+                </button>
             </div>
          </div>
       </div>
+
+      {/* Garment Details Modal */}
+      <AnimatePresence>
+        {selectedGarment && (
+          <motion.div 
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            className="fixed inset-0 z-[100] flex items-center justify-center p-6 bg-black/80 backdrop-blur-sm"
+            onClick={() => setSelectedGarment(null)}
+          >
+            <motion.div 
+              initial={{ scale: 0.9, y: 20 }}
+              animate={{ scale: 1, y: 0 }}
+              exit={{ scale: 0.9, y: 20 }}
+              className={`w-full max-w-2xl rounded-[40px] overflow-hidden border ${visualTheme === 'BLACK' ? 'bg-[#111] border-white/10' : 'bg-white border-black/10'}`}
+              onClick={e => e.stopPropagation()}
+            >
+              <div className="flex flex-col md:flex-row h-full">
+                <div className="w-full md:w-1/2 aspect-square bg-zinc-900">
+                  <img src={selectedGarment.image} className="w-full h-full object-cover" alt={selectedGarment.name} />
+                </div>
+                <div className="flex-1 p-8 flex flex-col justify-between">
+                  <div>
+                    <div className="flex justify-between items-start mb-6">
+                      <div>
+                        <p className="text-[10px] font-black text-primary uppercase tracking-[0.3em] mb-1">{selectedGarment.type}</p>
+                        <h2 className="text-2xl font-black italic uppercase leading-none">{selectedGarment.name}</h2>
+                      </div>
+                      <button 
+                        onClick={() => setSelectedGarment(null)}
+                        className="p-2 hover:bg-white/5 rounded-full transition-all"
+                      >
+                        <XCircle size={20} className="text-zinc-500" />
+                      </button>
+                    </div>
+
+                    <div className="space-y-4 mb-8">
+                       {[
+                         { label: 'SKU_REFERENCE', val: selectedGarment.sku },
+                         { label: 'MATERIAL_COMP', val: selectedGarment.material },
+                         { label: 'UNIT_WEIGHT', val: selectedGarment.weight },
+                         { label: 'STYLE_CAT', val: selectedGarment.style },
+                         { label: 'PLM_STATUS', val: 'Verified_Production' }
+                       ].map(row => (
+                         <div key={row.label} className="flex justify-between items-center py-2 border-b border-white/5">
+                           <span className="text-[8px] font-bold text-zinc-500 uppercase">{row.label}</span>
+                           <span className="text-[10px] font-black tabular-nums">{row.val}</span>
+                         </div>
+                       ))}
+                    </div>
+                  </div>
+
+                  <div className="flex gap-3">
+                    <button 
+                      onClick={() => { toggleAsset(selectedGarment); setSelectedGarment(null); }}
+                      className="flex-1 py-4 bg-primary text-black rounded-2xl font-black text-[10px] uppercase tracking-widest hover:scale-[1.02] transition-all"
+                    >
+                      Apply to Model
+                    </button>
+                    <button 
+                      onClick={() => { handleSubmitToERP(); setSelectedGarment(null); }}
+                      className={`px-6 rounded-2xl border transition-all hover:bg-white/5 ${visualTheme === 'BLACK' ? 'border-white/10' : 'border-black/10'}`}
+                    >
+                      <Database size={16} />
+                    </button>
+                  </div>
+                </div>
+              </div>
+            </motion.div>
+          </motion.div>
+        )}
+      </AnimatePresence>
     </div>
   );
 };
