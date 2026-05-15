@@ -135,16 +135,54 @@ const TrendMatrix = () => {
       <div className="max-w-[1900px] mx-auto">
         <div className="flex flex-col md:flex-row justify-between items-start md:items-baseline mb-16 md:mb-32 border-b border-white/5 pb-12 gap-8">
            <div className="space-y-4">
-              <LuxuryTypography variant="label" className="text-primary">Global_Trend_Intelligence</LuxuryTypography>
-              <h2 className="text-4xl md:text-6xl font-black italic uppercase italic tracking-tighter">Fashion_Bloomberg_Terminal</h2>
+              <motion.div
+                initial={{ opacity: 0, x: -10 }}
+                whileInView={{ opacity: 1, x: 0 }}
+                viewport={{ once: true }}
+              >
+                <LuxuryTypography variant="label" className="text-primary italic tracking-[0.5em]">Global_Trend_Intelligence</LuxuryTypography>
+              </motion.div>
+              <motion.h2 
+                initial={{ opacity: 0, y: 20 }}
+                whileInView={{ opacity: 1, y: 0 }}
+                transition={{ duration: 0.8, ease: [0.16, 1, 0.3, 1] }}
+                viewport={{ once: true }}
+                className="text-4xl md:text-6xl font-black italic uppercase tracking-tighter"
+              >
+                Fashion_Bloomberg_Terminal
+              </motion.h2>
            </div>
            
            {/* Animated Floating Labels */}
            <div className="flex gap-12 font-mono text-[10px] text-zinc-600">
-             <motion.div initial={{ y: -5 }} animate={{ y: 5 }} transition={{ repeat: Infinity, repeatType: 'reverse', duration: 2 }}>
+             <motion.div 
+               animate={{ 
+                 y: [-2, 2, -2],
+                 opacity: [0.4, 1, 0.4]
+               }} 
+               transition={{ 
+                 repeat: Infinity, 
+                 duration: 3,
+                 ease: "easeInOut"
+               }}
+               className="flex items-center gap-2"
+             >
+               <div className="w-1 h-1 bg-primary rounded-full animate-pulse" />
                <p>REFRESH: 1.0S</p>
              </motion.div>
-             <motion.div initial={{ opacity: 0.5 }} animate={{ opacity: 1 }} transition={{ repeat: Infinity, repeatType: 'reverse', duration: 1 }}>
+             <motion.div 
+               animate={{ 
+                 y: [2, -2, 2],
+                 opacity: [0.3, 0.8, 0.3]
+               }} 
+               transition={{ 
+                 repeat: Infinity, 
+                 duration: 4,
+                 ease: "easeInOut"
+               }}
+               className="flex items-center gap-2"
+             >
+               <div className="w-1 h-1 bg-zinc-800 rounded-full" />
                <p>NODE: MILAN_0xAF</p>
              </motion.div>
            </div>
@@ -154,41 +192,68 @@ const TrendMatrix = () => {
            {trends.map((t, i) => (
              <motion.div 
                key={i}
-               initial={{ opacity: 0, x: -20 }}
-               whileInView={{ opacity: 1, x: 0 }}
-               transition={{ delay: i * 0.1 }}
+               initial={{ opacity: 0, y: 20 }}
+               whileInView={{ opacity: 1, y: 0 }}
+               viewport={{ once: true }}
+               transition={{ delay: i * 0.1, duration: 0.8, ease: [0.16, 1, 0.3, 1] }}
                className="group grid grid-cols-1 md:grid-cols-4 items-center py-12 px-8 hover:bg-white/[0.02] transition-colors relative overflow-hidden"
              >
                 <div className="absolute left-0 w-1 h-0 bg-primary group-hover:h-full transition-all duration-500" />
                 <div className="flex items-center gap-6">
-                   <span className="text-[10px] font-mono text-zinc-700">0{i+1}</span>
-                   <LuxuryTypography variant="label" className="text-zinc-500 group-hover:text-white transition-colors">{t.label}</LuxuryTypography>
+                   <span className="text-[10px] font-mono text-zinc-700 tracking-tighter">0{i+1}</span>
+                   <motion.div
+                     whileHover={{ x: 5 }}
+                     transition={{ type: "spring", stiffness: 300, damping: 20 }}
+                   >
+                    <LuxuryTypography variant="label" className="text-zinc-500 group-hover:text-white transition-colors">{t.label}</LuxuryTypography>
+                   </motion.div>
                 </div>
-                <div className="col-span-2 relative">
-                   <h3 className="text-4xl font-black italic uppercase tracking-tighter group-hover:text-primary transition-colors">{t.val}</h3>
+                <div className="col-span-2 relative mt-4 md:mt-0">
+                   <motion.h3 
+                    whileHover={{ x: 10 }}
+                    className="text-4xl md:text-5xl font-black italic uppercase tracking-tighter group-hover:text-primary transition-all duration-500"
+                   >
+                    {t.val}
+                   </motion.h3>
                    
                    {/* Flashing Tags */}
                    <AnimatePresence>
                      {t.delta !== 'N/A' && (
                        <motion.span 
-                         initial={{ opacity: 0 }}
-                         animate={{ opacity: [0, 1, 0] }}
-                         transition={{ repeat: Infinity, duration: 2, delay: i * 0.5 }}
-                         className="absolute -top-4 -right-12 text-[8px] bg-primary/20 text-primary px-2 py-0.5 rounded-full font-mono"
+                         initial={{ opacity: 0, scale: 0.8 }}
+                         animate={{ 
+                           opacity: [0.4, 1, 0.4],
+                           scale: [0.95, 1, 0.95]
+                         }}
+                         transition={{ 
+                           repeat: Infinity, 
+                           duration: 1.5, 
+                           delay: i * 0.3 
+                         }}
+                         className="absolute -top-6 left-0 md:-top-4 md:-right-12 md:left-auto text-[8px] bg-primary/10 text-primary px-3 py-1 rounded-sm border border-primary/20 font-mono uppercase tracking-widest hidden md:block"
                        >
-                         {t.delta}
+                         SIGNAL_SYNC: {t.delta}
                        </motion.span>
                      )}
                    </AnimatePresence>
                 </div>
-                <div className="flex justify-end items-center gap-12">
-                   <div className="text-right">
-                      <p className="text-[9px] font-black uppercase text-zinc-600 tracking-widest">{t.status}</p>
-                      <p className={`text-lg font-black italic ${t.delta.startsWith('+') ? 'text-primary' : 'text-zinc-400'}`}>{t.delta}</p>
+                <div className="flex justify-between md:justify-end items-center gap-12 mt-8 md:mt-0">
+                   <div className="text-left md:text-right">
+                      <motion.p 
+                        animate={{ opacity: [0.3, 0.6, 0.3] }}
+                        transition={{ duration: 2, repeat: Infinity }}
+                        className="text-[9px] font-black uppercase text-zinc-600 tracking-[0.3em] mb-1"
+                      >
+                        {t.status}
+                      </motion.p>
+                      <p className={`text-lg md:text-2xl font-black italic tracking-tighter ${t.delta.startsWith('+') ? 'text-primary' : 'text-zinc-400'}`}>{t.delta}</p>
                    </div>
-                   <div className="w-12 h-12 rounded-full border border-white/10 flex items-center justify-center text-zinc-700 group-hover:border-primary group-hover:text-primary transition-all">
-                      <ArrowRight size={18} />
-                   </div>
+                   <motion.div 
+                    whileHover={{ scale: 1.1, rotate: 45 }}
+                    className="w-12 h-12 md:w-16 md:h-16 rounded-full border border-white/10 flex items-center justify-center text-zinc-700 group-hover:border-primary group-hover:text-primary transition-all shadow-[0_0_20px_rgba(255,255,255,0)] group-hover:shadow-[0_0_20px_rgba(255,255,255,0.05)]"
+                   >
+                       <ArrowRight size={24} />
+                   </motion.div>
                 </div>
              </motion.div>
            ))}
@@ -200,28 +265,44 @@ const TrendMatrix = () => {
 
 const LibraryTeaser = ({ title, subTitle, img, video, desc, id, onClick }: { title: string, subTitle: string, img?: string, video?: string, desc: string, id: string, onClick: (id: string) => void }) => {
   return (
-    <section 
+    <motion.section 
       onClick={() => onClick(id)}
+      whileHover="hover"
       className="relative h-[70vh] md:h-screen w-full overflow-hidden group cursor-pointer border-b border-white/5 bg-black"
     >
       {/* Background Media */}
-      <div className="absolute inset-0 transition-all duration-1000 ease-out group-hover:scale-105">
+      <motion.div 
+        variants={{
+          hover: { scale: 1.05, filter: 'grayscale(0%)' }
+        }}
+        transition={{ duration: 1.2, ease: [0.16, 1, 0.3, 1] }}
+        className="absolute inset-0"
+      >
         {video ? (
           <video 
             autoPlay 
             muted 
             loop 
             playsInline
-            className="w-full h-full object-cover grayscale brightness-[0.2] group-hover:grayscale-0 group-hover:brightness-[0.4] transition-all duration-1000"
+            className="w-full h-full object-cover grayscale brightness-[0.2] transition-all duration-1000"
             src={video}
           />
         ) : (
           <img 
             src={img} 
-            className="w-full h-full object-cover grayscale brightness-[0.2] group-hover:grayscale-0 group-hover:brightness-[0.4] transition-all duration-1000"
+            className="w-full h-full object-cover grayscale brightness-[0.2] transition-all duration-1000"
           />
         )}
-      </div>
+      </motion.div>
+
+      {/* Subtle Glow Overlay */}
+      <motion.div 
+        variants={{
+          hover: { opacity: 0.3 }
+        }}
+        initial={{ opacity: 0 }}
+        className="absolute inset-0 bg-primary/20 blur-[100px] pointer-events-none"
+      />
 
       {/* AI Scanning Overlay */}
       <div className="absolute inset-0 opacity-20 pointer-events-none">
@@ -244,7 +325,13 @@ const LibraryTeaser = ({ title, subTitle, img, video, desc, id, onClick }: { tit
           className="flex items-center gap-4"
         >
            <div className="h-4 w-4 bg-primary/20 rounded-full flex items-center justify-center">
-              <div className="w-1.5 h-1.5 bg-primary rounded-full animate-pulse" />
+              <motion.div 
+                variants={{
+                  hover: { scale: [1, 1.5, 1] }
+                }}
+                transition={{ repeat: Infinity, duration: 2 }}
+                className="w-1.5 h-1.5 bg-primary rounded-full" 
+              />
            </div>
            <LuxuryTypography variant="label" className="text-primary italic tracking-[0.5em] text-[9px] uppercase">{subTitle}</LuxuryTypography>
         </motion.div>
@@ -254,7 +341,10 @@ const LibraryTeaser = ({ title, subTitle, img, video, desc, id, onClick }: { tit
              initial={{ opacity: 0, x: -30 }}
              whileInView={{ opacity: 1, x: 0 }}
              transition={{ duration: 0.8, delay: 0.1 }}
-             className="text-[12vw] md:text-[10vw] font-black uppercase leading-[0.8] tracking-tighter text-white/90 group-hover:text-white transition-all duration-700"
+             variants={{
+               hover: { x: 20, color: '#fff' }
+             }}
+             className="text-[12vw] md:text-[10vw] font-black uppercase leading-[0.8] tracking-tighter text-white/90 transition-all duration-700"
            >
              {title}
            </motion.h2>
@@ -262,7 +352,10 @@ const LibraryTeaser = ({ title, subTitle, img, video, desc, id, onClick }: { tit
              initial={{ opacity: 0 }}
              whileInView={{ opacity: 1 }}
              transition={{ duration: 0.8, delay: 0.2 }}
-             className="max-w-2xl text-zinc-400 text-xs md:text-xl font-mono uppercase tracking-widest leading-relaxed mt-6 md:mt-10 opacity-60 group-hover:opacity-100 transition-all duration-700"
+             variants={{
+               hover: { opacity: 1, x: 20 }
+             }}
+             className="max-w-2xl text-zinc-400 text-xs md:text-xl font-mono uppercase tracking-widest leading-relaxed mt-6 md:mt-10 opacity-60 transition-all duration-700"
            >
              {desc}
            </motion.p>
@@ -274,19 +367,30 @@ const LibraryTeaser = ({ title, subTitle, img, video, desc, id, onClick }: { tit
           className="pt-8 flex items-center justify-between border-t border-white/5"
         >
            <div className="flex items-center gap-8">
-             <div className="w-12 h-12 md:w-20 md:h-20 rounded-full border border-white/10 flex items-center justify-center group-hover:bg-primary group-hover:border-primary group-hover:text-black transition-all duration-500 shadow-2xl">
+             <motion.div 
+               variants={{
+                 hover: { scale: 1.1, backgroundColor: '#c5fb45', color: '#000' }
+               }}
+               className="w-12 h-12 md:w-20 md:h-20 rounded-full border border-white/10 flex items-center justify-center transition-all duration-500 shadow-2xl"
+             >
                 <ArrowRight size={20} className="md:w-8 md:h-8" />
-             </div>
+             </motion.div>
              <div className="hidden md:block">
                <p className="text-[10px] font-mono text-zinc-600 uppercase tracking-widest group-hover:text-white transition-colors">Awaiting Prompt...</p>
-               <div className="h-0.5 w-0 group-hover:w-full bg-primary transition-all duration-700" />
+               <motion.div 
+                 variants={{
+                   hover: { width: '100%' }
+                 }}
+                 initial={{ width: 0 }}
+                 className="h-0.5 bg-primary transition-all duration-700" 
+               />
              </div>
            </div>
            
            <span className="text-[8px] font-mono text-zinc-800 uppercase tracking-tighter">OS_READY_0x{id.toUpperCase()}</span>
         </motion.div>
       </div>
-    </section>
+    </motion.section>
   );
 };
 
