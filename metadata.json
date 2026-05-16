@@ -1,5 +1,6 @@
 {
   "name": "Autonomous Fashion AI OS",
   "description": "A cinematic fashion operating system featuring AI collections, a design studio with neural synthesis, and digital human try-on studios. Powered by advanced 3D rendering and real-time trend intelligence.",
-  "requestFramePermissions": ["camera"]
+  "requestFramePermissions": ["camera"],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
 }

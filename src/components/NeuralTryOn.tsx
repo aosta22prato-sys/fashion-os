@@ -58,22 +58,26 @@ export const NeuralTryOn: React.FC<NeuralTryOnProps> = ({ preloadedDesign }) => 
   });
 
   const handleGenerate = async () => {
-    if (!garmentImage) return;
+    if (!garmentImage) {
+      setError("Please upload a garment image first.");
+      return;
+    }
     
     setIsGenerating(true);
     setProgress(0);
     setError(null);
+    setResultImage(null);
 
-    // Simulate progress
+    // Simulate progress with more steps
     const interval = setInterval(() => {
       setProgress(prev => {
-        if (prev >= 98) {
+        if (prev >= 95) {
           clearInterval(interval);
-          return 98;
+          return 95;
         }
-        return prev + Math.random() * 2;
+        return prev + Math.random() * 5;
       });
-    }, 150);
+    }, 200);
 
     try {
       const response = await fetch('/api/ai/try-on', {
@@ -82,20 +86,24 @@ export const NeuralTryOn: React.FC<NeuralTryOnProps> = ({ preloadedDesign }) => 
         body: JSON.stringify({
           personImage: selectedModel.image,
           garmentImage: garmentImage,
-          prompt: `Enterprise High-Fidelity Virtual Try-on. Quality: ${quality}. Maintain garment silhouette, textures, and realistic lighting environment. Digital human integration.`,
           quality: quality
         })
       });
+
+      if (!response.ok) {
+        const errorData = await response.json();
+        throw new Error(errorData.message || `Generation failed with status ${response.status}`);
+      }
 
       const data = await response.json();
       if (data.success) {
         setResultImage(data.task.result_url);
         setProgress(100);
       } else {
-        setError(data.error || "Generation failed");
+        throw new Error(data.error || "Generation failed");
       }
     } catch (err: any) {
-      setError(err.message);
+      setError(err.message || "An unexpected error occurred during generation.");
     } finally {
       clearInterval(interval);
       setIsGenerating(false);

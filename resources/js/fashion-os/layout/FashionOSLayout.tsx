@@ -58,7 +58,7 @@ export const FashionOSLayout: React.FC<FashionOSLayoutProps> = ({
           </AnimatePresence>
         </main>
 
-        <div className="w-[450px] border-l border-white/5 sticky top-24 h-[calc(100vh-96px)] p-8">
+        <div className="hidden xl:block w-[450px] border-l border-white/5 sticky top-24 h-[calc(100vh-96px)] p-8">
            <div className="h-full glass-dark rounded-[48px] border border-white/5 p-10 overflow-hidden">
               <FashionAssistant />
            </div>

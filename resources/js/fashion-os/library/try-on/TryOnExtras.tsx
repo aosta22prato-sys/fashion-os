@@ -1,5 +1,5 @@
 import React from 'react';
-import { LuxuryTypography } from '../../../design-system/LuxuryTypography';
+import { LuxuryTypography } from '../../design-system/LuxuryTypography';
 
 export const GarmentUploader: React.FC = () => <div>Garment_Uploader</div>;
 export const PoseSelector: React.FC = () => <div>Pose_Selector</div>;

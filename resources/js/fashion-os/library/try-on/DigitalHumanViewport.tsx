@@ -55,13 +55,11 @@ export const DigitalHumanViewport: React.FC<{ onPartSelect: (data: any) => void 
           
           <PresentationControls
             global
-            config={{ mass: 2, tension: 500 }}
-            snap={{ mass: 4, tension: 1500 }}
             rotation={[0, 0.3, 0]}
             polar={[-Math.PI / 3, Math.PI / 3]}
             azimuth={[-Math.PI / 1.4, Math.PI / 1.4]}
           >
-            <Stage environment="city" intensity={0.5} contactShadow={false}>
+            <Stage environment="city" intensity={0.5}>
                <HumanModel3D activeMesh={activeMesh} onSelect={handleSelect} />
             </Stage>
           </PresentationControls>

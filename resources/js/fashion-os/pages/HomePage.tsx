@@ -1,121 +1,34 @@
 import React, { useState, useEffect, useRef } from 'react';
+import { FASHION_SOURCES } from '../../../../src/constants';
 import { motion, useScroll, useTransform, useSpring, AnimatePresence } from 'motion/react';
 import Lenis from 'lenis';
 import { LuxuryTypography } from '../design-system/LuxuryTypography';
 import { GlassCard } from '../design-system/GlassCard';
 import { GradientButton } from '../design-system/GradientButton';
-import { Sparkles, ArrowRight, Zap, Globe, Cpu, UserCheck, Terminal, Video, Activity } from 'lucide-react';
+import { Sparkles, ArrowRight, Zap, Globe, Cpu, UserCheck, Terminal, Video, Activity, RefreshCw } from 'lucide-react';
 
 const RunwayHero = () => {
-  const { scrollY } = useScroll();
-  const yText = useTransform(scrollY, [0, 500], [0, 150]);
-  const yVideo = useTransform(scrollY, [0, 500], [0, 60]);
-  const opacity = useTransform(scrollY, [0, 400], [1, 0]);
-  const scale = useTransform(scrollY, [0, 500], [1, 1.1]);
-
-  useEffect(() => {
-    const lenis = new Lenis({
-      lerp: 0.1,
-      smoothWheel: true,
-    });
-
-    function raf(time: number) {
-      lenis.raf(time);
-      requestAnimationFrame(raf);
-    }
-
-    requestAnimationFrame(raf);
-
-    return () => {
-      lenis.destroy();
-    };
-  }, []);
-
   return (
-    <section className="relative min-h-[80vh] w-full overflow-hidden flex items-center justify-center bg-black">
-      <motion.div style={{ scale, y: yVideo }} className="absolute inset-0">
+    <section className="relative h-screen w-full flex items-center justify-center bg-black">
+      <div className="absolute inset-0">
         <video 
           autoPlay 
           muted 
           loop 
           playsInline
-          className="w-full h-full object-cover grayscale brightness-[0.4]"
+          className="w-full h-full object-cover opacity-60"
           src="https://cdn.pixabay.com/vimeo/328224524/fashion-show-23253.mp4?width=1280&hash=8cb9c771701389808388d1d83c3c1e2858b907e5"
         />
-      </motion.div>
-
-      {/* Cinematic Overlays */}
-      <div className="absolute inset-0 pointer-events-none">
-        {/* Grain Texture */}
-        <div className="absolute inset-0 opacity-[0.05] bg-[url('https://grainy-gradients.vercel.app/noise.svg')] mix-blend-overlay" />
-        
-        {/* Dynamic Scanlines */}
-        <div className="absolute inset-0 bg-[linear-gradient(rgba(18,16,16,0)_50%,rgba(0,0,0,0.1)_50%)] bg-[length:100%_4px] opacity-20" />
-        
-        {/* Deep Vignette */}
-        <div className="absolute inset-0 bg-[radial-gradient(circle_at_center,transparent_0%,rgba(0,0,0,0.4)_70%,rgba(0,0,0,0.8)_100%)]" />
-
-        {/* HUD Film Markers */}
-        <div className="absolute top-8 left-8 right-8 flex justify-between items-start">
-          <div className="flex items-center gap-4 text-primary/40 font-mono text-[8px] tracking-[0.3em] uppercase">
-            <Video size={10} />
-            <span>REC // 00:00:24:12</span>
-          </div>
-          <div className="flex items-center gap-4 text-white/20 font-mono text-[8px] tracking-[0.3em] uppercase">
-            <span>ISO_800</span>
-            <div className="w-8 h-px bg-white/20" />
-            <span>F_2.8</span>
-          </div>
-        </div>
-        
-        <div className="absolute bottom-8 left-8 right-8 flex justify-between items-end">
-          <div className="flex items-center gap-4 text-white/20 font-mono text-[8px] tracking-[0.3em] uppercase">
-             <Activity size={10} />
-             <span>NEURAL_FLOW: ACTIVE</span>
-          </div>
-          <div className="text-[8px] font-mono text-white/10 uppercase tracking-[0.5em]">
-             MODAUI_KERNEL_V4.2_STABLE
-          </div>
-        </div>
       </div>
+      <div className="absolute inset-0 bg-black/30" />
       
-      <motion.div
-        initial={{ opacity: 0 }}
-        animate={{ opacity: 0.6 }}
-        transition={{ duration: 2, ease: "easeOut" }}
-        className="absolute inset-0 bg-gradient-to-t from-black via-transparent to-black"
-      />
-      
-      <motion.div style={{ y: yText, opacity }} className="relative z-10 w-full px-6 md:px-24">
-        <div className="flex flex-col items-center text-center">
-          <LuxuryTypography variant="label" className="text-primary mb-12 animate-pulse tracking-[1.5em] text-[12px]">
-            NODE_SYNC_ESTABLISHED // OS_V4
-          </LuxuryTypography>
-          <motion.h1 
-            initial={{ scale: 0.9, opacity: 0 }}
-            whileInView={{ scale: 1, opacity: 1 }}
-            transition={{ duration: 1.5, ease: [0.22, 1, 0.36, 1] }}
-            className="text-[12vw] md:text-[18vw] font-black italic uppercase leading-[0.7] tracking-tighter mix-blend-difference text-white"
-          >
+      <div className="relative z-10 text-center">
+          <h1 className="text-[14vw] md:text-[10vw] font-serif font-light text-white tracking-tighter">
             MODAUI
-          </motion.h1>
-          <div className="mt-8">
-             <LuxuryTypography variant="h2" className="text-[6vw] md:text-[4.5vw] lowercase italic font-normal tracking-[-0.08em] opacity-80">
-               Fashion_Operating_System
-             </LuxuryTypography>
-          </div>
-        </div>
-      </motion.div>
-
-      {/* Floating HUD Elements */}
-      <div className="absolute top-12 left-6 md:left-12 space-y-1">
-        <p className="text-[8px] font-mono text-zinc-500 uppercase tracking-widest">LATENCY: 4.2MS</p>
-        <p className="text-[8px] font-mono text-zinc-500 uppercase tracking-widest">VRAM: 92%_ACTIVE</p>
-      </div>
-
-      <div className="absolute bottom-20 left-1/2 -translate-x-1/2 flex flex-col items-center gap-6">
-         <div className="w-px h-24 bg-gradient-to-b from-primary to-transparent" />
-         <span className="text-[9px] font-black uppercase tracking-[0.5em] text-zinc-600 hidden md:block">Explore_Kernel</span>
+          </h1>
+          <p className="mt-6 text-sm md:text-lg font-sans font-light text-white tracking-[0.2em] uppercase opacity-70">
+            Digital Fashion Archives
+          </p>
       </div>
     </section>
   );
@@ -149,42 +62,8 @@ const TrendMatrix = () => {
                 viewport={{ once: true }}
                 className="text-4xl md:text-6xl font-black italic uppercase tracking-tighter"
               >
-                Fashion_Bloomberg_Terminal
+                Fashion_Intelligence
               </motion.h2>
-           </div>
-           
-           {/* Animated Floating Labels */}
-           <div className="flex gap-12 font-mono text-[10px] text-zinc-600">
-             <motion.div 
-               animate={{ 
-                 y: [-2, 2, -2],
-                 opacity: [0.4, 1, 0.4]
-               }} 
-               transition={{ 
-                 repeat: Infinity, 
-                 duration: 3,
-                 ease: "easeInOut"
-               }}
-               className="flex items-center gap-2"
-             >
-               <div className="w-1 h-1 bg-primary rounded-full animate-pulse" />
-               <p>REFRESH: 1.0S</p>
-             </motion.div>
-             <motion.div 
-               animate={{ 
-                 y: [2, -2, 2],
-                 opacity: [0.3, 0.8, 0.3]
-               }} 
-               transition={{ 
-                 repeat: Infinity, 
-                 duration: 4,
-                 ease: "easeInOut"
-               }}
-               className="flex items-center gap-2"
-             >
-               <div className="w-1 h-1 bg-zinc-800 rounded-full" />
-               <p>NODE: MILAN_0xAF</p>
-             </motion.div>
            </div>
         </div>
 
@@ -215,27 +94,6 @@ const TrendMatrix = () => {
                    >
                     {t.val}
                    </motion.h3>
-                   
-                   {/* Flashing Tags */}
-                   <AnimatePresence>
-                     {t.delta !== 'N/A' && (
-                       <motion.span 
-                         initial={{ opacity: 0, scale: 0.8 }}
-                         animate={{ 
-                           opacity: [0.4, 1, 0.4],
-                           scale: [0.95, 1, 0.95]
-                         }}
-                         transition={{ 
-                           repeat: Infinity, 
-                           duration: 1.5, 
-                           delay: i * 0.3 
-                         }}
-                         className="absolute -top-6 left-0 md:-top-4 md:-right-12 md:left-auto text-[8px] bg-primary/10 text-primary px-3 py-1 rounded-sm border border-primary/20 font-mono uppercase tracking-widest hidden md:block"
-                       >
-                         SIGNAL_SYNC: {t.delta}
-                       </motion.span>
-                     )}
-                   </AnimatePresence>
                 </div>
                 <div className="flex justify-between md:justify-end items-center gap-12 mt-8 md:mt-0">
                    <div className="text-left md:text-right">
@@ -263,132 +121,60 @@ const TrendMatrix = () => {
   );
 };
 
-const LibraryTeaser = ({ title, subTitle, img, video, desc, id, onClick }: { title: string, subTitle: string, img?: string, video?: string, desc: string, id: string, onClick: (id: string) => void }) => {
+const LibraryTeaser = ({ title, img, video, id, onClick, className, textColor="text-white", overlay="bg-black/20", color = "#ffffff" }: { title: string, img?: string, video?: string, id: string, onClick: (id: string) => void, className?: string, textColor?: string, overlay?: string, color?: string }) => {
   return (
     <motion.section 
       onClick={() => onClick(id)}
-      whileHover="hover"
-      className="relative h-[70vh] md:h-screen w-full overflow-hidden group cursor-pointer border-b border-white/5 bg-black"
+      className={`relative h-[80vh] md:h-screen w-full overflow-hidden group cursor-pointer border-b border-zinc-900 bg-zinc-950 ${className || ''}`}
     >
-      {/* Background Media */}
-      <motion.div 
-        variants={{
-          hover: { scale: 1.05, filter: 'grayscale(0%)' }
-        }}
-        transition={{ duration: 1.2, ease: [0.16, 1, 0.3, 1] }}
-        className="absolute inset-0"
-      >
+      <div className="absolute inset-0 transition-transform duration-[2s] group-hover:scale-105">
         {video ? (
           <video 
             autoPlay 
             muted 
             loop 
             playsInline
-            className="w-full h-full object-cover grayscale brightness-[0.2] transition-all duration-1000"
+            className="w-full h-full object-cover"
             src={video}
           />
         ) : (
           <img 
             src={img} 
-            className="w-full h-full object-cover grayscale brightness-[0.2] transition-all duration-1000"
+            className="w-full h-full object-cover"
+            alt={title}
           />
         )}
-      </motion.div>
-
-      {/* Subtle Glow Overlay */}
-      <motion.div 
-        variants={{
-          hover: { opacity: 0.3 }
-        }}
-        initial={{ opacity: 0 }}
-        className="absolute inset-0 bg-primary/20 blur-[100px] pointer-events-none"
-      />
-
-      {/* AI Scanning Overlay */}
-      <div className="absolute inset-0 opacity-20 pointer-events-none">
-        <div className="absolute inset-0 bg-[linear-gradient(rgba(18,16,16,0)_50%,rgba(0,0,0,0.25)_50%),linear-gradient(90deg,rgba(255,0,0,0.06),rgba(0,255,0,0.02),rgba(0,0,255,0.06))] bg-[length:100%_2px,3px_100%]" />
-        <motion.div 
-          animate={{ y: ['0%', '100%'] }}
-          transition={{ duration: 10, repeat: Infinity, ease: "linear" }}
-          className="w-full h-px bg-primary/20 shadow-[0_0_15px_rgba(255,255,255,0.5)]"
-        />
       </div>
 
-      {/* Cinematic Gradation Overlay */}
-      <div className="absolute inset-0 bg-gradient-to-t from-black via-transparent to-black" />
+      <div className={`absolute inset-0 ${overlay} transition-all duration-700`} />
       
-      <div className="relative z-10 h-full flex flex-col justify-end p-8 md:p-32 space-y-6 md:space-y-12">
-        <motion.div 
-          initial={{ opacity: 0, y: 20 }}
-          whileInView={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.8 }}
-          className="flex items-center gap-4"
-        >
-           <div className="h-4 w-4 bg-primary/20 rounded-full flex items-center justify-center">
-              <motion.div 
-                variants={{
-                  hover: { scale: [1, 1.5, 1] }
-                }}
-                transition={{ repeat: Infinity, duration: 2 }}
-                className="w-1.5 h-1.5 bg-primary rounded-full" 
-              />
-           </div>
-           <LuxuryTypography variant="label" className="text-primary italic tracking-[0.5em] text-[9px] uppercase">{subTitle}</LuxuryTypography>
-        </motion.div>
+      <div className="relative z-10 h-full flex flex-col justify-between p-8 md:p-20">
+         <div className="text-white/70 font-sans text-xs uppercase tracking-[0.3em]">
+           {id === 'collection' ? '01 / ARCHIVE' : id === 'design' ? '02 / STUDIO' : '03 / TRY-ON'}
+         </div>
 
-        <div className="max-w-full">
-           <motion.h2 
-             initial={{ opacity: 0, x: -30 }}
-             whileInView={{ opacity: 1, x: 0 }}
-             transition={{ duration: 0.8, delay: 0.1 }}
-             variants={{
-               hover: { x: 20, color: '#fff' }
-             }}
-             className="text-[12vw] md:text-[10vw] font-black uppercase leading-[0.8] tracking-tighter text-white/90 transition-all duration-700"
-           >
-             {title}
-           </motion.h2>
-           <motion.p 
-             initial={{ opacity: 0 }}
-             whileInView={{ opacity: 1 }}
-             transition={{ duration: 0.8, delay: 0.2 }}
-             variants={{
-               hover: { opacity: 1, x: 20 }
-             }}
-             className="max-w-2xl text-zinc-400 text-xs md:text-xl font-mono uppercase tracking-widest leading-relaxed mt-6 md:mt-10 opacity-60 transition-all duration-700"
-           >
-             {desc}
-           </motion.p>
-        </div>
+         <div className="flex flex-col items-center justify-center text-center">
+            <motion.h2 
+              initial={{ opacity: 0, y: 30 }}
+              whileInView={{ opacity: 1, y: 0 }}
+              transition={{ duration: 1, ease: "easeOut" }}
+              className={`text-[10vw] md:text-[6vw] font-serif font-light tracking-tighter leading-none ${textColor}`}
+            >
+              {title}
+            </motion.h2>
+            <motion.div
+               initial={{ opacity: 0 }}
+               whileInView={{ opacity: 1 }}
+               transition={{ delay: 0.5, duration: 1 }}
+               className={`mt-8 px-8 py-3 border border-current font-sans text-[10px] uppercase tracking-[0.3em] hover:bg-white hover:text-black transition-all ${textColor}`}
+            >
+              Explore
+            </motion.div>
+         </div>
 
-        <motion.div 
-          initial={{ opacity: 0, scale: 0.9 }}
-          whileInView={{ opacity: 1, scale: 1 }}
-          className="pt-8 flex items-center justify-between border-t border-white/5"
-        >
-           <div className="flex items-center gap-8">
-             <motion.div 
-               variants={{
-                 hover: { scale: 1.1, backgroundColor: '#c5fb45', color: '#000' }
-               }}
-               className="w-12 h-12 md:w-20 md:h-20 rounded-full border border-white/10 flex items-center justify-center transition-all duration-500 shadow-2xl"
-             >
-                <ArrowRight size={20} className="md:w-8 md:h-8" />
-             </motion.div>
-             <div className="hidden md:block">
-               <p className="text-[10px] font-mono text-zinc-600 uppercase tracking-widest group-hover:text-white transition-colors">Awaiting Prompt...</p>
-               <motion.div 
-                 variants={{
-                   hover: { width: '100%' }
-                 }}
-                 initial={{ width: 0 }}
-                 className="h-0.5 bg-primary transition-all duration-700" 
-               />
-             </div>
-           </div>
-           
-           <span className="text-[8px] font-mono text-zinc-800 uppercase tracking-tighter">OS_READY_0x{id.toUpperCase()}</span>
-        </motion.div>
+         <div className="text-white/70 font-sans text-xs uppercase tracking-[0.3em] text-right">
+           FashionOS_2026
+         </div>
       </div>
     </motion.section>
   );
@@ -396,52 +182,140 @@ const LibraryTeaser = ({ title, subTitle, img, video, desc, id, onClick }: { tit
 
 const CreativeConsole = () => {
   const [messages, setMessages] = useState<{role: 'user' | 'ai', content: string}[]>([
-    { role: 'ai', content: 'SYSTEM READY.' }
+    { role: 'ai', content: 'SYSTEM READY. AWAITING DESIGN PARAMETERS.' }
   ]);
   const [input, setInput] = useState('');
+  const [isGenerating, setIsGenerating] = useState(false);
+  const [progress, setProgress] = useState(0);
   const scrollRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
     if (scrollRef.current) scrollRef.current.scrollTop = scrollRef.current.scrollHeight;
-  }, [messages]);
+  }, [messages, progress]);
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    if (!input.trim()) return;
-    setMessages(prev => [...prev, { role: 'user', content: input }]);
+    if (!input.trim() || isGenerating) return;
+
+    const prompt = input;
+    setMessages(prev => [...prev, { role: 'user', content: prompt }]);
     setInput('');
-    setTimeout(() => {
-      setMessages(prev => [...prev, { role: 'ai', content: `PROCESSING: '${input.slice(0,25)}...'` }]);
-    }, 800);
+    setIsGenerating(true);
+    setProgress(0);
+
+    // Simulate generation process
+    let currentProgress = 0;
+    const interval = setInterval(() => {
+      currentProgress += Math.random() * 15;
+      if (currentProgress >= 100) {
+        currentProgress = 100;
+        clearInterval(interval);
+        setTimeout(() => {
+          setIsGenerating(false);
+          setMessages(prev => [...prev, { 
+            role: 'ai', 
+            content: `Vision generated for "${prompt}". Opening preview...` 
+          }]);
+        }, 500);
+      }
+      setProgress(currentProgress);
+    }, 400);
   };
 
   return (
     <section className="py-24 px-6 md:px-12 bg-black flex flex-col items-center border-t border-white/5">
       <div className="max-w-3xl w-full">
-         <h2 className="text-xl md:text-2xl font-bold text-white mb-10 text-center uppercase tracking-widest leading-none">Director Console</h2>
+         <motion.div 
+           initial={{ opacity: 0, y: 20 }}
+           whileInView={{ opacity: 1, y: 0 }}
+           className="text-center mb-12"
+         >
+           <h2 className="text-3xl md:text-5xl font-black uppercase tracking-tighter text-white">Assistant</h2>
+         </motion.div>
 
-         <div className="bg-black border border-zinc-800 rounded-2xl overflow-hidden flex flex-col h-[60vh] md:h-[500px] shadow-2xl">
-            <div ref={scrollRef} className="flex-1 overflow-y-auto p-6 md:p-10 space-y-8 font-mono text-xs md:text-sm">
-               {messages.map((m, i) => (
-                 <div key={i} className={`flex ${m.role === 'user' ? 'justify-end' : 'justify-start'}`}>
-                    <div className={`max-w-[85%] p-4 rounded-2xl ${m.role === 'user' ? 'bg-zinc-800 text-white' : 'bg-transparent text-zinc-400'}`}>
-                       <p>{m.content}</p>
-                    </div>
+         <div className="bg-black/80 border border-white/5 backdrop-blur-3xl rounded-[2rem] overflow-hidden flex flex-col h-[65vh] md:h-[650px] shadow-[0_0_100px_rgba(0,0,0,1)] relative group/console ring-1 ring-white/5">
+            {/* Glossy Reflection Effect */}
+            <div className="absolute inset-0 bg-gradient-to-br from-white/[0.03] to-transparent pointer-events-none" />
+            
+            {/* Terminal Header */}
+            <div className="bg-black/50 px-8 py-4 border-b border-white/5 flex justify-between items-center backdrop-blur-md">
+              <div className="flex gap-4">
+                <div className="w-2.5 h-2.5 rounded-full bg-zinc-800" />
+                <div className="w-2.5 h-2.5 rounded-full bg-zinc-800" />
+              </div>
+              <div className="flex items-center gap-3">
+                <p className="text-[9px] font-mono text-zinc-500 uppercase tracking-[0.3em] font-medium italic">WORKSPACE</p>
+              </div>
+              <div className="flex gap-2">
+                <Terminal size={12} className="text-zinc-600" />
+              </div>
+            </div>
+
+          <div className="flex-1 overflow-y-auto p-8 md:p-14 space-y-10 font-mono text-xs md:text-sm">
+             {messages.map((m, i) => (
+               <motion.div 
+                 key={i} 
+                 initial={{ opacity: 0, x: m.role === 'user' ? 20 : -20 }}
+                 animate={{ opacity: 1, x: 0 }}
+                 className={`flex ${m.role === 'user' ? 'justify-end' : 'justify-start'}`}
+               >
+                  <div className={`max-w-[85%] relative ${
+                    m.role === 'user' 
+                    ? 'text-white' 
+                    : 'text-zinc-500'
+                  }`}>
+                     <p className={`text-sm md:text-lg font-mono leading-relaxed ${m.role === 'user' ? 'text-right' : 'text-left italic'}`}>
+                       {m.role === 'ai' && <span className="text-primary/40 mr-3 underline underline-offset-4 decoration-primary/20">AI:</span>}
+                       {m.content}
+                     </p>
+                  </div>
+               </motion.div>
+             ))}
+
+               {isGenerating && (
+                 <div className="pt-10 space-y-6">
+                   <div className="flex justify-between items-center px-2">
+                     <div className="flex items-center gap-3">
+                        <Activity size={12} className="text-primary animate-spin" />
+                        <span className="text-[10px] font-mono text-primary uppercase tracking-widest">Generating_Vision...</span>
+                     </div>
+                     <span className="text-[10px] font-mono text-zinc-700">{Math.round(progress)}%</span>
+                   </div>
+                   <div className="h-[2px] w-full bg-zinc-900 rounded-full overflow-hidden">
+                     <motion.div 
+                       className="h-full bg-primary shadow-[0_0_15px_#c5fb45]" 
+                       initial={{ width: 0 }}
+                       animate={{ width: `${progress}%` }}
+                     />
+                   </div>
                  </div>
-               ))}
+               )}
             </div>
             
-            <form onSubmit={handleSubmit} className="p-4 bg-zinc-950/50 border-t border-zinc-800">
-               <div className="relative flex items-center bg-zinc-900 rounded-full">
+            <form onSubmit={handleSubmit} className="p-6 md:p-10 bg-black/40 border-t border-white/5 backdrop-blur-xl">
+               <div className="relative flex items-center bg-zinc-900/50 border border-white/5 rounded-2xl md:rounded-3xl p-2 focus-within:ring-2 focus-within:ring-primary/20 transition-all">
                  <input 
                    value={input}
                    onChange={(e) => setInput(e.target.value)}
-                   placeholder="Enter command..."
-                   className="flex-1 bg-transparent text-white outline-none font-mono text-sm p-4 px-6 placeholder:text-zinc-600"
+                   disabled={isGenerating}
+                   placeholder="Ask for design inspiration..."
+                   className="flex-1 bg-transparent text-white outline-none font-mono text-sm md:text-base p-4 px-6 placeholder:text-zinc-700"
                  />
-                 <button type="submit" className="p-3 mr-2 bg-zinc-800 text-zinc-400 rounded-full hover:text-white transition-colors">
-                    <Sparkles size={16} />
+                 <button 
+                  type="submit" 
+                  disabled={isGenerating || !input.trim()}
+                  className={`px-8 md:px-12 py-4 md:py-5 rounded-xl md:rounded-[1.2rem] font-bold uppercase text-[10px] tracking-[0.2em] transition-all flex items-center justify-center ${
+                    isGenerating 
+                    ? 'bg-zinc-800 text-zinc-600' 
+                    : 'bg-white text-black hover:bg-primary active:scale-95'
+                  }`}
+                 >
+                    {isGenerating ? <RefreshCw size={16} className="animate-spin" /> : 'Execute'}
                  </button>
+               </div>
+               <div className="mt-4 flex justify-center gap-6 opacity-20">
+                  <span className="text-[8px] font-mono text-zinc-500 lowercase tracking-widest">prompt_engine: core_v4</span>
+                  <span className="text-[8px] font-mono text-zinc-500 lowercase tracking-widest">model_0x88_active</span>
                </div>
             </form>
          </div>
@@ -451,90 +325,109 @@ const CreativeConsole = () => {
 };
 
 
+interface SystemHUDProps {
+  label: string;
+  value: string;
+  active?: boolean;
+}
+
+const SystemHUD = ({ label, value, active }: SystemHUDProps) => (
+  <div className="flex flex-col gap-1">
+    <p className="text-[7px] font-mono text-zinc-600 uppercase tracking-widest">{label}</p>
+    <div className="flex items-center gap-2">
+      {active && <div className="w-1 h-1 bg-primary rounded-full animate-pulse shadow-[0_0_5px_#c5fb45]" />}
+      <p className="text-[10px] font-mono text-zinc-400 font-bold">{value}</p>
+    </div>
+  </div>
+);
+
+const NeuralBackground = () => (
+  <div className="fixed inset-0 pointer-events-none z-0">
+    <div className="absolute inset-0 bg-[radial-gradient(circle_at_50%_50%,rgba(197,251,69,0.02),transparent)]" />
+    <div className="absolute inset-0 opacity-[0.03] bg-[url('https://www.transparenttextures.com/patterns/carbon-fibre.png')]" />
+    <motion.div 
+      animate={{ 
+        opacity: [0.1, 0.2, 0.1],
+        scale: [1, 1.05, 1]
+      }}
+      transition={{ duration: 10, repeat: Infinity }}
+      className="absolute inset-0 bg-gradient-to-tr from-black via-zinc-950 to-black" 
+    />
+  </div>
+);
+
 export const HomePage: React.FC<{ onTabChange: (id: string) => void }> = ({ onTabChange }) => {
+  const { scrollYProgress } = useScroll();
+  const scaleX = useSpring(scrollYProgress, { stiffness: 100, damping: 30, restDelta: 0.001 });
+
+  React.useEffect(() => {
+    const lenis = new Lenis({ duration: 1.2, easing: (t) => Math.min(1, 1.001 - Math.pow(2, -10 * t)) });
+    function raf(time: number) { lenis.raf(time); requestAnimationFrame(raf); }
+    requestAnimationFrame(raf);
+    return () => lenis.destroy();
+  }, []);
+
   return (
-    <div className="w-full">
-      {/* SECTION 1 — FULLSCREEN RUNWAY FILM */}
+    <div className="w-full bg-[#fcfaf7] text-[#1a1a1a] font-sans overflow-x-hidden">
+      <motion.div className="fixed top-0 left-0 right-0 h-px bg-black z-[100] origin-left" style={{ scaleX }} />
+      
       <RunwayHero />
       
-      {/* SECTION 2 — LIVE TREND MATRIX (Fashion Bloomberg Terminal) */}
-      <TrendMatrix />
-      
-      {/* SECTION 3 — THREE CORE LIBRARIES (Apple Style Fullscreen) */}
-      <div className="space-y-0">
-        <LibraryTeaser 
-          id="collection"
-          title="全球趋势库"
-          subTitle="TREND_ARCHIVE // 0x01"
-          desc="Access the deep neural archives of global aesthetic evolution. From Milan runways to Tokyo backstreets."
-          img="https://images.unsplash.com/photo-1558769132-cb1aea458c5e?auto=format&fit=crop&q=80"
-          onClick={onTabChange}
-        />
-        <LibraryTeaser 
-          id="design"
-          title="设计师工作室"
-          subTitle="DESIGN_STUDIO // 0x02"
-          desc="Professional inference tools for the next generation of creative directors. Style remixing in real-time."
-          video="https://cdn.pixabay.com/vimeo/197177579/fashion-show-6555.mp4?width=1280&hash=8cb9c771701389808388d1d83c3c1e2858b907e5"
-          onClick={onTabChange}
-        />
-        <LibraryTeaser 
-          id="try-on"
-          title="收藏世界"
-          subTitle="WORLD_ENGINE // 0x03"
-          desc="Infinite scalability for digital wardrobes. Deploy multi-angle simulations and neural try-ons."
-          img="https://images.unsplash.com/photo-1539109136881-3be0616acf4b?auto=format&fit=crop&q=80"
-          onClick={onTabChange}
-        />
-      </div>
+      <main className="flex flex-col">
+        <div className="h-screen w-full">
+          <LibraryTeaser 
+            id="collection"
+            title="全球趋势库"
+            img="https://images.unsplash.com/photo-1558769132-cb1aea458c5e?auto=format&fit=crop&q=80"
+            color="#c5fb45"
+            onClick={onTabChange}
+          />
+        </div>
+        <div className="h-screen w-full">
+          <LibraryTeaser 
+            id="design"
+            title="设计师工作室"
+            video="https://cdn.pixabay.com/vimeo/197177579/fashion-show-6555.mp4?width=1280&hash=8cb9c771701389808388d1d83c3c1e2858b907e5"
+            color="#000000"
+            onClick={onTabChange}
+          />
+        </div>
+        <div className="h-screen w-full [perspective:1000px]">
+          <LibraryTeaser 
+            id="try-on"
+            title="收藏世界"
+            img="https://images.unsplash.com/photo-1539109136881-3be0616acf4b?auto=format&fit=crop&q=80"
+            className="bg-[#fcfaf7]"
+            textColor="text-[#1a1a1a]"
+            overlay="bg-black/10"
+            onClick={onTabChange}
+          />
+        </div>
+      </main>
 
-      {/* SECTION 4 — FEATURED CAMPAIGN (Editorial Noir) */}
-      <section className="min-h-[60vh] md:h-screen w-full relative overflow-hidden group">
-         <motion.img 
-           initial={{ scale: 1.1 }}
-           whileInView={{ scale: 1 }}
-           transition={{ duration: 2 }}
-           src="https://images.unsplash.com/photo-1490481651871-ab68de25d43d?auto=format&fit=crop&q=80" 
-           className="w-full h-full object-cover grayscale contrast-[2] brightness-[0.7]"
-         />
-         <div className="absolute inset-0 bg-black/40 flex flex-col items-center justify-center p-8 md:p-20 text-center">
-            <motion.div 
-               initial={{ opacity: 0, y: 50 }}
-               whileInView={{ opacity: 1, y: 0 }}
-               className="space-y-8 md:space-y-12"
-            >
-               <LuxuryTypography variant="label" className="text-white tracking-[0.5em] md:tracking-[1em] mb-8 md:mb-12 text-[9px]">EDITORIAL_CAMPAIGN_SS26</LuxuryTypography>
-               <h2 className="text-[15vw] md:text-[10vw] font-black uppercase tracking-tighter leading-none text-white mix-blend-overlay">
-                 VOID_RAIDERS
-               </h2>
-               <div className="flex items-center justify-center gap-6 md:gap-12 pt-8 md:pt-12">
-                  <div className="h-px w-12 md:w-24 bg-white/20" />
-                  <span className="text-[8px] md:text-[10px] font-mono text-white/40 uppercase tracking-[0.3em] md:tracking-[0.5em] italic">NODE_0x44</span>
-                  <div className="h-px w-12 md:w-24 bg-white/20" />
-               </div>
-            </motion.div>
-         </div>
-      </section>
-
-      {/* SECTION 5 — AI DIRECTOR CONSOLE */}
-      <CreativeConsole />
-
-
-      <footer className="py-20 md:py-32 bg-black border-t border-white/5 px-8 md:px-24">
-         <div className="flex flex-col md:flex-row justify-between items-center gap-12">
-            <h2 className="text-4xl font-black uppercase tracking-tighter text-white/20">MODAUI</h2>
-            
-            <div className="flex gap-10">
-               {['X', 'IG', 'DC'].map(platform => (
-                 <a key={platform} className="text-[10px] font-bold uppercase tracking-[0.2em] text-zinc-600 hover:text-white transition-all">{platform}</a>
-               ))}
+      <footer className="py-24 px-12 md:px-24 border-t border-zinc-200">
+        <div className="grid grid-cols-2 md:grid-cols-4 gap-8 mb-12">
+          {['Luxury', 'Avant-Garde', 'Media'].map((category) => (
+            <div key={category}>
+              <h4 className="text-[10px] font-black uppercase tracking-widest text-zinc-900 mb-6">{category}</h4>
+              <ul className="space-y-4">
+                {FASHION_SOURCES.filter(source => source.category === category).map((source) => (
+                  <li key={source.name}>
+                    <a 
+                      href={source.url} 
+                      target="_blank" 
+                      rel="noopener noreferrer"
+                      className="text-sm font-light text-zinc-600 hover:text-black transition-colors"
+                    >
+                      {source.name}
+                    </a>
+                  </li>
+                ))}
+              </ul>
             </div>
-         </div>
-         
-         <div className="mt-16 flex flex-col md:flex-row justify-between items-center gap-6 pt-10 border-t border-white/5 opacity-40">
-            <p className="text-[8px] font-mono uppercase tracking-widest">© 2026 SS26_PROTOCOLS</p>
-            <p className="text-[8px] font-mono uppercase tracking-widest text-primary">STATUS: CONNECTED</p>
-         </div>
+          ))}
+        </div>
+        <p className="text-sm font-light text-zinc-600">© 2026 MODAUI</p>
       </footer>
     </div>
   );

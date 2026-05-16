@@ -1,10 +1,20 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { LuxuryTypography } from '../../design-system/LuxuryTypography';
 import { CollectionMasonryGrid } from './CollectionMasonryGrid';
-import { Search, SlidersHorizontal, Sparkles, Filter } from 'lucide-react';
+import { Search, SlidersHorizontal, Sparkles, Filter, RefreshCw } from 'lucide-react';
 import { motion } from 'motion/react';
+import { fashionItemService } from '@/services/fashionItemService';
 
 export const CollectionHome: React.FC = () => {
+  const [isCollecting, setIsCollecting] = useState(false);
+
+  const handleCollectLatest = async () => {
+    setIsCollecting(true);
+    // Simulate collection call
+    await fashionItemService.getItems(10);
+    setTimeout(() => setIsCollecting(false), 1000);
+  };
+
   return (
     <div className="flex flex-col h-full bg-[#050505]">
       {/* Hero Header */}
@@ -15,6 +25,17 @@ export const CollectionHome: React.FC = () => {
             <LuxuryTypography variant="h1" className="text-8xl lowercase italic font-normal">Neural_Discovery</LuxuryTypography>
           </div>
           <div className="flex gap-4">
+            <button
+                onClick={handleCollectLatest}
+                className={`px-8 py-4 rounded-full border transition-all flex items-center gap-4 ${
+                    isCollecting ? 'bg-zinc-800 border-zinc-700 text-zinc-400' : 'bg-primary border-primary text-black hover:bg-primary/90'
+                }`}
+            >
+              <RefreshCw className={isCollecting ? 'animate-spin' : ''} size={14} />
+              <span className="text-[10px] font-black uppercase tracking-widest">
+                  {isCollecting ? 'Collecting...' : 'Collect Latest Styles'}
+              </span>
+            </button>
              {[
                { label: 'All Collections', count: '412', active: true },
                { label: 'SS26 Trend', count: '84', active: false },

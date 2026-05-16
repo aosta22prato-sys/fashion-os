@@ -11,22 +11,22 @@ const NAV_GROUPS = [
   {
     label: 'Core',
     items: [
-      { id: 'home', label: 'Home Matrix', icon: Grid },
+      { id: 'home', label: 'Home', icon: Grid },
     ]
   },
   {
     label: 'Studio',
     items: [
-      { id: 'try-on', label: 'Try-On Studio', icon: User },
-      { id: 'design', label: 'Inspiration Studio', icon: Eraser },
-      { id: 'collection', label: 'Collection AI', icon: Library },
+      { id: 'try-on', label: 'Try-On', icon: User },
+      { id: 'design', label: 'Design', icon: Eraser },
+      { id: 'collection', label: 'Vault', icon: Library },
     ]
   },
   {
     label: 'Insights',
     items: [
-      { id: 'trends', label: 'Trend Matrix', icon: TrendingUp },
-      { id: 'clusters', label: 'Style Clusters', icon: Grid },
+      { id: 'trends', label: 'Trends', icon: TrendingUp },
+      { id: 'clusters', label: 'Archive', icon: Grid },
     ]
   }
 ];
@@ -36,7 +36,7 @@ export const Sidebar: React.FC<{ activeTab: string, onSelect: (id: string) => vo
     <motion.aside
       initial={{ x: -100, opacity: 0 }}
       animate={{ x: 0, opacity: 1 }}
-      className="fixed left-8 top-1/2 -translate-y-1/2 z-[100] h-auto bg-black/40 backdrop-blur-3xl border border-white/5 p-4 rounded-[40px] flex flex-col gap-8 shadow-2xl"
+      className="fixed left-8 top-1/2 -translate-y-1/2 z-[100] h-auto bg-black/40 backdrop-blur-3xl border border-white/5 p-4 rounded-[40px] hidden md:flex flex-col gap-8 shadow-2xl"
     >
       <div className="flex flex-col gap-4">
         {NAV_GROUPS.flatMap(g => g.items).map((item) => (

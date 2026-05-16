@@ -1,4 +1,5 @@
-import React, { useEffect, useState, useCallback, useRef } from 'react';
+import React, { useEffect, useState, useCallback, useRef, useMemo } from 'react';
+import { FASHION_SOURCES } from './src/constants';
 import { motion, AnimatePresence } from 'motion/react';
 import { 
   Zap, Cpu, Activity, Server, Network, Brain,
@@ -51,6 +52,41 @@ export const AIOperationsCenter: React.FC<AIOperationsCenterProps> = ({
   const [logs, setLogs] = useState<any[]>([]);
   const [activeTab, setActiveTab] = useState<'matrix' | 'tryon' | 'studio' | 'agents' | 'memory' | 'logs'>('matrix');
   const [isExecuting, setIsExecuting] = useState<string | null>(null);
+  const [scrapeUrl, setScrapeUrl] = useState('');
+  const [searchQuery, setSearchQuery] = useState('');
+  const [selectedSource, setSelectedSource] = useState<any>(null);
+
+  const filteredResults = useMemo(() => {
+    if (!searchQuery) return [];
+    const q = searchQuery.toLowerCase();
+    const results: { type: string, name: string, id: string }[] = [];
+
+    if (registry) {
+      registry.agents.forEach(a => {
+        if (a.name.toLowerCase().includes(q)) results.push({ type: 'Agent', name: a.name, id: a.id });
+      });
+      registry.models.forEach(m => {
+        if (m.name.toLowerCase().includes(q)) results.push({ type: 'Model', name: m.name, id: m.id });
+      });
+    }
+    if (memory) {
+      memory.trends.forEach((t: any) => {
+        if (t.topic.toLowerCase().includes(q)) results.push({ type: 'Trend', name: t.topic, id: t.topic });
+      });
+    }
+    return results;
+  }, [searchQuery, registry, memory]);
+
+  const handleQuickScrape = async (source: any) => {
+    setScrapeUrl(source.url);
+    setSelectedSource(source);
+    await executeAction(`Scrape ${source.url}`, `/api/fashion/scrape?url=${encodeURIComponent(source.url)}&category=${encodeURIComponent(source.category)}`);
+  };
+
+  const handleScrape = async () => {
+    if (!scrapeUrl) return;
+    await executeAction(`Scrape ${scrapeUrl}`, '/api/fashion/scrape?url=' + encodeURIComponent(scrapeUrl));
+  };
 
   useEffect(() => {
     if (preloadedDesign) {
@@ -100,7 +136,6 @@ export const AIOperationsCenter: React.FC<AIOperationsCenterProps> = ({
       const mem = await memRes.json();
       
       setRegistry(reg);
-      // Handle the new nested health structure
       setStats(healthData.health || healthData); 
       setMemory(mem);
     } catch (e) {
@@ -171,6 +206,24 @@ export const AIOperationsCenter: React.FC<AIOperationsCenterProps> = ({
             </h2>
           </div>
           <div className="flex gap-4">
+             <div className="relative">
+                <input
+                  type="text"
+                  placeholder="Search system..."
+                  value={searchQuery}
+                  onChange={(e) => setSearchQuery(e.target.value)}
+                  className="bg-white/5 border border-white/10 rounded-full px-4 py-2 text-xs text-white placeholder:text-zinc-500 w-48"
+                />
+                {filteredResults.length > 0 && (
+                   <div className="absolute top-12 left-0 w-64 bg-neutral-900 border border-white/10 rounded-2xl p-4 z-[200] max-h-64 overflow-y-auto">
+                      {filteredResults.map(res => (
+                         <div key={res.id} className="text-xs text-zinc-300 py-1 cursor-pointer hover:text-primary">
+                            {res.name} <span className="text-[9px] text-zinc-600">[{res.type}]</span>
+                         </div>
+                      ))}
+                   </div>
+                )}
+             </div>
              {['matrix', 'tryon', 'studio', 'agents', 'memory', 'logs'].map((tab) => (
                <QuantumButton
                  key={tab}
@@ -194,197 +247,140 @@ export const AIOperationsCenter: React.FC<AIOperationsCenterProps> = ({
               className="grid grid-cols-1 lg:grid-cols-4 gap-8"
             >
               <div className="lg:col-span-3 grid grid-cols-1 md:grid-cols-2 gap-8">
-                {/* Try-on Quick Access */}
-                <NeuralCard 
-                  title={translations[lang].ops.tryon} 
-                  subtitle={translations[lang].ops.tryonDesc} 
-                  icon={<Camera className="text-primary" />}
-                  className="!p-12 md:col-span-2 bg-gradient-to-br from-primary/5 to-transparent border-primary/20"
-                >
-                  <div className="flex items-center justify-between gap-10">
-                    <div className="space-y-4 max-w-md">
-                      <p className="text-sm text-zinc-400 leading-relaxed italic">
-                        Access the neural fitting room to map designs onto character silhouettes using Gemini 3.1 high-fidelity vision models.
-                      </p>
-                      <QuantumButton variant="primary" onClick={() => setActiveTab('tryon')}>
-                        Enter Fitting Room
-                      </QuantumButton>
-                    </div>
-                    <div className="hidden md:flex gap-2">
-                       <div className="w-16 h-24 bg-zinc-800 rounded-xl animate-pulse" />
-                       <div className="w-16 h-24 bg-primary/20 rounded-xl animate-pulse border border-primary/30" />
-                       <div className="w-16 h-24 bg-zinc-800 rounded-xl animate-pulse" />
-                    </div>
-                  </div>
-                </NeuralCard>
-
-                {/* Workers Fabric */}
-                <NeuralCard 
-                  title={t.gpuFabric} 
-                  subtitle={t.clusterSync} 
-                  icon={<Activity className="text-primary animate-pulse" />}
-                  className="!p-12 md:col-span-1"
-                >
-                  <div className="space-y-8">
-                    {/* GPU Utilization Visualizer */}
-                    <div className="h-40 w-full bg-white/5 rounded-3xl p-6 border border-white/5">
-                      <ResponsiveContainer width="100%" height="100%">
-                        <BarChart data={registry?.workers || []}>
-                          <XAxis 
-                            dataKey="id" 
-                            hide 
-                          />
-                          <YAxis hide domain={[0, 100]} />
-                          <Tooltip 
-                            cursor={{ fill: 'transparent' }}
-                            content={({ active, payload }) => {
-                              if (active && payload && payload.length) {
-                                return (
-                                  <div className="bg-black/80 backdrop-blur-md border border-primary/20 p-3 rounded-xl shadow-2xl">
-                                    <p className="text-[10px] font-black uppercase tracking-widest text-primary mb-1">{payload[0].payload.id}</p>
-                                    <p className="text-xl font-black text-white">{payload[0].value}% <span className="text-[10px] text-muted uppercase font-mono">Load</span></p>
-                                  </div>
-                                );
-                              }
-                              return null;
-                            }}
-                          />
-                          <Bar dataKey="load" radius={[4, 4, 0, 0]}>
-                            {(registry?.workers || []).map((entry, index) => (
-                              <Cell 
-                                key={`cell-${index}`} 
-                                fill={entry.status === 'busy' ? '#f59e0b' : '#00b8d9'} 
-                                className="transition-all duration-500"
-                              />
-                            ))}
-                          </Bar>
-                        </BarChart>
-                      </ResponsiveContainer>
-                    </div>
-
-                    {registry?.workers.map(w => (
-                      <div key={w.id} className="space-y-3">
-                        <div className="flex justify-between text-[11px] font-black text-text uppercase tracking-widest">
-                          <span>{w.id}</span>
-                          <span className={w.status === 'busy' ? 'text-amber-500' : 'text-primary'}>{w.load}%</span>
-                        </div>
-                        <div className="h-1.5 w-full bg-white/5 rounded-full overflow-hidden">
-                          <motion.div 
-                            initial={{ width: 0 }}
-                            animate={{ width: `${w.load}%` }}
-                            className={`h-full transition-all duration-500 aurora-progress`} 
-                          />
-                        </div>
-                        <div className="flex justify-between text-[8px] font-mono text-muted uppercase">
-                          <span>{w.gpu || 'A100_G5'} / 80GB</span>
-                          <span className="flex items-center gap-1.5">
-                             <div className={`w-1 h-1 rounded-full ${w.status === 'busy' ? 'bg-amber-500' : 'bg-primary animate-pulse'}`} />
-                             {(translations[lang].common as any)[w.status] || w.status}
-                          </span>
-                        </div>
+                {/* Workflow Hubs */}
+                <div className="md:col-span-2 grid grid-cols-1 gap-8">
+                  {/* Intelligence Hub */}
+                  <NeuralCard 
+                    title="Neural Intelligence"
+                    subtitle="Trend Ingestion & Source Intelligence"
+                    icon={<Brain className="text-primary" />}
+                    className="!p-10"
+                  >
+                     <div className="relative group mb-6">
+                         {isExecuting === `Scrape ${scrapeUrl}` && (
+                             <div className="absolute left-4 top-1/2 -translate-y-1/2">
+                                <div className="w-2 h-2 bg-primary rounded-full animate-pulse" />
+                             </div>
+                         )}
+                         <input 
+                           placeholder="Paste source URL for trend ingestion..."
+                           value={scrapeUrl}
+                           onChange={(e) => setScrapeUrl(e.target.value)}
+                           className={`w-full bg-neutral-800 dark:bg-neutral-800 border-none rounded-2xl py-4 text-xs italic font-serif text-white focus:ring-1 focus:ring-primary/50 transition-all placeholder:text-zinc-600 shadow-inner ${isExecuting === `Scrape ${scrapeUrl}` ? 'px-10' : 'px-5'}`}
+                         />
+                         <button 
+                            onClick={handleScrape}
+                            disabled={isExecuting === `Scrape ${scrapeUrl}`}
+                            className="absolute right-2 top-1/2 -translate-y-1/2 p-2 bg-primary/20 text-primary hover:bg-primary hover:text-black rounded-xl transition-all"
+                         >
+                            {isExecuting === `Scrape ${scrapeUrl}` ? (
+                              <RotateCw size={14} className="animate-spin" />
+                            ) : (
+                              <Workflow size={14} />
+                            )}
+                         </button>
                       </div>
-                    ))}
-                  </div>
-                </NeuralCard>
+                      <div className="space-y-4">
+                        {['Luxury', 'Avant-Garde', 'Media'].map(category => (
+                          <div key={category}>
+                             <p className="text-[8px] font-black uppercase tracking-widest text-zinc-500 mb-2">{category}</p>
+                             <div className="grid grid-cols-2 gap-2">
+                                {FASHION_SOURCES.filter(s => s.category === category).map(source => (
+                                   <button
+                                      key={source.url}
+                                      onClick={() => handleQuickScrape(source)}
+                                      className="px-3 py-2 bg-white/5 hover:bg-primary/20 rounded-xl text-[9px] font-bold text-zinc-300 hover:text-white transition-all text-left"
+                                   >
+                                      {source.name}
+                                   </button>
+                                ))}
+                             </div>
+                          </div>
+                        ))}
+                      </div>
+                      
+                      {selectedSource && (
+                        <div className="mt-6 p-4 bg-white/5 rounded-2xl border border-white/10">
+                           <p className="text-[10px] font-black uppercase tracking-widest text-primary mb-3">Brand DNA: {selectedSource.name}</p>
+                           <div className="text-[10px] text-zinc-400 space-y-2">
+                              <p><span className="text-zinc-600">Aesthetic:</span> {selectedSource.dna.aesthetic}</p>
+                              <p><span className="text-zinc-600">Colors:</span> {selectedSource.dna.colors.join(', ')}</p>
+                              <p><span className="text-zinc-600">Materials:</span> {selectedSource.dna.materials.join(', ')}</p>
+                           </div>
+                        </div>
+                      )}
+                      
+                      </div>
+                  </NeuralCard>
 
-                {/* Queue Intelligence */}
-                <NeuralCard 
-                  title={t.queueIntel} 
-                  subtitle={t.activeRequests} 
-                  icon={<TrendingUp className="text-blue-500" />}
-                  glowColor="blue"
-                  className="!p-12 flex flex-col justify-between"
-                >
-                  <div className="py-10">
-                    <div className="text-7xl font-black text-text">{stats?.queue_depth || 0}</div>
-                    <p className="text-[10px] font-mono text-muted uppercase mt-4">{t.taskBacklog}</p>
+                  {/* Studio & Try-On Access */}
+                  <div className="grid grid-cols-2 gap-8">
+                      <NeuralCard title="Design Studio" icon={<Cpu className="text-primary" />} className="!p-8 !justify-center">
+                          <p className="text-xs text-zinc-400 mb-6 italic">Generative design & latent space exploration.</p>
+                          <QuantumButton variant="primary" onClick={() => setActiveTab('studio')} className="w-full">Launch Studio</QuantumButton>
+                      </NeuralCard>
+                      <NeuralCard title="Neural Try-On" icon={<Camera className="text-primary" />} className="!p-8 !justify-center">
+                          <p className="text-xs text-zinc-400 mb-6 italic">High-fidelity 3D fit simulation.</p>
+                          <QuantumButton variant="primary" onClick={() => setActiveTab('tryon')} className="w-full">Launch Try-On</QuantumButton>
+                      </NeuralCard>
                   </div>
-                  <div className="flex gap-2">
-                    <QuantumButton 
-                      variant="secondary" 
-                      className="flex-1"
-                      onClick={() => executeAction('Queue Prioritization', '/api/queue/prioritize')}
-                    >
-                      {t.prioritize}
-                    </QuantumButton>
-                    <QuantumButton 
-                      variant="secondary" 
-                      className="flex-1"
-                      onClick={() => executeAction('Cache Flush', '/api/memory/flush')}
-                    >
-                      {t.flushCache}
-                    </QuantumButton>
-                  </div>
-                </NeuralCard>
+                </div>
 
-                {/* Runtime Controls */}
-                <NeuralCard 
-                  title={t.runtimeControls} 
-                  subtitle={t.highLevelAccess} 
-                  icon={<ShieldAlert className="text-rose-500" />}
-                  glowColor="amber"
-                  className="!p-12 md:col-span-2"
-                >
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-8 mt-10">
-                    <RuntimePanel title="Command Bus" status={isExecuting ? 'busy' : 'online'}>
-                       <div className="grid grid-cols-1 gap-2">
+                {/* Workers Fabric & Runtime */}
+                <div className="md:col-span-2 grid grid-cols-1 gap-8">
+                  {/* Workers Fabric */}
+                  <NeuralCard 
+                    title={t.gpuFabric} 
+                    subtitle={t.clusterSync} 
+                    icon={<Activity className="text-primary animate-pulse" />}
+                    className="!p-10"
+                  >
+                    <div className="space-y-4">
+                      {registry?.workers.map(w => (
+                        <div key={w.id} className="space-y-2">
+                          <div className="flex justify-between text-[10px] font-black text-text uppercase">
+                            <span>{w.id}</span>
+                            <span className={w.status === 'busy' ? 'text-amber-500' : 'text-primary'}>{w.load}%</span>
+                          </div>
+                          <div className="h-1.5 w-full bg-white/5 rounded-full overflow-hidden">
+                            <motion.div 
+                              initial={{ width: 0 }}
+                              animate={{ width: `${w.load}%` }}
+                              className={`h-full transition-all duration-500 aurora-progress`} 
+                            />
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                  </NeuralCard>
+                  
+                  {/* Runtime Controls */}
+                  <NeuralCard 
+                    title={t.runtimeControls} 
+                    subtitle={t.highLevelAccess} 
+                    icon={<ShieldAlert className="text-rose-500" />}
+                    className="!p-10"
+                  >
+                        <div className="grid grid-cols-2 gap-2">
                           {[
-                            { id: 'runtime.restart_worker', label: 'Restart Worker', icon: RotateCw },
-                            { id: 'runtime.clear_vram', label: 'Clear VRAM', icon: Trash2 },
-                            { id: 'runtime.switch_model', label: 'Switch Model', icon: RefreshCw },
-                            { id: 'system.health_check', label: 'Health Check', icon: Activity },
-                            { id: 'system.brain_cycle_trigger', label: 'Brain Cycle', icon: Brain }
+                            { id: 'runtime.restart_worker', label: 'Restart' },
+                            { id: 'runtime.clear_vram', label: 'Flush VRAM' },
+                            { id: 'system.health_check', label: 'Health Check' },
+                            { id: 'system.brain_cycle_trigger', label: 'Brain Cycle' }
                           ].map(cmd => (
                             <button
                               key={cmd.id}
                               onClick={() => runCommand(cmd.id)}
                               disabled={!!isExecuting}
-                              className="flex items-center justify-between p-4 bg-white/5 rounded-2xl hover:bg-white/10 transition-all group"
+                              className="p-3 bg-white/5 rounded-xl hover:bg-white/10 transition-all text-left"
                             >
-                              <div className="flex items-center gap-3">
-                                <cmd.icon size={14} className="text-zinc-500 group-hover:text-primary" />
-                                <span className="text-[10px] font-black uppercase tracking-widest text-zinc-400 group-hover:text-white">{cmd.label}</span>
-                              </div>
-                              <ChevronRight size={14} className="text-zinc-700 group-hover:text-primary" />
+                              <span className="text-[9px] font-black uppercase text-zinc-300">{cmd.label}</span>
                             </button>
                           ))}
                        </div>
-                    </RuntimePanel>
+                  </NeuralCard>
+                </div>
 
-                    <RuntimePanel title={t.gpuWatchdog} status={stats?.gpu_runtime ? 'online' : 'offline'}>
-                      <p className="text-[11px] text-muted leading-relaxed italic mb-8">
-                        {t.gpuMonitorDesc}
-                      </p>
-                      <QuantumButton 
-                        variant="glow"
-                        className="w-full !bg-rose-500/10 hover:!bg-rose-500/20 !text-rose-500 border border-rose-500/20 shadow-none hover:shadow-[0_0_15px_rgba(244,63,94,0.2)]"
-                        onClick={() => executeAction('GPU Watchdog Sync', '/api/runtime/watchdog/sync')}
-                      >
-                        <ShieldAlert size={14} />
-                        {t.triggerWatchdog}
-                      </QuantumButton>
-                    </RuntimePanel>
-
-                    <div className="p-8 bg-black/40 rounded-[2.5rem] border border-white/5 space-y-6">
-                      <div className="flex items-center gap-2 mb-2">
-                        <Search size={16} className="text-primary" />
-                        <h5 className="text-[10px] font-black uppercase tracking-widest text-primary">Neural Scraper</h5>
-                      </div>
-                      <div className="relative group">
-                         <input 
-                           placeholder="Paste source URL for trend ingestion..."
-                           className="w-full bg-neutral-800 dark:bg-neutral-800 border-none rounded-2xl px-5 py-4 text-xs italic font-serif text-white focus:ring-1 focus:ring-primary/50 transition-all placeholder:text-zinc-600 shadow-inner"
-                         />
-                         <button className="absolute right-2 top-1/2 -translate-y-1/2 p-2 bg-primary/20 text-primary hover:bg-primary hover:text-black rounded-xl transition-all">
-                            <Workflow size={14} />
-                         </button>
-                      </div>
-                      <p className="text-[8px] font-mono text-zinc-500 uppercase tracking-widest text-center">
-                        Secure Ingestion Path: 0x44 (AliExpress / TMall / SHEIN)
-                      </p>
-                    </div>
-                  </div>
-                </NeuralCard>
 
                 {/* Models Register */}
                 <NeuralCard 
